@@ -1,5 +1,6 @@
 "use client";
 
+import { AdminCategorySelect } from "@/components/AdminCategorySelect";
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Link from "next/link";
 import {
@@ -588,14 +589,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                   className={inputClass}
                 />
               </label>
-              <label>
-                <span className={labelClass}>Category</span>
-                <input
-                  value={draft.category}
-                  onChange={(event) => patch({ category: event.target.value })}
-                  className={inputClass}
-                />
-              </label>
+              <AdminCategorySelect value={draft.category} onChange={(category) => patch({ category })} />
               <label>
                 <span className={labelClass}>Price</span>
                 <input
