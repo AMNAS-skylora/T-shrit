@@ -14,7 +14,6 @@ import {
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type {
   HeroCtaStyle,
-  HeroImagePosition,
   HeroSlideConfig,
   HeroSlideKind,
 } from "@/data/hero-slides";
@@ -38,7 +37,6 @@ type Draft = {
   endsAt: string;
   showCountdown: boolean;
   ctaStyle: HeroCtaStyle;
-  imagePosition: HeroImagePosition;
   imagePlacement: HeroImagePlacement;
   enabled: boolean;
   order: string;
@@ -59,7 +57,6 @@ const emptyDraft: Draft = {
   endsAt: "",
   showCountdown: false,
   ctaStyle: "dark",
-  imagePosition: "center",
   imagePlacement: normalizeHeroImagePlacement(undefined),
   enabled: true,
   order: "0",
@@ -114,9 +111,6 @@ export function AdminHeroManager() {
   const [saving, setSaving] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
-  const [defaultDrawerOpen, setDefaultDrawerOpen] = useState(false);
-  const [defaultSaving, setDefaultSaving] = useState(false);
-  const [defaultUploading, setDefaultUploading] = useState(false);
 
   async function load() {
     const [heroResponse, productResponse, settingsResponse] = await Promise.all([
@@ -138,7 +132,7 @@ export function AdminHeroManager() {
       throw new Error(productData.error || "Could not load products.");
     }
     if (!settingsResponse.ok) {
-      throw new Error(settingsData.error || "Could not load default hero.");
+      throw new Error(settingsData.error || "Could not load hero settings.");
     }
 
     setSlides(heroData.slides || []);
@@ -165,95 +159,6 @@ export function AdminHeroManager() {
 
   const previewImage = draft.imageUrl || productImage;
 
-
-  function patchDefaultHero(patch: Partial<StoreSettings>) {
-    setStoreSettings((current) =>
-      current ? ({ ...current, ...patch } as StoreSettings) : current,
-    );
-  }
-
-  async function persistDefaultHero(settings: StoreSettings) {
-    const response = await fetch("/api/admin/settings", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(Object.fromEntries(Object.entries(settings).filter(([key]) => key.startsWith("homeDefaultHero")))),
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Could not save default hero.");
-    }
-
-    setStoreSettings(data.settings);
-    return data.settings as StoreSettings;
-  }
-
-  async function toggleDefaultHero() {
-    if (!storeSettings || defaultSaving) return;
-    setDefaultSaving(true);
-    setMessage("");
-
-    try {
-      const next = {
-        ...storeSettings,
-        homeDefaultHeroEnabled: !storeSettings.homeDefaultHeroEnabled,
-      };
-      await persistDefaultHero(next);
-      setMessage(
-        next.homeDefaultHeroEnabled
-          ? "First hero enabled."
-          : "First hero disabled.",
-      );
-    } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "Could not update default hero.",
-      );
-    } finally {
-      setDefaultSaving(false);
-    }
-  }
-
-  async function uploadDefaultHero(file: File) {
-    if (!storeSettings) return;
-    setDefaultUploading(true);
-    setMessage("");
-
-    const previous = storeSettings.homeDefaultHeroImageUrl;
-    const previewUrl = URL.createObjectURL(file);
-    patchDefaultHero({ homeDefaultHeroImageUrl: previewUrl });
-
-    try {
-      const uploaded = await uploadAdminImage(file, "kleidin/hero");
-      patchDefaultHero({ homeDefaultHeroImageUrl: uploaded.url });
-      setMessage(
-        "First hero image uploaded. Save default hero to publish the change.",
-      );
-    } catch (error) {
-      patchDefaultHero({ homeDefaultHeroImageUrl: previous });
-      setMessage(error instanceof Error ? error.message : "Upload failed.");
-    } finally {
-      URL.revokeObjectURL(previewUrl);
-      setDefaultUploading(false);
-    }
-  }
-
-  async function saveDefaultHero() {
-    if (!storeSettings || defaultSaving) return;
-    setDefaultSaving(true);
-    setMessage("");
-
-    try {
-      await persistDefaultHero(storeSettings);
-      setDefaultDrawerOpen(false);
-      setMessage("First hero saved.");
-    } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "Could not save default hero.",
-      );
-    } finally {
-      setDefaultSaving(false);
-    }
-  }
 
   function reset() {
     setEditingId(null);
@@ -295,7 +200,6 @@ export function AdminHeroManager() {
       endsAt: dateTimeInput(slide.endsAt),
       showCountdown: Boolean(slide.showCountdown),
       ctaStyle: slide.ctaStyle ?? "dark",
-      imagePosition: slide.imagePosition ?? "center",
       imagePlacement: normalizeHeroImagePlacement(slide.imagePlacement),
       enabled: slide.enabled,
       order: String(slide.order),
@@ -399,6 +303,7 @@ export function AdminHeroManager() {
 
       const payload = {
         ...draft,
+        imagePosition: "center",
         title:
           draft.title ||
           (draft.kind === "product" ? selectedProduct?.name || "" : ""),
@@ -474,7 +379,7 @@ export function AdminHeroManager() {
             Hero builder
           </h1>
           <p className="mt-2 max-w-xl text-xs leading-5 text-black/45">
-            Add two or three heroes and turn them on. Live slides rotate automatically every five seconds in one white slider; the product section below is black.
+            Create as many slides as you need. Enabled live slides rotate every five seconds, in position order. Images stay centered; adjust image size separately for desktop and mobile.
           </p>
         </div>
 
@@ -487,93 +392,13 @@ export function AdminHeroManager() {
         </button>
       </div>
 
-      {storeSettings ? (
-        <section className="mt-5 overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
-          <div className="grid gap-0 lg:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
-            <div className="min-w-0"><HomeHeroSlider settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview /></div>
-
-            <div className="flex flex-col justify-between p-4 sm:p-5">
-              <div>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className={labelClass}>System hero</p>
-                    <h2 className="mt-1 text-lg font-bold tracking-[-.025em]">
-                      First hero
-                    </h2>
-                  </div>
-                  <span
-                    className={
-                      "rounded-full px-2.5 py-1 text-[8px] font-bold uppercase " +
-                      (storeSettings.homeDefaultHeroEnabled
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-black/[.04] text-black/45")
-                    }
-                  >
-                    {storeSettings.homeDefaultHeroEnabled ? "LIVE" : "HIDDEN"}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-[10px] leading-5 text-black/45">
-                  When enabled, this is the first slide. Enabled custom, product and offer heroes rotate in the same slider, in position order.
-                </p>
-
-                <div className="mt-4 rounded-xl bg-[#f7f7f8] p-3">
-                  <span className="block text-[8px] font-bold uppercase tracking-[.08em] text-black/30">
-                    Image
-                  </span>
-                  <strong className="mt-1 block text-[10px]">
-                    {storeSettings.homeDefaultHeroImageUrl
-                      ? "Custom hero image"
-                      : "No image · light background"}
-                  </strong>
-                  <span className="mt-1 block text-[8px] text-black/35">
-                    1920 × 1080 · 16:9 HERO IMAGE
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-5 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  disabled={defaultSaving}
-                  role="switch"
-                  aria-checked={storeSettings.homeDefaultHeroEnabled}
-                  aria-label="First hero enabled"
-                  onClick={() => void toggleDefaultHero()}
-                  className={
-                    "min-h-11 rounded-xl px-3 text-[10px] font-bold disabled:opacity-50 " +
-                    (storeSettings.homeDefaultHeroEnabled
-                      ? "border border-black/10 bg-white"
-                      : "bg-[#001cac] !text-white")
-                  }
-                >
-                  {defaultSaving
-                    ? "Saving…"
-                    : storeSettings.homeDefaultHeroEnabled
-                      ? "Turn off"
-                      : "Turn on"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMessage("");
-                    setDefaultDrawerOpen(true);
-                  }}
-                  className="min-h-11 rounded-xl bg-[#111] px-3 text-[10px] font-bold !text-white"
-                >
-                  Edit default hero
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      ) : null}
+      {storeSettings ? <div className="mt-5 overflow-hidden rounded-2xl border border-black/10"><HomeHeroSlider settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview /></div> : null}
 
       <div className="mt-5">
         <div className="mb-3">
-          <p className={labelClass}>Custom hero slides</p>
+          <p className={labelClass}>Hero slides</p>
           <p className="mt-1 text-[10px] text-black/40">
-            Enabled, live slides join the automatic slider. Hidden, scheduled and ended slides stay out until their live time.
+            Every slide uses the same layout. There is no default slide or slide-count limit. Only enabled, live slides are shown.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
@@ -604,190 +429,6 @@ export function AdminHeroManager() {
         <p className="mt-4 rounded-xl bg-white px-4 py-3 text-xs font-medium text-black/60 ring-1 ring-black/5">
           {message}
         </p>
-      ) : null}
-
-      {storeSettings ? (
-        <AdminDrawer
-          open={defaultDrawerOpen}
-          title="Edit default hero"
-          description="This is the first slide when enabled. Other enabled heroes rotate in the same slider."
-          onClose={() => {
-            if (!defaultSaving && !defaultUploading) {
-              setDefaultDrawerOpen(false);
-              void load();
-            }
-          }}
-          footer={
-            <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
-              <button
-                type="button"
-                disabled={defaultSaving || defaultUploading}
-                onClick={() => {
-                  setDefaultDrawerOpen(false);
-                  void load();
-                }}
-                className="min-h-11 rounded-xl border border-black/10 px-5 text-xs font-bold disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={defaultSaving || defaultUploading}
-                onClick={() => void saveDefaultHero()}
-                className="min-h-11 rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white disabled:opacity-50"
-              >
-                {defaultSaving ? "Saving…" : "Save default hero"}
-              </button>
-            </div>
-          }
-        >
-          <div className="space-y-4">
-            <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className={labelClass}>First hero status</p>
-                  <p className="mt-1 text-[10px] text-black/45">
-                    When off, only your additional hero slides are shown.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    patchDefaultHero({
-                      homeDefaultHeroEnabled:
-                        !storeSettings.homeDefaultHeroEnabled,
-                    })
-                  }
-                  className={
-                    "min-h-10 rounded-full px-4 text-[9px] font-bold uppercase " +
-                    (storeSettings.homeDefaultHeroEnabled
-                      ? "bg-[#001cac] !text-white"
-                      : "bg-black/[.05] text-black/50")
-                  }
-                >
-                  {storeSettings.homeDefaultHeroEnabled ? "ON" : "OFF"}
-                </button>
-              </div>
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
-              <p className={labelClass}>Content</p>
-              <div className="mt-3 grid gap-3">
-                <label>
-                  <span className={labelClass}>Title</span>
-                  <textarea
-                    value={storeSettings.homeDefaultHeroTitle}
-                    onChange={(event) =>
-                      patchDefaultHero({
-                        homeDefaultHeroTitle: event.target.value,
-                      })
-                    }
-                    className={inputClass}
-                  />
-                </label>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <label>
-                    <span className={labelClass}>Button text</span>
-                    <input
-                      value={storeSettings.homeDefaultHeroButtonLabel}
-                      onChange={(event) =>
-                        patchDefaultHero({
-                          homeDefaultHeroButtonLabel: event.target.value,
-                        })
-                      }
-                      className={inputClass}
-                    />
-                  </label>
-                  <label>
-                    <span className={labelClass}>Button link</span>
-                    <input
-                      value={storeSettings.homeDefaultHeroButtonHref}
-                      onChange={(event) =>
-                        patchDefaultHero({
-                          homeDefaultHeroButtonHref: event.target.value,
-                        })
-                      }
-                      className={inputClass}
-                    />
-                  </label>
-                </div>
-              </div>
-            </section>
-
-            <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className={labelClass}>First hero image</p>
-                  <p className="mt-1 text-[10px] text-black/45">
-                    Recommended: 1920 × 1080 (16:9). Uploads preserve subject framing.
-                  </p>
-                </div>
-                {defaultUploading ? (
-                  <span className="text-[9px] font-bold uppercase text-[#001cac]">
-                    Uploading…
-                  </span>
-                ) : null}
-              </div>
-
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-black/20 px-3 text-center text-[10px] font-bold">
-                  {storeSettings.homeDefaultHeroImageUrl
-                    ? "Replace image"
-                    : "Upload image"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    disabled={defaultUploading}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => {
-                      const file = event.target.files?.[0];
-                      if (file) void uploadDefaultHero(file);
-                      event.target.value = "";
-                    }}
-                    className="sr-only"
-                  />
-                </label>
-
-                <button
-                  type="button"
-                  disabled={!storeSettings.homeDefaultHeroImageUrl}
-                  onClick={() =>
-                    patchDefaultHero({ homeDefaultHeroImageUrl: "" })
-                  }
-                  className="min-h-11 rounded-xl border border-black/10 px-3 text-[10px] font-bold disabled:opacity-35"
-                >
-                  Remove image
-                </button>
-              </div>
-
-              <label className="mt-3 block">
-                <span className={labelClass}>Image position</span>
-                <select
-                  value={storeSettings.homeDefaultHeroImagePosition}
-                  onChange={(event) =>
-                    patchDefaultHero({
-                      homeDefaultHeroImagePosition: event.target.value as
-                        | "left"
-                        | "center"
-                        | "right",
-                    })
-                  }
-                  className={inputClass}
-                >
-                  <option value="left">Left</option>
-                  <option value="center">Center</option>
-                  <option value="right">Right</option>
-                </select>
-              </label>
-              <AdminHeroImageControls
-                value={storeSettings.homeDefaultHeroImagePlacement}
-                onChange={(homeDefaultHeroImagePlacement) => patchDefaultHero({ homeDefaultHeroImagePlacement })}
-                settings={storeSettings}
-                products={products}
-                disabled={defaultSaving || defaultUploading}
-              />
-            </section>
-          </div>
-        </AdminDrawer>
       ) : null}
 
       <AdminDrawer
@@ -968,23 +609,7 @@ export function AdminHeroManager() {
                 />
               </label>
 
-              <label>
-                <span className={labelClass}>Image position</span>
-                <select
-                  value={draft.imagePosition}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      imagePosition: event.target.value as HeroImagePosition,
-                    }))
-                  }
-                  className={inputClass}
-                >
-                  <option value="left">Left</option>
-                  <option value="center">Center</option>
-                  <option value="right">Right</option>
-                </select>
-              </label>
+
             </div>
           </section>
 
@@ -1006,7 +631,7 @@ export function AdminHeroManager() {
             {storeSettings ? <AdminHeroImageControls
               value={draft.imagePlacement}
               onChange={(imagePlacement) => setDraft((current) => ({ ...current, imagePlacement }))}
-              settings={{ ...storeSettings, homeDefaultHeroTitle: draft.title || selectedProduct?.name || "", homeDefaultHeroImageUrl: previewImage, homeDefaultHeroImagePosition: draft.imagePosition, homeDefaultHeroButtonLabel: draft.button, homeDefaultHeroButtonHref: draft.href }}
+              settings={{ ...storeSettings, homeDefaultHeroTitle: draft.title || selectedProduct?.name || "", homeDefaultHeroImageUrl: previewImage, homeDefaultHeroImagePosition: "center", homeDefaultHeroButtonLabel: draft.button, homeDefaultHeroButtonHref: draft.href }}
               products={selectedProduct ? [selectedProduct] : []}
               disabled={saving || uploading}
             /> : null}
@@ -1151,14 +776,7 @@ export function AdminHeroManager() {
                     alt={slide.title || linkedProduct?.name || "Hero"}
                     fill
                     sizes="420px"
-                    className={
-                      "object-contain " +
-                      (slide.imagePosition === "left"
-                        ? "object-left"
-                        : slide.imagePosition === "right"
-                          ? "object-right"
-                          : "object-center")
-                    }
+                    className="object-contain object-center"
                   />
                 ) : (
                   <div className="grid h-full place-items-center text-[10px] text-black/35">

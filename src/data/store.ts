@@ -34,7 +34,7 @@ export const localStoreSettings: StoreSettings = {
   homeDefaultHeroButtonLabel: "SHOP DAILY",
   homeDefaultHeroButtonHref: "/products",
   homeDefaultHeroImageUrl: "",
-  homeDefaultHeroImagePlacement: { desktop: { scale: 100, x: 0, y: 0 }, mobile: { scale: 100, x: 0, y: 0 } },
+  homeDefaultHeroImagePlacement: { desktop: { scale: 100 }, mobile: { scale: 100 } },
   homeDefaultHeroImagePosition: "right",
   homeCatalogEyebrow: "CATALOG",
   homeCatalogTitle: "Products",

@@ -1,7 +1,7 @@
 import "server-only";
 import { normalizeHeroImagePlacement } from "@/lib/hero-image-placement";
 
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { ObjectId, type Document } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import type {
@@ -37,7 +37,7 @@ function ctaStyle(value: unknown): HeroCtaStyle {
 }
 
 function imagePosition(value: unknown): HeroImagePosition {
-  return value === "left" || value === "right" ? value : "center";
+  return "center";
 }
 
 function toSlide(doc: Document): HeroSlideConfig {
@@ -101,8 +101,29 @@ function fields(input: Record<string, unknown>, current?: HeroSlideConfig) {
   };
 }
 
+// Convert the existing first hero into a regular editable slide once.
+// A stable id makes concurrent admin/storefront reads safe; the marker prevents
+// deleted or disabled slides from being recreated from the old settings.
+async function migrateFirstHero(db: Awaited<ReturnType<typeof getDb>>) {
+  const settings = await db.collection("siteSettings").findOne({ key: "storefront" });
+  if (!settings || settings.homeDefaultHeroMigrated || (!settings.homeDefaultHeroEnabled && !text(settings.homeDefaultHeroImageUrl))) return;
+  const id = new ObjectId(createHash("sha256").update("kleidin/legacy-first-hero").digest("hex").slice(0, 24));
+  const first = await db.collection("heroSlides").find({}).sort({ order: 1 }).limit(1).toArray();
+  await db.collection("heroSlides").updateOne({ _id: id }, { $setOnInsert: {
+    id: randomUUID(), kind: "custom", title: text(settings.homeDefaultHeroTitle),
+    imageUrl: text(settings.homeDefaultHeroImageUrl), imagePosition: "center",
+    imagePlacement: normalizeHeroImagePlacement(settings.homeDefaultHeroImagePlacement),
+    button: text(settings.homeDefaultHeroButtonLabel, "Shop collection"),
+    href: text(settings.homeDefaultHeroButtonHref, "/products"),
+    enabled: bool(settings.homeDefaultHeroEnabled), order: first.length ? number(first[0].order) - 1 : 0,
+    createdAt: new Date(), updatedAt: new Date(),
+  } }, { upsert: true });
+  await db.collection("siteSettings").updateOne({ key: "storefront" }, { $set: { homeDefaultHeroMigrated: true, homeDefaultHeroEnabled: false } });
+}
+
 export async function listHeroSlides(options?: { enabledOnly?: boolean }) {
   const db = await getDb();
+  await migrateFirstHero(db);
   const rows = await db
     .collection("heroSlides")
     .find(options?.enabledOnly ? { enabled: true } : {})

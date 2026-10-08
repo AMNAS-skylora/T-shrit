@@ -18,7 +18,7 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   const [reducedMotion, setReducedMotion] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const touchStart = useRef<number | null>(null);
-  const active = useMemo(() => getComfortSlides(settings, slides, products, now), [settings, slides, products, now]);
+  const active = useMemo(() => getComfortSlides(slides, products, now), [slides, products, now]);
   const selected = Math.max(0, active.findIndex((slide) => slide.id === selectedId));
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
@@ -51,10 +51,10 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
       {active.map((slide, index) => <div key={slide.id} className={styles.slide} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${active.length}`} aria-hidden={index !== selected} inert={index !== selected}>
         <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />
       </div>)}
-    </div> : preview ? <p className={styles.noSlides}>Turn on First hero or add an enabled slide to preview the slider.</p> : null}
+    </div> : preview ? <p className={styles.noSlides}>Add and enable a slide to preview the slider.</p> : null}
     {active.length > 1 ? <div className={styles.controls}>
       <button type="button" aria-label="Previous slide" onClick={() => move(-1)}>←</button>
-      <div className={styles.dots}>{active.map((slide, index) => <button type="button" key={slide.id} aria-label={`Show slide ${index + 1}`} aria-current={index === selected ? "true" : undefined} onClick={() => setSelectedId(slide.id)}><span /></button>)}</div>
+      {active.length > 8 ? <select aria-label="Select hero slide" value={active[selected].id} onChange={(event) => setSelectedId(event.target.value)}>{active.map((slide, index) => <option key={slide.id} value={slide.id}>{index + 1} / {active.length}</option>)}</select> : <div className={styles.dots}>{active.map((slide, index) => <button type="button" key={slide.id} aria-label={`Show slide ${index + 1}`} aria-current={index === selected ? "true" : undefined} onClick={() => setSelectedId(slide.id)}><span /></button>)}</div>}
       <button type="button" aria-label="Next slide" onClick={() => move(1)}>→</button>
       <button type="button" aria-label={paused ? "Start automatic slides" : "Pause automatic slides"} aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Play" : "Pause"}</button>
     </div> : null}
