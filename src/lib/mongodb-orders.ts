@@ -362,3 +362,18 @@ export async function listCustomers() {
     .toArray();
   return rows.map(toCustomer);
 }
+
+export async function getCustomerDetails(id: string) {
+  if (!ObjectId.isValid(id)) return null;
+  const db = await getDb();
+  const row = await db.collection("customers").findOne({ _id: new ObjectId(id) });
+  if (!row) return null;
+  const customer = toCustomer(row);
+  // Orders and customer aggregation both use the exact phone as the customer key.
+  const rows = customer.phone ? await db.collection("orders")
+    .find({ "customer.phone": customer.phone })
+    .sort({ createdAt: -1 })
+    .limit(101)
+    .toArray() : [];
+  return { customer, orders: rows.slice(0, 100).map(toOrder), hasMoreOrders: rows.length > 100 };
+}
