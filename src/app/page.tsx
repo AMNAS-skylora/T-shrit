@@ -1,9 +1,7 @@
 import { getActiveHeroSlides } from "@/lib/hero";
 import { getActiveAnimationBars } from "@/lib/animation-bars";
-import { getMongoEnvironment } from "@/lib/server-env";
 import { HomepageAnimationBars } from "@/components/HomepageAnimationBars";
 import { TopFashionHero } from "@/components/TopFashionHero";
-import { customOfferSlides } from "@/data/custom-offer-slides";
 import { AutoOutfitHero } from "@/components/AutoOutfitHero";
 import { FeaturedProductMotion } from "@/components/FeaturedProductMotion";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
@@ -79,7 +77,6 @@ export default async function Home() {
     ...activeProducts.filter((product) => !linkedIds.has(product.id)),
   ].slice(0, 20);
 
-  const demo = !getMongoEnvironment();
   const featuredProducts = activeProducts.filter((product) => product.featuredAnimationEnabled || product.featured)
     .sort((a, b) => (a.animationSortOrder ?? a.featuredSortOrder ?? 100) - (b.animationSortOrder ?? b.featuredSortOrder ?? 100));
   const customSlides = heroSlides.filter((slide) => slide.kind !== "product").slice(0, 5);
@@ -95,14 +92,14 @@ export default async function Home() {
       {settings.homeProductHeroEnabled && productSlides.length ? <TopFashionHero products={activeProducts} heroSlides={productSlides} /> : null}
       {settings.homeAnimationBarsEnabled ? <HomepageAnimationBars bars={animationBars} placement="after-hero" /> : null}
 
-      {settings.homeCustomOffersEnabled ? <TopFashionHero products={[]} heroSlides={customSlides.length ? customSlides : customOfferSlides} fullscreen /> : null}
+      {settings.homeCustomOffersEnabled && customSlides.length ? <TopFashionHero products={[]} heroSlides={customSlides} fullscreen /> : null}
 
-      {settings.homeFeaturedEnabled ? <FeaturedProductMotion products={featuredProducts} demo={demo} /> : null}
+      {settings.homeFeaturedEnabled ? <FeaturedProductMotion products={featuredProducts} /> : null}
 
       {settings.homeAboutEnabled ? <HomeAboutSection settings={settings} /> : null}
 
 
-      {settings.homeCatalogEnabled ? <HomeAllProductsSection products={activeProducts} demo={false} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
+      {settings.homeCatalogEnabled ? <HomeAllProductsSection products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
 
       {settings.homeDealersEnabled ? <HomeDealerSection settings={settings} /> : null}
 

@@ -29,50 +29,20 @@ type SliderItem = {
   slug: string;
   image: string;
   backgroundImage: string;
-  modelImage: string;
   category: string;
   description: string;
   price: number;
-  demo: boolean;
   source?: Product;
 };
 
 export function AutoOutfitHero({ products }: { products: Product[] }) {
   const items = useMemo<SliderItem[]>(() => {
-    const localPairs = [
-      {
-        foreground: "/images/product-1.png",
-        model: "/images/man-1.png",
-        background: "/images/bg.png",
-      },
-      {
-        foreground: "/images/product-2.png",
-        model: "/images/man-2.png",
-        background: "/images/bg.png",
-      },
-    ];
-
     const activeProducts = products
       .filter(
         (product) =>
           product.status === "active" && Boolean(getProductImage(product)),
       )
       .slice(0, 20);
-
-    if (!activeProducts.length) {
-      return localPairs.map((pair, index) => ({
-        id: "demo-selector-" + index,
-        name: index === 0 ? "Essential White Tee" : "Daily White Tee",
-        slug: "",
-        image: pair.foreground,
-        backgroundImage: pair.background,
-        modelImage: pair.model,
-        category: "T-Shirts",
-        description: "Comfortable everyday essentials, made for repeat wear.",
-        price: 799,
-        demo: true,
-      }));
-    }
 
     return activeProducts.map((product) => {
       return {
@@ -81,12 +51,10 @@ export function AutoOutfitHero({ products }: { products: Product[] }) {
         slug: product.slug,
         image: getProductImage(product),
         backgroundImage:
-          product.showcaseBackgroundImage || "/images/bg.png",
-        modelImage: "",
+          product.showcaseBackgroundImage || "",
         category: product.category,
         description: product.description,
         price: product.price,
-        demo: false,
         source: product,
       };
     });
@@ -269,44 +237,19 @@ export function AutoOutfitHero({ products }: { products: Product[] }) {
             />
           </div>
 
-          {active.modelImage ? (
-            <div
-              key={"model-" + active.id + "-" + activeIndex}
-              className="selected-product-image pointer-events-none absolute inset-0 z-10"
-            >
-              <img
-                src={active.modelImage}
-                alt=""
-                draggable={false}
-                className="hero-model-image h-full w-full select-none object-contain object-bottom sm:object-cover sm:object-top"
-              />
-            </div>
-          ) : null}
-
           <div className="pointer-events-none absolute inset-0 z-[11] bg-black/10" />
         </>
       ) : null}
 
-      {!active.modelImage ? <div data-hero-product-image key={"product-" + active.id} className="selected-product-image pointer-events-none absolute bottom-[210px] right-4 z-20 h-[30svh] w-[60%] sm:bottom-[220px] sm:right-10 sm:h-[55svh] sm:w-[44%]"><img src={active.image} alt={active.name} className="h-full w-full object-contain" /></div> : null}
+      <div data-hero-product-image key={"product-" + active.id} className="selected-product-image pointer-events-none absolute bottom-[210px] right-4 z-20 h-[30svh] w-[60%] sm:bottom-[220px] sm:right-10 sm:h-[55svh] sm:w-[44%]"><img src={active.image} alt={active.name} className="h-full w-full object-contain" /></div>
 
-      {active.demo ? <>
-        <div className="absolute left-5 top-[20%] z-30 text-white sm:left-10 lg:left-16">
-          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[.14em]">KLEID.IN / DAILY</p>
-          <h1 className="text-[clamp(36px,6vw,86px)] font-semibold leading-[.92] tracking-[-.05em]">ESSENTIALS<br />WITHOUT<br />NOISE</h1>
-        </div>
-        <div data-motion-owned key={"details-" + active.id} className="selected-product-details absolute right-5 top-[46%] z-30 w-[48%] max-w-[320px] text-white sm:right-10 lg:right-16">
-          <p className="mb-3 text-[10px] font-semibold uppercase tracking-[.14em]">{active.category}</p>
-          <h2 className="selected-product-name text-[clamp(24px,4vw,48px)] font-semibold leading-[.95] tracking-[-.04em]">{active.name}</h2>
-          <p className="selected-product-price mt-5 text-sm font-semibold">₹{activePrice?.toLocaleString("en-IN")}</p>
-          <Link href="/products" onTouchStart={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="selected-product-button mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-white px-6 text-[10px] font-semibold uppercase tracking-[.08em] !text-black">Explore products</Link>
-        </div>
-      </> : <div data-motion-owned key={"details-" + active.id} className="selected-product-details absolute left-5 right-5 top-[10%] z-30 max-w-[560px] rounded-sm bg-white/85 p-5 text-[#111] backdrop-blur-sm sm:left-10 sm:right-auto sm:top-[15%] sm:p-8 lg:left-16">
+      <div data-motion-owned key={"details-" + active.id} className="selected-product-details absolute left-5 right-5 top-[10%] z-30 max-w-[560px] rounded-sm bg-white/85 p-5 text-[#111] backdrop-blur-sm sm:left-10 sm:right-auto sm:top-[15%] sm:p-8 lg:left-16">
         <p className="mb-3 text-[10px] font-semibold uppercase tracking-[.14em]">KLEID.IN / {active.category}</p>
         <h1 className="selected-product-name text-[clamp(32px,5vw,68px)] font-semibold leading-[.95] tracking-[-.05em]">{active.name}</h1>
         <p className="mt-4 max-w-[420px] text-sm leading-6">{active.description}</p>
         <p className="selected-product-price mt-4 text-lg font-semibold">₹{activePrice?.toLocaleString("en-IN")}</p>
-        <Link href={active.demo ? "/#all-products" : `/products/${active.slug}`} onTouchStart={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="selected-product-button mt-5 inline-flex min-h-11 items-center bg-[#111] px-6 text-xs font-semibold !text-white">{active.demo ? "Explore products" : "View product"} <span className="ml-4">↗</span></Link>
-      </div>}
+        <Link href={`/products/${active.slug}`} onTouchStart={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="selected-product-button mt-5 inline-flex min-h-11 items-center bg-[#111] px-6 text-xs font-semibold !text-white">View product <span className="ml-4">↗</span></Link>
+      </div>
 
       <div className="absolute inset-x-0 bottom-[76px] z-40 flex h-[112px] items-center sm:bottom-[82px] sm:h-[122px] lg:bottom-[86px] lg:h-[132px]">
         <div

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type { StoreSettings } from "@/types/commerce";
 
-const sectionControls = [["demoProductsEnabled", "Temporary demo products"], ["homeProductHeroEnabled", "Product hero"], ["homeProductSelectorEnabled", "Shirt product selector"], ["homeCustomOffersEnabled", "Custom offer slider"], ["homeFeaturedEnabled", "Featured product animation"], ["homeAboutEnabled", "About section"], ["homeCatalogEnabled", "Product catalog"], ["homeDealersEnabled", "Dealer section"], ["homeSpotlightEnabled", "Spotlight product"], ["homeAnimationBarsEnabled", "Scrolling animation bars"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
+const sectionControls = [["homeProductHeroEnabled", "Product hero"], ["homeProductSelectorEnabled", "Shirt product selector"], ["homeCustomOffersEnabled", "Custom offer slider"], ["homeFeaturedEnabled", "Featured product animation"], ["homeAboutEnabled", "About section"], ["homeCatalogEnabled", "Product catalog"], ["homeDealersEnabled", "Dealer section"], ["homeSpotlightEnabled", "Spotlight product"], ["homeAnimationBarsEnabled", "Scrolling animation bars"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
 
 function label(key: string) {
   return key

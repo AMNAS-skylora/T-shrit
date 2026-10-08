@@ -1,7 +1,7 @@
 export const publicEnv = {
   whatsappNumber: process.env.NEXT_PUBLIC_WHATSAPP_NUMBER?.trim() ?? "",
   supportEmail:
-    process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || "hello@kleid.in",
+    process.env.NEXT_PUBLIC_SUPPORT_EMAIL?.trim() || "",
   instagramUrl: process.env.NEXT_PUBLIC_INSTAGRAM_URL?.trim() ?? "",
   facebookUrl: process.env.NEXT_PUBLIC_FACEBOOK_URL?.trim() ?? "",
 } as const;

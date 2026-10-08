@@ -7,36 +7,6 @@ import { useOfferClock } from "@/hooks/useOfferClock";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type DemoFeaturedProduct = {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  href: string;
-};
-
-const demoProducts: DemoFeaturedProduct[] = [
-  {
-    id: "demo-product-1",
-    name: "Essential White Tee",
-    description:
-      "A clean everyday essential with a balanced weight, relaxed structure and an easy fit built for repeat wear.",
-    price: 799,
-    image: "/images/product-1.png",
-    href: "/#all-products",
-  },
-  {
-    id: "demo-product-2",
-    name: "Daily White Tee",
-    description:
-      "Soft, minimal and versatile. Designed with a comfortable silhouette and a clean finish for everyday styling.",
-    price: 899,
-    image: "/images/product-2.png",
-    href: "/#all-products",
-  },
-];
-
 function money(value: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -45,11 +15,11 @@ function money(value: number) {
   }).format(value);
 }
 
-export function FeaturedProductMotion({ products = [], demo = true }: { products?: Product[]; demo?: boolean }) {
-  const items = useMemo(() => products.length ? products.map((product) => ({
+export function FeaturedProductMotion({ products = [] }: { products?: Product[] }) {
+  const items = useMemo(() => products.filter((product) => Boolean(getProductPrimaryImage(product))).map((product) => ({
     id: product.id, name: product.name, description: product.description,
     price: product.price, image: getProductPrimaryImage(product) || "", href: `/products/${product.slug}`,
-  })) : demo ? demoProducts : [], [products, demo]);
+  })), [products]);
 
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);

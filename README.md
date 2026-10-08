@@ -93,10 +93,10 @@ Main routes:
 
 MongoDB indexes are created automatically when the backend connects.
 
-## Frontend fallback
+## Storefront data
 
-If MongoDB is not configured or temporarily unavailable, the public storefront falls back to the local data/config in `src/data` so the site can still render.
+The storefront only displays products and hero slides published through MongoDB. Without a configured database, the catalog is empty and product URLs return 404. Database errors propagate rather than showing sample inventory. Store settings use the local configuration until a database is configured.
 
 Section visibility is managed in Admin → Settings → Edit settings → Section visibility. All new section switches default to On, including for existing databases. Save applies the switches to the storefront without deleting content. Footer visibility applies across public pages.
 
-Copy `.env.example` to `.env.local` for local setup, or set these variables on the hosting server. MongoDB, admin credentials and signed Cloudinary upload credentials are required for live administration. `/api/health` returns 503 until these are configured and the database responds; Admin Settings shows the connection status. Without MongoDB configuration the storefront is a demo. A configured database failure displays an error rather than sample inventory.
+Copy `.env.example` to `.env.local` for local setup, or set these variables on the hosting server. MongoDB, admin credentials and signed Cloudinary upload credentials are required for live administration. `/api/health` returns 503 until these are configured and the database responds; Admin Settings shows the connection status. Without MongoDB configuration the storefront shows an empty catalog. A configured database failure displays an error rather than sample inventory.

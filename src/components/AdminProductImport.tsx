@@ -39,81 +39,6 @@ const headers = [
   "sort_order",
 ];
 
-const sampleRows = [
-  [
-    "KLD-001",
-    "Essential Tee",
-    "essential-tee",
-    "T-Shirts",
-    "799",
-    "999",
-    "active",
-    "Heavy cotton everyday tee",
-    "Black",
-    "#000000",
-    "S",
-    "5",
-    "",
-    "",
-    "true",
-    "percentage",
-    "10",
-    "Launch offer",
-    "10% OFF",
-    "false",
-    "",
-    "1",
-  ],
-  [
-    "KLD-001",
-    "Essential Tee",
-    "essential-tee",
-    "T-Shirts",
-    "799",
-    "999",
-    "active",
-    "Heavy cotton everyday tee",
-    "Black",
-    "#000000",
-    "M",
-    "8",
-    "",
-    "",
-    "true",
-    "percentage",
-    "10",
-    "Launch offer",
-    "10% OFF",
-    "false",
-    "",
-    "1",
-  ],
-  [
-    "KLD-001",
-    "Essential Tee",
-    "essential-tee",
-    "T-Shirts",
-    "799",
-    "999",
-    "active",
-    "Heavy cotton everyday tee",
-    "White",
-    "#FFFFFF",
-    "S",
-    "4",
-    "",
-    "",
-    "true",
-    "percentage",
-    "10",
-    "Launch offer",
-    "10% OFF",
-    "false",
-    "",
-    "1",
-  ],
-];
-
 function csvEscape(value: string) {
   if (/[",\n\r]/.test(value)) {
     return '"' + value.replace(/"/g, '""') + '"';
@@ -124,7 +49,6 @@ function csvEscape(value: string) {
 function templateCsv() {
   return [
     headers.map(csvEscape).join(","),
-    ...sampleRows.map((row) => row.map(csvEscape).join(",")),
   ].join("\r\n");
 }
 
