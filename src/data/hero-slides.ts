@@ -1,6 +1,6 @@
 import type { HeroImagePlacement } from "@/lib/hero-image-placement";
 
-export type HeroSection = "primary" | "secondary";
+export type HeroSection = "primary" | "secondary" | "tertiary";
 export type HeroSlideKind = "product" | "offer" | "collection" | "custom";
 export type HeroCtaStyle = "light" | "dark" | "outline";
 export type HeroImagePosition = "left" | "center" | "right";
@@ -9,6 +9,9 @@ export type HeroSlideConfig = {
   id: string;
   section?: HeroSection;
   tickerText?: string;
+  imageOpacity?: number;
+  secondaryButton?: string;
+  secondaryHref?: string;
   kind: HeroSlideKind;
   productId?: string | null;
   label: string;

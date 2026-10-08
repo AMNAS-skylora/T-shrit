@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { AdminHeroImageControls } from "@/components/AdminHeroImageControls";
-import { normalizeHeroImagePlacement, type HeroImagePlacement } from "@/lib/hero-image-placement";
+import { normalizeHeroImagePlacement, normalizeHeroImageOpacity, type HeroImagePlacement } from "@/lib/hero-image-placement";
 import { HomeHeroSlider } from "@/components/HomeHeroSlider";
 import {
   ChangeEvent,
@@ -26,6 +26,9 @@ import { uploadAdminImage } from "@/lib/admin-image-upload";
 type Draft = {
   section: HeroSection;
   tickerText: string;
+  imageOpacity: number;
+  secondaryButton: string;
+  secondaryHref: string;
   title: string;
   label: string;
   subtitle: string;
@@ -48,6 +51,9 @@ type Draft = {
 const emptyDraft: Draft = {
   section: "primary",
   tickerText: "",
+  imageOpacity: 40,
+  secondaryButton: "",
+  secondaryHref: "",
   title: "",
   label: "KLEID.IN",
   subtitle: "",
@@ -194,6 +200,9 @@ export function AdminHeroManager() {
     setDraft({
       section: slide.section || "primary",
       tickerText: slide.tickerText || "",
+      imageOpacity: normalizeHeroImageOpacity(slide.imageOpacity),
+      secondaryButton: slide.secondaryButton || "",
+      secondaryHref: slide.secondaryHref || "",
       title: slide.title,
       label: slide.label,
       subtitle: slide.subtitle,
@@ -400,8 +409,8 @@ export function AdminHeroManager() {
         </button>
       </div>
 
-      {storeSettings ? <div className="mt-5 space-y-5">{(["primary", "secondary"] as const).map((section) => <section key={section} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
-        <div className="flex items-center justify-between gap-3 p-4"><h2 className="text-sm font-semibold">{section === "primary" ? "First section · Centered hero" : "Second section · Campaign card"}</h2><button type="button" onClick={() => openCreate("custom", section)} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold !text-white">+ Add slide</button></div>
+      {storeSettings ? <div className="mt-5 space-y-5">{(["primary", "secondary", "tertiary"] as const).map((section) => <section key={section} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+        <div className="flex items-center justify-between gap-3 p-4"><h2 className="text-sm font-semibold">{section === "primary" ? "First section · Centered hero" : section === "secondary" ? "Second section · Campaign card" : "Third section · Background image"}</h2><button type="button" onClick={() => openCreate("custom", section)} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold !text-white">+ Add slide</button></div>
         <HomeHeroSlider section={section} settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview />
       </section>)}</div> : null}
 
@@ -409,7 +418,7 @@ export function AdminHeroManager() {
         <div className="mb-3">
           <p className={labelClass}>Hero slides</p>
           <p className="mt-1 text-[10px] text-black/40">
-            Choose First section or Second section for each slide. Each section rotates its own enabled, live slides. There is no slide-count limit.
+            Choose First, Second or Third section for each slide. Each section rotates its own enabled, live slides. There is no slide-count limit.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
@@ -478,7 +487,7 @@ export function AdminHeroManager() {
           className="space-y-4"
         >
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
-            <label><span className={labelClass}>Homepage section / layout</span><select value={draft.section} onChange={(event) => setDraft((current) => ({ ...current, section: event.target.value as HeroSection }))} className={inputClass}><option value="primary">First section · Centered hero</option><option value="secondary">Second section · Campaign card</option></select></label>
+            <label><span className={labelClass}>Homepage section / layout</span><select value={draft.section} onChange={(event) => setDraft((current) => ({ ...current, section: event.target.value as HeroSection }))} className={inputClass}><option value="primary">First section · Centered hero</option><option value="secondary">Second section · Campaign card</option><option value="tertiary">Third section · Background image</option></select></label>
             <p className="mt-3 text-xs leading-5 text-black/50">Slides appear only in the selected section, sorted by their position.</p>
           </section>
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
@@ -591,9 +600,9 @@ export function AdminHeroManager() {
             </div>
           </section>
 
-          {draft.section === "secondary" ? <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5"><div className="grid gap-4">
+          {draft.section !== "primary" ? <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5"><div className="grid gap-4">
             <label><span className={labelClass}>Description (optional)</span><textarea value={draft.subtitle} onChange={(event) => setDraft((current) => ({ ...current, subtitle: event.target.value }))} className={inputClass} /></label>
-            <label><span className={labelClass}>Bottom announcement strip (optional)</span><input value={draft.tickerText} onChange={(event) => setDraft((current) => ({ ...current, tickerText: event.target.value }))} className={inputClass} placeholder="Your campaign announcement" /></label>
+            {draft.section === "secondary" ? <label><span className={labelClass}>Bottom announcement strip (optional)</span><input value={draft.tickerText} onChange={(event) => setDraft((current) => ({ ...current, tickerText: event.target.value }))} className={inputClass} placeholder="Your campaign announcement" /></label> : null}
           </div></section> : null}
 
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
@@ -633,6 +642,11 @@ export function AdminHeroManager() {
             </div>
           </section>
 
+          {draft.section === "tertiary" ? <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5"><div className="grid gap-4 sm:grid-cols-2">
+            <label><span className={labelClass}>Second button text (optional)</span><input value={draft.secondaryButton} onChange={(event) => setDraft((current) => ({ ...current, secondaryButton: event.target.value }))} className={inputClass} /></label>
+            <label><span className={labelClass}>Second button link</span><input value={draft.secondaryHref} onChange={(event) => setDraft((current) => ({ ...current, secondaryHref: event.target.value }))} className={inputClass} required={Boolean(draft.secondaryButton)} placeholder="/products or https://..." /></label>
+          </div></section> : null}
+
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
             <div className="flex items-center justify-between gap-3">
               <div>
@@ -650,6 +664,10 @@ export function AdminHeroManager() {
 
             {storeSettings ? <AdminHeroImageControls
               section={draft.section}
+              imageOpacity={draft.imageOpacity}
+              onOpacityChange={(imageOpacity) => setDraft((current) => ({ ...current, imageOpacity }))}
+              secondaryButton={draft.secondaryButton}
+              secondaryHref={draft.secondaryHref}
               subtitle={draft.subtitle}
               tickerText={draft.tickerText}
               value={draft.imagePlacement}
@@ -828,7 +846,7 @@ export function AdminHeroManager() {
 
               <div className="p-4">
                 <p className="text-[9px] font-bold uppercase tracking-[.1em] text-[#001cac]">
-                  {slide.section === "secondary" ? "Second section" : "First section"} · Position {slide.order}
+                  {slide.section === "tertiary" ? "Third section" : slide.section === "secondary" ? "Second section" : "First section"} · Position {slide.order}
                 </p>
                 <h2 className="mt-2 truncate font-bold">
                   {slide.title || linkedProduct?.name || "Untitled hero"}

@@ -47,3 +47,10 @@ test('campaign content uses saved text only and has no slide-count cap', () => {
   assert.equal(result.length, 20); assert.equal(result[0].subtitle, 'Campaign description'); assert.equal(result[0].tickerText, 'Saved announcement');
   assert.equal(getComfortSlides([slide('empty', { section: 'secondary' })], [], now, 'secondary')[0].tickerText, '');
 });
+test('third section is independent and preserves custom opacity and both button actions', () => {
+  const slides = [slide('primary'), slide('second', { section: 'secondary' }), slide('third', { section: 'tertiary', imageOpacity: 25, secondaryButton: 'Contact', secondaryHref: 'mailto:contact@example.test' })];
+  const result = getComfortSlides(slides, [], now, 'tertiary');
+  assert.equal(result.length, 1); assert.equal(result[0].id, 'third'); assert.equal(result[0].imageOpacity, 25);
+  assert.equal(result[0].secondaryButton, 'Contact'); assert.equal(result[0].secondaryHref, 'mailto:contact@example.test');
+  assert.equal(getComfortSlides([slide('defaults', { section: 'tertiary' })], [], now, 'tertiary')[0].imageOpacity, 40);
+});
