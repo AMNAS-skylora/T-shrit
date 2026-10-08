@@ -4,10 +4,10 @@ import type { Product } from "@/types/product";
 import { getProductPrimaryImage } from "@/lib/product-images";
 import styles from "./ComfortHero.module.css";
 
-export function ComfortHero({ settings, products, preview = false }: { settings: StoreSettings; products: Product[]; preview?: boolean }) {
+export function ComfortHero({ settings, products, preview = false, heading = true }: { settings: StoreSettings; products: Product[]; preview?: boolean; heading?: boolean }) {
   const candidates = products.filter((product) => product.status === "active" && getProductPrimaryImage(product));
   const product = candidates.find((item) => item.spotlight) || candidates[0];
-  const Title = preview ? "h3" : "h1";
+  const Title = preview ? "h3" : heading ? "h1" : "h2";
   return <section aria-label="First hero" className={styles.hero}>
     <Title className={styles.title}>{settings.homeDefaultHeroTitle}</Title>
     {settings.homeDefaultHeroImageUrl ? <img src={settings.homeDefaultHeroImageUrl} alt="Featured collection" className={styles.model} style={{ objectPosition: settings.homeDefaultHeroImagePosition + " bottom" }} /> : preview ? <p className={styles.empty}>Upload your model image in First hero settings. A transparent cutout works best.</p> : null}

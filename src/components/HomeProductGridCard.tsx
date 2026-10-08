@@ -9,9 +9,11 @@ import { getProductPrimaryImage } from "@/lib/product-images";
 import type { Product } from "@/types/product";
 
 export function HomeProductGridCard({
+  theme = "light",
   product,
   whatsappNumber,
 }: {
+  theme?: "light" | "dark";
   product: Product;
   whatsappNumber: string;
 }) {
@@ -42,13 +44,13 @@ export function HomeProductGridCard({
       </div>
 
       <div className="pt-3">
-        <h3 className="m-0 min-h-[2.5em] text-[11px] font-semibold tracking-[-.01em] text-[#111] sm:text-[12px]">
+        <h3 className={"m-0 min-h-[2.5em] text-[11px] font-semibold tracking-[-.01em] sm:text-[12px] " + (theme === "dark" ? "text-white" : "text-[#111]")}>
           {product.name}
         </h3>
 
-        <p className="mt-1 text-[10px] font-medium text-black/52 sm:text-[11px]">
+        <p className={"mt-1 text-[10px] font-medium sm:text-[11px] " + (theme === "dark" ? "text-white/65" : "text-black/52")}>
           {formatPrice(price)}
-          {offerActive ? <del className="ml-2 text-black/35">{formatPrice(product.price)}</del> : null}
+          {offerActive ? <del className={"ml-2 " + (theme === "dark" ? "text-white/45" : "text-black/35")}>{formatPrice(product.price)}</del> : null}
         </p>
 
         <a
@@ -58,7 +60,8 @@ export function HomeProductGridCard({
           aria-disabled={whatsappHref === "#" ? "true" : undefined}
           onClick={(event) => { if (whatsappHref === "#") event.preventDefault(); }}
           className={
-            "home-product-whatsapp-button relative z-20 mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full bg-black px-3 text-[8px] font-semibold uppercase tracking-[.07em] !text-white transition sm:min-h-11 sm:text-[9px] " +
+            "home-product-whatsapp-button relative z-20 mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-3 text-[8px] font-semibold uppercase tracking-[.07em] transition sm:min-h-11 sm:text-[9px] " +
+            (theme === "dark" ? "border border-white/30 bg-white !text-black " : "bg-black !text-white ") +
             (whatsappHref === "#"
               ? "cursor-default opacity-70"
               : "hover:opacity-90")
