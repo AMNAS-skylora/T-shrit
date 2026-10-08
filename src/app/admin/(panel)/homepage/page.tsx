@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 export default function AdminHomepagePage() {
   return (
     <>
-      <AdminHomepageLayouts />
       <AdminHeroManager />
+      <div className="mt-8"><AdminHomepageLayouts /></div>
       <AdminAnimationBarManager />
     </>
   );

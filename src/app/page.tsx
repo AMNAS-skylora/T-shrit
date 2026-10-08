@@ -2,6 +2,7 @@ import { getActiveHeroSlides } from "@/lib/hero";
 import { getActiveAnimationBars } from "@/lib/animation-bars";
 import { HomepageAnimationBars } from "@/components/HomepageAnimationBars";
 import { TopFashionHero } from "@/components/TopFashionHero";
+import { ComfortHero } from "@/components/ComfortHero";
 import { AutoOutfitHero } from "@/components/AutoOutfitHero";
 import { FeaturedProductMotion } from "@/components/FeaturedProductMotion";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
@@ -87,6 +88,7 @@ export default async function Home() {
   );
   return (
     <div className="reference-home">
+      {settings.homeDefaultHeroEnabled ? <ComfortHero settings={settings} products={activeProducts} /> : null}
       {settings.homeAnimationBarsEnabled ? <HomepageAnimationBars bars={animationBars} placement="before-hero" /> : null}
       {settings.homeProductHeroEnabled && settings.homeProductSelectorEnabled ? <AutoOutfitHero products={showcaseProducts} /> : null}
       {settings.homeProductHeroEnabled && productSlides.length ? <TopFashionHero products={activeProducts} heroSlides={productSlides} fullscreen={settings.homeHeroLayout === "immersive"} /> : null}

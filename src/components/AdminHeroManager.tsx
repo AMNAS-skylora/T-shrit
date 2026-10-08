@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { ComfortHero } from "@/components/ComfortHero";
 import {
   ChangeEvent,
   FormEvent,
@@ -197,8 +198,8 @@ export function AdminHeroManager() {
       await persistDefaultHero(next);
       setMessage(
         next.homeDefaultHeroEnabled
-          ? "Default hero enabled."
-          : "Default hero disabled.",
+          ? "First hero enabled."
+          : "First hero disabled.",
       );
     } catch (error) {
       setMessage(
@@ -222,7 +223,7 @@ export function AdminHeroManager() {
       const uploaded = await uploadAdminImage(file, "kleidin/hero");
       patchDefaultHero({ homeDefaultHeroImageUrl: uploaded.url });
       setMessage(
-        "Default hero image uploaded. Save default hero to publish the change.",
+        "First hero image uploaded. Save default hero to publish the change.",
       );
     } catch (error) {
       patchDefaultHero({ homeDefaultHeroImageUrl: previous });
@@ -241,7 +242,7 @@ export function AdminHeroManager() {
     try {
       await persistDefaultHero(storeSettings);
       setDefaultDrawerOpen(false);
-      setMessage("Default hero saved.");
+      setMessage("First hero saved.");
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Could not save default hero.",
@@ -469,7 +470,7 @@ export function AdminHeroManager() {
             Hero builder
           </h1>
           <p className="mt-2 max-w-xl text-xs leading-5 text-black/45">
-            Build light editorial hero slides. Default image format is 1920 × 1080 (16:9).
+            Manage the first hero, then add extra slides. The first hero uses a large title, model image and a real product card.
           </p>
         </div>
 
@@ -485,56 +486,7 @@ export function AdminHeroManager() {
       {storeSettings ? (
         <section className="mt-5 overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
           <div className="grid gap-0 lg:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
-            <div className="relative aspect-[16/9] overflow-hidden bg-[#e9e7e2]">
-              {defaultPreviewImage ? (
-                storeSettings.homeDefaultHeroImageUrl.startsWith("blob:") ? (
-                  <img
-                    src={storeSettings.homeDefaultHeroImageUrl}
-                    alt=""
-                    className={
-                      "h-full w-full object-contain " +
-                      (storeSettings.homeDefaultHeroImagePosition === "left"
-                        ? "object-left"
-                        : storeSettings.homeDefaultHeroImagePosition === "right"
-                          ? "object-right"
-                          : "object-center")
-                    }
-                  />
-                ) : (
-                  <Image
-                    src={defaultPreviewImage}
-                    alt="Default hero preview"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 65vw"
-                    className={
-                      "object-contain " +
-                      (storeSettings.homeDefaultHeroImagePosition === "left"
-                        ? "object-left"
-                        : storeSettings.homeDefaultHeroImagePosition === "right"
-                          ? "object-right"
-                          : "object-center")
-                    }
-                  />
-                )
-              ) : null}
-
-              <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(239,237,232,.98)_0%,rgba(239,237,232,.90)_38%,rgba(239,237,232,.18)_72%,rgba(239,237,232,0)_100%)]" />
-              <div className="absolute inset-0 flex max-w-[62%] flex-col justify-center p-5 sm:p-7">
-                <span className="text-[8px] font-bold uppercase tracking-[.14em] text-black/45">
-                  {storeSettings.homeDefaultHeroLabel}
-                </span>
-                <strong className="mt-2 text-[clamp(28px,5vw,56px)] font-black whitespace-pre-line leading-[.88] tracking-[-.055em]">
-                  {storeSettings.homeDefaultHeroTitle}
-                </strong>
-                <p className="mt-3 line-clamp-2 max-w-sm text-[9px] leading-4 text-black/50">
-                  {storeSettings.homeDefaultHeroSubtitle}
-                </p>
-              </div>
-
-              <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-1 text-[8px] font-bold uppercase text-black/55 backdrop-blur">
-                Default · First
-              </span>
-            </div>
+            <div className="min-w-0"><ComfortHero settings={storeSettings} products={products} preview /></div>
 
             <div className="flex flex-col justify-between p-4 sm:p-5">
               <div>
@@ -542,7 +494,7 @@ export function AdminHeroManager() {
                   <div>
                     <p className={labelClass}>System hero</p>
                     <h2 className="mt-1 text-lg font-bold tracking-[-.025em]">
-                      Default hero
+                      First hero
                     </h2>
                   </div>
                   <span
@@ -583,7 +535,7 @@ export function AdminHeroManager() {
                   disabled={defaultSaving}
                   role="switch"
                   aria-checked={storeSettings.homeDefaultHeroEnabled}
-                  aria-label="Default hero enabled"
+                  aria-label="First hero enabled"
                   onClick={() => void toggleDefaultHero()}
                   className={
                     "min-h-11 rounded-xl px-3 text-[10px] font-bold disabled:opacity-50 " +
@@ -690,7 +642,7 @@ export function AdminHeroManager() {
             <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className={labelClass}>Default hero status</p>
+                  <p className={labelClass}>First hero status</p>
                   <p className="mt-1 text-[10px] text-black/45">
                     When off, only your additional hero slides are shown.
                   </p>
@@ -790,7 +742,7 @@ export function AdminHeroManager() {
             <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className={labelClass}>Default hero image</p>
+                  <p className={labelClass}>First hero image</p>
                   <p className="mt-1 text-[10px] text-black/45">
                     Recommended: 1920 × 1080 (16:9). Uploads preserve subject framing.
                   </p>
