@@ -49,6 +49,16 @@ const quickActions = [
   },
 ];
 
+function ActionIcon({ name }: { name: string }) {
+  const paths: Record<string, string> = {
+    "+": "M12 5v14M5 12h14", O: "M7 3h10v4H7zM5 5H3v16h18V5h-2M7 12h10M7 16h7",
+    I: "m3 7 9-4 9 4v10l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v10", "₹": "M6 4h12M6 8h12M7 4c8 0 8 8 0 8l9 8",
+    C: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-4M16 3a4 4 0 0 1 0 8",
+    H: "m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8", S: "M4 7h16M4 17h16M8 4v6M16 14v6",
+  };
+  return <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={paths[name]} /></svg>;
+}
+
 function statusClass(status: string) {
   if (status === "delivered" || status === "paid") {
     return "bg-emerald-50 text-emerald-700 ring-emerald-100";
@@ -83,21 +93,21 @@ function MetricCard({
           : "bg-white text-[#111] ring-black/[.06]";
 
   const muted =
-    tone === "blue" || tone === "dark" ? "text-white/55" : "text-black/42";
+    tone === "blue" || tone === "dark" ? "text-white/75" : "text-black/55";
 
   const labelColor =
     tone === "blue"
-      ? "text-white/65"
+      ? "text-white/80"
       : tone === "dark"
-        ? "text-white/55"
+        ? "text-white/75"
         : tone === "amber"
           ? "text-amber-700"
-          : "text-black/42";
+          : "text-black/55";
 
   return (
     <article
       className={
-        "relative min-h-[132px] overflow-hidden rounded-[22px] p-4 ring-1 sm:p-5 " +
+        "relative min-w-0 min-h-[132px] overflow-hidden rounded-[22px] p-4 ring-1 sm:p-5 " +
         shell
       }
     >
@@ -105,7 +115,7 @@ function MetricCard({
         <div className="flex items-center justify-between gap-3">
           <p
             className={
-              "text-[9px] font-bold uppercase tracking-[.12em] " + labelColor
+              "text-[10px] font-bold uppercase tracking-[.12em] " + labelColor
             }
           >
             {label}
@@ -125,10 +135,10 @@ function MetricCard({
         </div>
 
         <div>
-          <strong className="block break-words text-[26px] font-bold leading-none tracking-[-.05em] sm:text-[30px]">
+          <strong className="block break-words text-[22px] font-bold leading-none tracking-[-.05em] sm:text-[28px]">
             {value}
           </strong>
-          <span className={"mt-2 block text-[9px] leading-4 " + muted}>
+          <span className={"mt-2 block text-[10px] leading-4 " + muted}>
             {help}
           </span>
         </div>
@@ -138,7 +148,11 @@ function MetricCard({
 }
 
 export default async function AdminDashboardPage() {
-  const metrics = await getDashboardMetrics();
+  let metrics: Awaited<ReturnType<typeof getDashboardMetrics>>;
+  try { metrics = await getDashboardMetrics(); }
+  catch {
+    return <div className="min-w-0"><p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">CONTROL CENTER</p><h1 className="mt-2 text-3xl font-bold">Dashboard</h1><div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5"><h2 className="text-base font-semibold">Could not load dashboard</h2><p className="mt-2 text-sm leading-6 text-black/50">Store data is temporarily unavailable. Try loading the dashboard again.</p><a href="/admin" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#001cac] px-5 text-xs font-semibold !text-white">Retry dashboard</a></div><nav aria-label="Store management" className="mt-4 grid gap-3 sm:grid-cols-3">{[["/admin/products", "Products"], ["/admin/orders", "Orders"], ["/admin/inventory", "Inventory"]].map(([href, label]) => <Link key={href} href={href} className="flex min-h-11 items-center justify-between rounded-xl bg-white px-4 text-sm font-semibold ring-1 ring-black/5">{label}<span aria-hidden="true">→</span></Link>)}</nav></div>;
+  }
   const maxDailyRevenue = Math.max(
     1,
     ...metrics.salesSeries.map((item) => item.revenue),
@@ -233,26 +247,26 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="pb-4">
+    <div className="min-w-0 pb-4">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-[#001cac]" />
-            <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#001cac]">
+            <p className="text-[10px] font-black uppercase tracking-[.18em] text-[#001cac]">
               Control center
             </p>
           </div>
           <h1 className="mt-2 text-[34px] font-bold leading-none tracking-[-.055em] md:text-[42px]">
             Dashboard
           </h1>
-          <p className="mt-2.5 max-w-xl text-[11px] leading-5 text-black/42">
+          <p className="mt-2.5 max-w-xl text-[11px] leading-5 text-black/55">
             Sales, payments, products, inventory and fulfilment at a glance.
           </p>
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:flex">
           <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-black/[.06]">
-            <span className="block text-[8px] font-bold uppercase tracking-[.1em] text-black/35">
+            <span className="block text-[10px] font-bold uppercase tracking-[.1em] text-black/50">
               Cost setup
             </span>
             <strong className="mt-0.5 block text-[11px]">
@@ -260,7 +274,7 @@ export default async function AdminDashboardPage() {
             </strong>
           </div>
           <div className="rounded-xl bg-white px-3 py-2.5 ring-1 ring-black/[.06]">
-            <span className="block text-[8px] font-bold uppercase tracking-[.1em] text-black/35">
+            <span className="block text-[10px] font-bold uppercase tracking-[.1em] text-black/50">
               Delivered
             </span>
             <strong className="mt-0.5 block text-[11px]">
@@ -269,52 +283,6 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       </header>
-
-      <section
-        aria-label="Quick actions"
-        className="mt-5 overflow-hidden rounded-[22px] border border-white/10 bg-[#0f1013] shadow-[0_16px_45px_rgba(0,0,0,.10)]"
-      >
-        <div className="flex items-center justify-between gap-3 border-b border-white/[.08] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-white/20" />
-            <span className="h-2 w-2 rounded-full bg-white/20" />
-            <span className="h-2 w-2 rounded-full bg-white/20" />
-            <span className="ml-2 font-mono text-[8px] uppercase tracking-[.16em] text-white/30">
-              Quick actions
-            </span>
-          </div>
-          <span className="hidden font-mono text-[8px] uppercase tracking-[.1em] text-white/20 sm:block">
-            KLEID.IN / ADMIN
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-px bg-white/[.08] sm:grid-cols-4 xl:grid-cols-7">
-          {quickActions.map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className="group flex min-h-[88px] flex-col justify-between bg-[#0f1013] p-3.5 text-white transition duration-200 hover:bg-[#17191f] sm:min-h-[96px]"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <span className="grid h-9 w-9 place-items-center rounded-[10px] border border-white/10 bg-white/[.04] font-mono text-[12px] font-bold text-[#7890ff] transition group-hover:border-[#7890ff]/40 group-hover:bg-[#001cac]/20">
-                  {action.short}
-                </span>
-                <span className="text-[12px] text-white/20 transition group-hover:translate-x-0.5 group-hover:text-white/60">
-                  ↗
-                </span>
-              </div>
-              <div className="mt-3 min-w-0">
-                <strong className="block truncate text-[11px] font-semibold text-white">
-                  {action.label}
-                </strong>
-                <span className="mt-1 block truncate text-[8px] uppercase tracking-[.08em] text-white/30">
-                  {action.description}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       <section className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <MetricCard
@@ -350,11 +318,20 @@ export default async function AdminDashboardPage() {
         />
       </section>
 
+      <section aria-label="Quick actions" className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+        <h2 className="text-sm font-semibold">Quick actions</h2>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
+          {quickActions.map((action) => <Link key={action.label} href={action.href} className="group min-w-0 rounded-xl border border-black/5 bg-[#fafafa] p-3 transition hover:border-[#001cac]/20 hover:bg-[#eef2ff]">
+            <div className="flex items-center justify-between gap-2"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#eef2ff] text-[#001cac]"><ActionIcon name={action.short} /></span><span aria-hidden="true" className="text-xs text-black/50">↗</span></div><strong className="mt-3 block break-words text-xs font-semibold">{action.label}</strong><span className="mt-1 block text-[10px] leading-5 text-black/50">{action.description}</span>
+          </Link>)}
+        </div>
+      </section>
+
       <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(310px,.75fr)]">
         <section className="overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
           <div className="flex flex-col gap-3 border-b border-black/[.055] p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
-              <p className="text-[8px] font-black uppercase tracking-[.15em] text-[#001cac]">
+              <p className="text-[10px] font-black uppercase tracking-[.15em] text-[#001cac]">
                 Last 7 days
               </p>
               <h2 className="mt-1 text-[17px] font-bold tracking-[-.03em]">
@@ -363,7 +340,7 @@ export default async function AdminDashboardPage() {
             </div>
             <div className="flex items-center gap-4">
               <div>
-                <span className="block text-[8px] uppercase tracking-[.08em] text-black/30">
+                <span className="block text-[10px] uppercase tracking-[.08em] text-black/50">
                   Today
                 </span>
                 <strong className="mt-0.5 block text-[12px]">
@@ -371,7 +348,7 @@ export default async function AdminDashboardPage() {
                 </strong>
               </div>
               <div>
-                <span className="block text-[8px] uppercase tracking-[.08em] text-black/30">
+                <span className="block text-[10px] uppercase tracking-[.08em] text-black/50">
                   Orders
                 </span>
                 <strong className="mt-0.5 block text-[12px]">
@@ -390,7 +367,7 @@ export default async function AdminDashboardPage() {
                 <p className="mt-2 text-[11px] font-semibold">
                   No sales in the last 7 days
                 </p>
-                <p className="mt-1 text-[9px] text-black/35">
+                <p className="mt-1 text-[10px] text-black/50">
                   The graph will update automatically after orders are created.
                 </p>
               </div>
@@ -405,11 +382,8 @@ export default async function AdminDashboardPage() {
               {metrics.salesSeries.map((item) => {
                 const height =
                   item.revenue > 0
-                    ? Math.max(
-                        10,
-                        Math.round((item.revenue / maxDailyRevenue) * 100),
-                      )
-                    : 4;
+                    ? (item.revenue / maxDailyRevenue) * 100
+                    : 0;
 
                 return (
                   <div
@@ -417,7 +391,7 @@ export default async function AdminDashboardPage() {
                     className="flex h-full min-w-0 flex-col justify-end"
                   >
                     <div className="mb-2 hidden text-center sm:block">
-                      <span className="text-[8px] font-semibold text-black/35">
+                      <span className="text-[10px] font-semibold text-black/50">
                         {item.revenue ? formatPrice(item.revenue) : "—"}
                       </span>
                     </div>
@@ -425,12 +399,14 @@ export default async function AdminDashboardPage() {
                       <div
                         className="w-full rounded-t-[8px] bg-[#001cac] transition-[height]"
                         style={{ height: `${height}%` }}
+                        role="img"
+                        aria-label={`${item.label}: ${formatPrice(item.revenue)} · ${item.orders} orders`}
                         title={`${item.label}: ${formatPrice(item.revenue)} · ${item.orders} orders`}
                       />
                     </div>
                     <div className="mt-2 text-center">
-                      <strong className="block text-[9px]">{item.label}</strong>
-                      <span className="mt-0.5 block text-[7px] text-black/30">
+                      <strong className="block text-[10px]">{item.label}</strong>
+                      <span className="mt-0.5 block text-[10px] text-black/50">
                         {item.orders} ord
                       </span>
                     </div>
@@ -443,7 +419,7 @@ export default async function AdminDashboardPage() {
 
         <section className="overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
           <div className="border-b border-black/[.055] p-4 sm:p-5">
-            <p className="text-[8px] font-black uppercase tracking-[.15em] text-[#001cac]">
+            <p className="text-[10px] font-black uppercase tracking-[.15em] text-[#001cac]">
               Product performance
             </p>
             <h2 className="mt-1 text-[17px] font-bold tracking-[-.03em]">
@@ -461,7 +437,7 @@ export default async function AdminDashboardPage() {
                   >
                     <span
                       className={
-                        "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[9px] font-black " +
+                        "grid h-8 w-8 shrink-0 place-items-center rounded-[10px] text-[10px] font-black " +
                         (index === 0
                           ? "bg-[#001cac] text-white"
                           : "bg-black/[.035] text-black/40")
@@ -470,10 +446,8 @@ export default async function AdminDashboardPage() {
                       {String(index + 1).padStart(2, "0")}
                     </span>
                     <div className="min-w-0 flex-1">
-                      <strong className="block truncate text-[11px]">
-                        {product.name}
-                      </strong>
-                      <span className="mt-1 block truncate text-[8px] text-black/35">
+                      {product.productId ? <Link href={"/admin/products/" + product.productId} className="block break-words text-xs font-semibold !text-[#001cac] hover:underline">{product.name}</Link> : <strong className="block break-words text-xs">{product.name}</strong>}
+                      <span className="mt-1 block truncate text-[10px] text-black/50">
                         {product.sku || "No SKU"} · {product.quantity} sold
                       </span>
                     </div>
@@ -481,7 +455,7 @@ export default async function AdminDashboardPage() {
                       <strong className="block text-[10px]">
                         {formatPrice(product.revenue)}
                       </strong>
-                      <span className="mt-0.5 block text-[7px] uppercase text-black/30">
+                      <span className="mt-0.5 block text-[10px] uppercase text-black/50">
                         revenue
                       </span>
                     </div>
@@ -490,18 +464,18 @@ export default async function AdminDashboardPage() {
               </div>
             ) : (
               <div className="flex min-h-[205px] flex-col items-center justify-center px-5 text-center">
-                <div className="grid h-11 w-11 place-items-center rounded-full bg-black/[.035] text-sm font-bold text-black/35">
+                <div className="grid h-11 w-11 place-items-center rounded-full bg-black/[.035] text-sm font-bold text-black/50">
                   #
                 </div>
                 <p className="mt-3 text-[11px] font-semibold">
                   No best sellers yet
                 </p>
-                <p className="mt-1 max-w-[220px] text-[9px] leading-4 text-black/35">
-                  Product rankings appear automatically after completed sales.
+                <p className="mt-1 max-w-[220px] text-[10px] leading-4 text-black/50">
+                  Product rankings appear after orders are recorded.
                 </p>
                 <Link
                   href="/admin/orders?new=1"
-                  className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl bg-[#111] px-4 text-[9px] font-bold !text-white"
+                  className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#111] px-4 text-[10px] font-bold !text-white"
                 >
                   Create order
                 </Link>
@@ -515,16 +489,14 @@ export default async function AdminDashboardPage() {
         <section className="overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
           <div className="flex items-center justify-between border-b border-black/[.055] p-4">
             <div>
-              <p className="text-[8px] font-black uppercase tracking-[.15em] text-[#001cac]">
+              <p className="text-[10px] font-black uppercase tracking-[.15em] text-[#001cac]">
                 Attention
               </p>
               <h2 className="mt-1 text-[15px] font-bold tracking-[-.025em]">
                 Needs action
               </h2>
             </div>
-            <span className="rounded-full bg-black/[.035] px-2.5 py-1 text-[8px] font-bold uppercase text-black/40">
-              Live
-            </span>
+            <span className="rounded-full bg-black/[.035] px-2.5 py-1 text-[10px] font-semibold text-black/50">{attentionItems.filter((item) => item.active).length} to review</span>
           </div>
 
           <div className="divide-y divide-black/[.055]">
@@ -541,10 +513,10 @@ export default async function AdminDashboardPage() {
                   }
                 />
                 <div className="min-w-0 flex-1">
-                  <strong className="block truncate text-[10px]">
+                  <strong className="block break-words text-xs">
                     {item.label}
                   </strong>
-                  <span className="mt-0.5 block truncate text-[8px] text-black/35">
+                  <span className="mt-0.5 block truncate text-[10px] text-black/50">
                     {item.note}
                   </span>
                 </div>
@@ -559,7 +531,7 @@ export default async function AdminDashboardPage() {
 
         <section className="rounded-[22px] bg-white p-3 ring-1 ring-black/[.06] sm:p-4">
           <div className="px-1 pb-3">
-            <p className="text-[8px] font-black uppercase tracking-[.15em] text-[#001cac]">
+            <p className="text-[10px] font-black uppercase tracking-[.15em] text-[#001cac]">
               Operations
             </p>
             <h2 className="mt-1 text-[15px] font-bold tracking-[-.025em]">
@@ -572,20 +544,20 @@ export default async function AdminDashboardPage() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="group min-h-[92px] rounded-[16px] bg-[#f7f7f8] p-3 transition hover:bg-[#f0f1f4]"
+                className="group min-w-0 min-h-[92px] rounded-[16px] bg-[#f7f7f8] p-3 transition hover:bg-[#f0f1f4]"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-[8px] font-bold uppercase tracking-[.08em] text-black/35">
+                  <span className="text-[10px] font-bold uppercase tracking-[.08em] text-black/50">
                     {item.label}
                   </span>
-                  <span className="text-[9px] text-black/20 transition group-hover:text-black/50">
+                  <span className="text-[10px] text-black/20 transition group-hover:text-black/50">
                     ↗
                   </span>
                 </div>
                 <strong className="mt-3 block text-[21px] leading-none tracking-[-.04em]">
                   {item.value}
                 </strong>
-                <span className="mt-2 block truncate text-[8px] text-black/35">
+                <span className="mt-2 block truncate text-[10px] text-black/50">
                   {item.meta}
                 </span>
               </Link>
@@ -597,7 +569,7 @@ export default async function AdminDashboardPage() {
       <section className="mt-4 overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
         <div className="flex items-center justify-between gap-3 border-b border-black/[.055] p-4 sm:p-5">
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[.15em] text-[#001cac]">
+            <p className="text-[10px] font-black uppercase tracking-[.15em] text-[#001cac]">
               Fulfilment
             </p>
             <h2 className="mt-1 text-[17px] font-bold tracking-[-.03em]">
@@ -606,118 +578,30 @@ export default async function AdminDashboardPage() {
           </div>
           <Link
             href="/admin/orders"
-            className="inline-flex min-h-10 items-center justify-center rounded-xl border border-black/10 bg-white px-3.5 text-[9px] font-bold transition hover:bg-black/[.025]"
+            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/10 bg-white px-3.5 text-[10px] font-bold transition hover:bg-black/[.025]"
           >
             Manage orders
           </Link>
         </div>
 
         {metrics.recentOrders.length ? (
-          <>
-            <div className="grid gap-2 p-3 md:hidden">
-              {metrics.recentOrders.map((order) => (
-                <article
-                  key={order.id}
-                  className="rounded-[16px] border border-black/[.07] p-3"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <strong className="block truncate text-[11px]">
-                        {order.orderNumber}
-                      </strong>
-                      <span className="mt-1 block truncate text-[9px] text-black/40">
-                        {order.customerName}
-                      </span>
-                    </div>
-                    <strong className="shrink-0 text-[11px]">
-                      {formatPrice(order.total)}
-                    </strong>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    <span
-                      className={
-                        "rounded-full px-2.5 py-1 text-[7px] font-bold uppercase ring-1 " +
-                        statusClass(order.status)
-                      }
-                    >
-                      {order.status.replaceAll("-", " ")}
-                    </span>
-                    <span
-                      className={
-                        "rounded-full px-2.5 py-1 text-[7px] font-bold uppercase ring-1 " +
-                        statusClass(order.paymentStatus)
-                      }
-                    >
-                      {order.paymentStatus}
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </div>
-
-            <div className="hidden overflow-x-auto md:block">
-              <table className="w-full min-w-[820px] text-left text-[10px]">
-                <thead className="bg-[#fafafa] text-black/35">
-                  <tr>
-                    <th className="px-5 py-3 font-semibold">Order</th>
-                    <th className="font-semibold">Customer</th>
-                    <th className="font-semibold">Total</th>
-                    <th className="font-semibold">Payment</th>
-                    <th className="font-semibold">Status</th>
-                    <th className="pr-5 font-semibold">Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {metrics.recentOrders.map((order) => (
-                    <tr
-                      key={order.id}
-                      className="border-t border-black/[.055] transition hover:bg-black/[.012]"
-                    >
-                      <td className="px-5 py-3.5 font-semibold">
-                        {order.orderNumber}
-                      </td>
-                      <td>{order.customerName}</td>
-                      <td className="font-semibold">
-                        {formatPrice(order.total)}
-                      </td>
-                      <td>
-                        <span
-                          className={
-                            "rounded-full px-2.5 py-1 text-[7px] font-bold uppercase ring-1 " +
-                            statusClass(order.paymentStatus)
-                          }
-                        >
-                          {order.paymentStatus}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={
-                            "rounded-full px-2.5 py-1 text-[7px] font-bold uppercase ring-1 " +
-                            statusClass(order.status)
-                          }
-                        >
-                          {order.status.replaceAll("-", " ")}
-                        </span>
-                      </td>
-                      <td className="pr-5 text-black/40">
-                        {new Date(order.createdAt).toLocaleDateString("en-IN")}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </>
+          <div className="grid gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
+            {metrics.recentOrders.map((order) => <article key={order.id} className="min-w-0 rounded-xl border border-black/10 p-4">
+              <div className="flex flex-wrap items-start justify-between gap-2"><h3 className="min-w-0 break-all text-sm font-semibold"><Link href={"/admin/orders/" + order.id} className="!text-[#001cac] hover:underline">{order.orderNumber}</Link></h3><strong className="text-sm">{formatPrice(order.total)}</strong></div>
+              <p className="mt-2 break-words text-xs font-semibold">{order.customerName}</p><p className="mt-1 text-[10px] text-black/50">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
+              <div className="mt-3 flex flex-wrap gap-2"><span className={"rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ring-1 " + statusClass(order.status)}>{order.status.replaceAll("-", " ")}</span><span className={"rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ring-1 " + statusClass(order.paymentStatus)}>{order.paymentMethod.toUpperCase()} · {order.paymentStatus}</span></div>
+              <Link href={"/admin/orders/" + order.id} className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-black/10 px-3 text-xs font-semibold !text-[#001cac] hover:bg-[#eef2ff]">View order →</Link>
+            </article>)}
+          </div>
         ) : (
           <div className="flex min-h-[150px] flex-col items-center justify-center p-6 text-center">
             <p className="text-[11px] font-semibold">No orders yet</p>
-            <p className="mt-1 text-[9px] text-black/35">
+            <p className="mt-1 text-[10px] text-black/50">
               New orders will appear here automatically.
             </p>
             <Link
               href="/admin/orders?new=1"
-              className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl bg-[#001cac] px-4 text-[9px] font-bold !text-white"
+              className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#001cac] px-4 text-[10px] font-bold !text-white"
             >
               + Create first order
             </Link>
