@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useDeferredValue, useEffect, useMemo, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type { Product } from "@/types/product";
 import { getProductPrimaryImage } from "@/lib/product-images";
@@ -39,13 +39,20 @@ export function AdminInventoryManager() {
   const [message, setMessage] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [search, setSearch] = useState("");
+  const query = useDeferredValue(search).trim().toLowerCase();
+  const [stockFilter, setStockFilter] = useState("all");
 
-  async function load(nextThreshold = threshold) {
+  async function load(nextThreshold = threshold, signal?: AbortSignal) {
     const response = await fetch(
       "/api/admin/inventory?threshold=" + nextThreshold,
-      { cache: "no-store" },
+      { cache: "no-store", signal },
     );
     const data = await response.json();
+    if (signal?.aborted) return;
 
     if (!response.ok) {
       throw new Error(data.error || "Could not load inventory.");
@@ -53,26 +60,25 @@ export function AdminInventoryManager() {
 
     setProducts(data.products || []);
     setMovements(data.movements || []);
-    setSummary(data.summary || {});
+    setSummary(data.summary || { totalProducts: 0, totalUnits: 0, lowStock: 0, soldOut: 0 });
     setAlerts(data.alerts || []);
     setThreshold(
       Number.isFinite(Number(data.lowStockThreshold))
         ? Number(data.lowStockThreshold)
         : nextThreshold,
     );
-
-    if (!productId && data.products?.[0]?.id) {
-      setProductId(data.products[0].id);
-    }
   }
 
   useEffect(() => {
-    void load(DEFAULT_LOW_STOCK_THRESHOLD).catch((error) =>
-      setMessage(
-        error instanceof Error ? error.message : "Could not load inventory.",
-      ),
-    );
+    const controller = new AbortController();
+    setLoading(true); setLoadError("");
+    void load(DEFAULT_LOW_STOCK_THRESHOLD, controller.signal)
+      .catch((error) => { if (!controller.signal.aborted) setLoadError(error instanceof Error ? error.message : "Could not load inventory."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [retry]);
 
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("adjust") === "1") {
       setMessage("");
@@ -151,6 +157,8 @@ export function AdminInventoryManager() {
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy) return;
+    if (!Number.isInteger(Number(delta)) || Number(delta) === 0) { setMessage("Enter a non-zero whole number for stock change."); return; }
     setBusy(true);
     setMessage("");
 
@@ -175,7 +183,8 @@ export function AdminInventoryManager() {
       setDelta("");
       setDrawerOpen(false);
       setMessage("Stock updated.");
-      await load();
+      try { await load(); }
+      catch { setMessage("Stock updated, but the inventory could not refresh. Reload the page to see the latest stock."); }
     } catch (error) {
       setMessage(
         error instanceof Error ? error.message : "Stock update failed.",
@@ -185,8 +194,13 @@ export function AdminInventoryManager() {
     }
   }
 
+  const visibleProducts = products.filter((product) => {
+    const matchesStock = stockFilter === "all" || (stockFilter === "sold-out" ? product.stock <= 0 : stockFilter === "low" ? product.stock > 0 && product.stock <= threshold : product.stock > threshold);
+    return matchesStock && (!query || [product.name, product.sku, product.category].some((value) => value?.toLowerCase().includes(query)));
+  });
+
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">
@@ -203,12 +217,16 @@ export function AdminInventoryManager() {
         <button
           type="button"
           onClick={() => openAdjustment()}
-          className="min-h-11 w-full rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white sm:w-auto"
+          disabled={loading || !!loadError || !products.length}
+          className="disabled:opacity-50 min-h-11 w-full rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white sm:w-auto"
         >
           Adjust stock
         </button>
       </div>
 
+      {loading ? <div role="status" aria-label="Loading inventory" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((key) => <div key={key} className="h-72 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none" />)}</div>
+        : loadError ? <div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-red-100"><p className="text-sm text-red-600">{loadError}</p><button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button></div>
+        : <>
       <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <article className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
           <p className="text-[10px] font-semibold uppercase tracking-[.08em] text-black/40">
@@ -280,7 +298,7 @@ export function AdminInventoryManager() {
       <section className="mt-5 rounded-[22px] bg-white p-4 ring-1 ring-black/[.06] md:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[#001cac]">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#001cac]">
               Inventory overview
             </p>
             <h2 className="mt-1 text-lg font-bold tracking-[-.025em]">
@@ -294,14 +312,21 @@ export function AdminInventoryManager() {
           <button
             type="button"
             onClick={() => openAdjustment()}
-            className="min-h-11 rounded-xl border border-black/10 bg-white px-4 text-[10px] font-bold transition hover:bg-black/[.025]"
+            disabled={!products.length}
+            className="min-h-11 rounded-xl border border-black/10 bg-white px-4 text-[10px] font-bold transition hover:bg-black/[.025] disabled:opacity-50"
           >
             + Adjust stock
           </button>
         </div>
 
+        <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+          <label className="min-w-0 text-xs font-semibold">Search products<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Product name, SKU or category" className="mt-2 min-h-11 w-full rounded-xl border border-black/10 bg-[#fafafa] px-3 text-sm font-normal outline-none focus:border-[#001cac]" /></label>
+          <label className="text-xs font-semibold">Stock status<select value={stockFilter} onChange={(event) => setStockFilter(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-black/10 bg-[#fafafa] px-3 text-sm font-normal"><option value="all">All stock</option><option value="in-stock">In stock</option><option value="low">Low stock</option><option value="sold-out">Sold out</option></select></label>
+        </div>
+        <p aria-live="polite" className="mt-4 text-xs text-black/45">Showing {visibleProducts.length} of {products.length} products</p>
+        {!visibleProducts.length ? <div className="py-10 text-center"><h3 className="text-sm font-semibold">{products.length ? "No matching products" : "No products yet"}</h3><p className="mt-2 text-xs text-black/50">{products.length ? "Try another search or stock filter." : "Add a product before adjusting stock."}</p>{products.length ? <button type="button" onClick={() => { setSearch(""); setStockFilter("all"); }} className="mt-3 min-h-11 px-4 text-xs font-semibold !text-[#001cac]">Clear filters</button> : <Link href="/admin/products" className="mt-3 inline-flex min-h-11 items-center px-4 text-xs font-semibold !text-[#001cac]">Go to products →</Link>}</div> : null}
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {products.map((product) => {
+          {visibleProducts.map((product) => {
             const image = getProductPrimaryImage(product);
             const isSoldOut = product.stock <= 0;
             const isLow = product.stock > 0 && product.stock <= threshold;
@@ -309,7 +334,7 @@ export function AdminInventoryManager() {
             return (
               <article
                 key={product.id}
-                className="overflow-hidden rounded-[20px] border border-black/[.07] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(0,0,0,.06)]"
+                className="min-w-0 overflow-hidden rounded-[20px] border border-black/[.07] bg-white transition hover:-translate-y-0.5 hover:shadow-[0_14px_36px_rgba(0,0,0,.06)]"
               >
                 <Link
                   href={"/admin/products/" + product.id}
@@ -328,7 +353,7 @@ export function AdminInventoryManager() {
                       <span className="grid h-10 w-10 place-items-center rounded-full bg-black/[.04]">
                         ◻
                       </span>
-                      <span className="text-[8px] font-bold uppercase tracking-[.1em]">
+                      <span className="text-[10px] font-bold uppercase tracking-[.1em]">
                         No image
                       </span>
                     </div>
@@ -336,7 +361,7 @@ export function AdminInventoryManager() {
 
                   <span
                     className={
-                      "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[8px] font-bold uppercase backdrop-blur-md " +
+                      "absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase " +
                       (isSoldOut
                         ? "bg-red-50/95 text-red-700"
                         : isLow
@@ -352,18 +377,18 @@ export function AdminInventoryManager() {
                   <div className="min-w-0">
                     <Link
                       href={"/admin/products/" + product.id}
-                      className="block truncate text-[12px] font-bold hover:text-[#001cac]"
+                      className="block break-words text-sm font-bold hover:text-[#001cac]"
                     >
                       {product.name}
                     </Link>
-                    <p className="mt-1 truncate text-[8px] uppercase tracking-[.06em] text-black/35">
+                    <p className="mt-1 truncate text-[10px] uppercase tracking-[.06em] text-black/35">
                       {product.sku} · {product.category || "Uncategorized"}
                     </p>
                   </div>
 
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     <div className="rounded-xl bg-[#f7f7f8] p-2.5">
-                      <span className="block text-[7px] font-bold uppercase tracking-[.08em] text-black/30">
+                      <span className="block text-[10px] font-bold uppercase tracking-[.08em] text-black/30">
                         Stock
                       </span>
                       <strong className="mt-1 block text-[15px] leading-none">
@@ -371,7 +396,7 @@ export function AdminInventoryManager() {
                       </strong>
                     </div>
                     <div className="rounded-xl bg-[#f7f7f8] p-2.5">
-                      <span className="block text-[7px] font-bold uppercase tracking-[.08em] text-black/30">
+                      <span className="block text-[10px] font-bold uppercase tracking-[.08em] text-black/30">
                         Colours
                       </span>
                       <strong className="mt-1 block text-[15px] leading-none">
@@ -379,7 +404,7 @@ export function AdminInventoryManager() {
                       </strong>
                     </div>
                     <div className="rounded-xl bg-[#f7f7f8] p-2.5">
-                      <span className="block text-[7px] font-bold uppercase tracking-[.08em] text-black/30">
+                      <span className="block text-[10px] font-bold uppercase tracking-[.08em] text-black/30">
                         Sizes
                       </span>
                       <strong className="mt-1 block text-[15px] leading-none">
@@ -392,6 +417,7 @@ export function AdminInventoryManager() {
                     <button
                       type="button"
                       onClick={() => {
+                        setMessage("");
                         setProductId(product.id);
                         setColor("");
                         setSize("");
@@ -429,7 +455,7 @@ export function AdminInventoryManager() {
             <div>
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-40" />
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-40" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
                 </span>
                 <h2 className="text-sm font-bold">Low stock alerts</h2>
@@ -439,12 +465,12 @@ export function AdminInventoryManager() {
               </p>
             </div>
 
-            <span className="w-fit rounded-full bg-black/[.04] px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.08em] text-black/50">
+            <span className="w-fit rounded-full bg-black/[.04] px-3 py-1.5 text-[10px] font-bold uppercase tracking-[.08em] text-black/50">
               {alerts.length} need attention
             </span>
           </div>
 
-          <div className="grid gap-2 p-3 md:hidden">
+          <div className="grid gap-3 p-4 lg:grid-cols-2">
             {alerts.map((alert) => (
               <article
                 key={alert.id}
@@ -459,11 +485,11 @@ export function AdminInventoryManager() {
                   <div className="min-w-0">
                     <Link
                       href={"/admin/products/" + alert.productId}
-                      className="block truncate text-sm font-bold"
+                      className="block break-words text-sm font-bold"
                     >
                       {alert.productName}
                     </Link>
-                    <p className="mt-1 text-[10px] text-black/45">
+                    <p className="mt-1 break-words text-[10px] text-black/45">
                       {alert.sku}
                       {[alert.color, alert.size].filter(Boolean).length
                         ? " · " +
@@ -474,7 +500,7 @@ export function AdminInventoryManager() {
 
                   <span
                     className={
-                      "shrink-0 rounded-full px-2.5 py-1 text-[9px] font-bold uppercase " +
+                      "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase " +
                       (alert.status === "sold-out"
                         ? "bg-red-100 text-red-700"
                         : "bg-amber-100 text-amber-800")
@@ -497,76 +523,18 @@ export function AdminInventoryManager() {
             ))}
           </div>
 
-          <div className="hidden overflow-x-auto md:block">
-            <table className="w-full min-w-[820px] text-left text-xs">
-              <thead className="bg-black/[.015] text-black/40">
-                <tr>
-                  <th className="px-5 py-3">Product</th>
-                  <th>Variant</th>
-                  <th>Stock</th>
-                  <th>Status</th>
-                  <th className="pr-5 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {alerts.map((alert) => (
-                  <tr key={alert.id} className="border-t border-black/5">
-                    <td className="px-5 py-3">
-                      <Link
-                        href={"/admin/products/" + alert.productId}
-                        className="font-semibold hover:text-[#001cac]"
-                      >
-                        {alert.productName}
-                      </Link>
-                      <span className="mt-0.5 block text-[9px] text-black/40">
-                        {alert.sku}
-                      </span>
-                    </td>
-                    <td>
-                      {[alert.color, alert.size].filter(Boolean).join(" / ") ||
-                        "Base stock"}
-                    </td>
-                    <td>
-                      <strong>{alert.stock}</strong>
-                    </td>
-                    <td>
-                      <span
-                        className={
-                          "rounded-full px-2.5 py-1 text-[9px] font-bold uppercase " +
-                          (alert.status === "sold-out"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-amber-100 text-amber-800")
-                        }
-                      >
-                        {alert.status === "sold-out" ? "Sold out" : "Low stock"}
-                      </span>
-                    </td>
-                    <td className="pr-5 text-right">
-                      <button
-                        type="button"
-                        onClick={() => openAdjustment(alert)}
-                        className="min-h-9 rounded-lg border border-black/10 px-3 text-[10px] font-bold"
-                      >
-                        Restock
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         </section>
-      ) : (
+      ) : summary.totalProducts > 0 ? (
         <section className="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 p-5">
           <p className="text-sm font-bold text-emerald-800">Stock looks healthy</p>
           <p className="mt-1 text-[10px] leading-5 text-emerald-700/70">
             No product, colour or size is at or below {threshold} units.
           </p>
         </section>
-      )}
+      ) : null}
 
       {message ? (
-        <p className="mt-4 rounded-xl bg-white px-4 py-3 text-xs font-medium text-black/60 ring-1 ring-black/5">
+        <p role="status" className="mt-4 rounded-xl bg-white px-4 py-3 text-xs font-medium text-black/60 ring-1 ring-black/5">
           {message}
         </p>
       ) : null}
@@ -581,6 +549,7 @@ export function AdminInventoryManager() {
           onSubmit={submit}
           className="grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/5 md:grid-cols-2"
         >
+          <fieldset disabled={busy} className="contents disabled:opacity-60">
           <label className="md:col-span-2">
             <span className="text-[10px] font-bold uppercase tracking-[.08em] text-black/45">
               Product
@@ -610,7 +579,7 @@ export function AdminInventoryManager() {
             </span>
             <select
               value={color}
-              onChange={(event) => setColor(event.target.value)}
+              onChange={(event) => { setColor(event.target.value); setSize(""); }}
               disabled={!selectedColors.length}
               className="mt-1.5 min-h-11 w-full rounded-xl border border-black/10 px-3 text-sm disabled:bg-black/[.03] disabled:text-black/35"
             >
@@ -652,6 +621,7 @@ export function AdminInventoryManager() {
             </span>
             <input
               type="number"
+              step="1"
               value={delta}
               onChange={(event) => setDelta(event.target.value)}
               placeholder="+10 or -2"
@@ -672,8 +642,10 @@ export function AdminInventoryManager() {
             />
           </label>
 
+          </fieldset>
+          <p className="text-xs leading-5 text-black/45 md:col-span-2">Use a positive number to add stock or a negative number to remove stock.</p>
           <button
-            disabled={busy}
+            disabled={busy || !productId || !delta || Number(delta) === 0}
             className="min-h-11 rounded-xl bg-[#001cac] px-4 py-2.5 text-xs font-bold !text-white disabled:opacity-50 md:col-span-2"
           >
             {busy ? "Updating…" : "Update stock"}
@@ -697,59 +669,15 @@ export function AdminInventoryManager() {
           </div>
         </div>
 
-        <div className="mt-3 overflow-x-auto">
-          <table className="w-full min-w-[720px] text-left text-xs">
-            <thead className="text-black/40">
-              <tr>
-                <th className="py-3">Product</th>
-                <th>Variant</th>
-                <th>Change</th>
-                <th>Reason</th>
-                <th>Reference</th>
-                <th>Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {movements.map((movement) => (
-                <tr key={movement.id} className="border-t border-black/5">
-                  <td className="py-3 font-semibold">{movement.productName}</td>
-                  <td>
-                    {[movement.color, movement.size]
-                      .filter(Boolean)
-                      .join(" / ") || "Base stock"}
-                  </td>
-                  <td
-                    className={
-                      movement.delta >= 0
-                        ? "font-bold text-emerald-700"
-                        : "font-bold text-red-600"
-                    }
-                  >
-                    {movement.delta > 0 ? "+" : ""}
-                    {movement.delta}
-                  </td>
-                  <td>{movement.reason}</td>
-                  <td>{movement.reference || "—"}</td>
-                  <td>
-                    {new Date(movement.createdAt).toLocaleString("en-IN")}
-                  </td>
-                </tr>
-              ))}
-
-              {!movements.length ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="py-8 text-center text-xs text-black/40"
-                  >
-                    No stock movements yet.
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
+          {movements.map((movement) => <article key={movement.id} className="min-w-0 rounded-xl border border-black/10 p-4">
+            <div className="flex items-start justify-between gap-3"><div className="min-w-0"><Link href={"/admin/products/" + movement.productId} className="break-words text-sm font-semibold !text-[#001cac] hover:underline">{movement.productName}</Link><p className="mt-1 break-words text-xs text-black/50">{[movement.color, movement.size].filter(Boolean).join(" / ") || "Base stock"}</p></div><span className={"shrink-0 rounded-full px-3 py-1 text-xs font-semibold " + (movement.delta >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600")}>{movement.delta > 0 ? "+" : ""}{movement.delta}</span></div>
+            <p className="mt-3 break-words text-xs leading-5">{movement.reason}</p>{movement.reference ? <p className="mt-1 break-all text-xs text-black/45">Reference: {movement.reference}</p> : null}<p className="mt-3 text-[10px] text-black/45">{new Date(movement.createdAt).toLocaleString("en-IN")}</p>
+          </article>)}
+          {!movements.length ? <p className="py-8 text-center text-xs text-black/45 lg:col-span-2">No stock movements yet.</p> : null}
         </div>
       </section>
+      </>}
     </div>
   );
 }
