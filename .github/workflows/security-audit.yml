@@ -32,5 +32,8 @@ jobs:
       - name: Type check
         run: npm run lint
 
+      - name: Tests
+        run: node --test tests/*.test.cjs
+
       - name: Production build
         run: npm run build
