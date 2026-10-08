@@ -25,6 +25,8 @@ export function Footer({ settings }: { settings: StoreSettings }) {
 
       <div className="footer-column">
         <span>Help</span>
+        {settings.supportEmail ? <a href={"mailto:" + settings.supportEmail}>Email us</a> : null}
+        {settings.phoneNumber ? <a href={"tel:" + settings.phoneNumber.replace(/[^\d+]/g, "")}>{settings.phoneNumber}</a> : null}
         {whatsappHref ? (
           <>
             <a href={whatsappHref} target="_blank" rel="noreferrer">Shipping</a>
