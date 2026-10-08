@@ -309,14 +309,6 @@ export function AdminInventoryManager() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={() => openAdjustment()}
-            disabled={!products.length}
-            className="min-h-11 rounded-xl border border-black/10 bg-white px-4 text-[10px] font-bold transition hover:bg-black/[.025] disabled:opacity-50"
-          >
-            + Adjust stock
-          </button>
         </div>
 
         <div className="mt-5 grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
