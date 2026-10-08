@@ -5,6 +5,7 @@ import type { StoreSettings } from "@/types/commerce";
 import type { Product } from "@/types/product";
 import type { HeroSection, HeroSlideConfig } from "@/data/hero-slides";
 import { getComfortSlides } from "@/lib/comfort-slides";
+import { BackgroundHero } from "@/components/BackgroundHero";
 import { SecondaryHero } from "@/components/SecondaryHero";
 import { ComfortHero } from "@/components/ComfortHero";
 import styles from "./ComfortHero.module.css";
@@ -43,14 +44,14 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   function move(direction: number) {
     if (active.length > 1) setSelectedId(active[(selected + direction + active.length) % active.length].id);
   }
-  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : ""}`} role="region" aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : "Featured collections"}
+  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : section === "tertiary" && (active.length || preview) ? styles.backgroundSlider : ""}`} role="region" aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : section === "tertiary" ? "Background collections" : "Featured collections"}
     onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
     onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onTouchStart={(event) => { touchStart.current = event.touches[0].clientX; }}
     onTouchEnd={(event) => { if (touchStart.current !== null) { const distance = event.changedTouches[0].clientX - touchStart.current; if (Math.abs(distance) > 50) move(distance < 0 ? 1 : -1); touchStart.current = null; } }}>
     {active.length ? <div className={styles.track} style={{ transform: `translateX(-${selected * 100}%)` }} aria-live={automatic ? "off" : "polite"}>
       {active.map((slide, index) => <div key={slide.id} className={styles.slide} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${active.length}`} aria-hidden={index !== selected} inert={index !== selected}>
-        {section === "secondary" ? <SecondaryHero slide={slide} preview={preview} /> : <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />}
+        {section === "tertiary" ? <BackgroundHero slide={slide} preview={preview} /> : section === "secondary" ? <SecondaryHero slide={slide} preview={preview} /> : <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />}
       </div>)}
     </div> : preview ? <p className={styles.noSlides}>Add and enable a slide to preview the slider.</p> : null}
     {active.length > 1 ? <div className={styles.controls}>

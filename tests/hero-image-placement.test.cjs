@@ -40,6 +40,9 @@ test('custom hero placement survives edits, supports partial device patches and 
   const updated = await heroes.updateHeroSlide(String(id), { imagePlacement: { mobile: { scale: 110 } } });
   assert.equal(updated.section, "secondary"); assert.equal(updated.tickerText, "Saved strip");
   assert.deepEqual(updated.imagePlacement, { desktop: custom.desktop, mobile: { scale: 110 } });
+  await heroes.updateHeroSlide(String(id), { section: 'tertiary', imageOpacity: 20, secondaryButton: 'Learn more', secondaryHref: '/products' });
+  const campaign = await heroes.updateHeroSlide(String(id), { title: 'Background campaign' });
+  assert.equal(campaign.section, 'tertiary'); assert.equal(campaign.imageOpacity, 20); assert.equal(campaign.secondaryButton, 'Learn more'); assert.equal(campaign.secondaryHref, '/products');
   delete row.imagePlacement;
   assert.deepEqual((await heroes.getHeroSlide(String(id))).imagePlacement, defaults);
 });

@@ -38,3 +38,5 @@
 
 .secondarySlider { padding: 32px 5% 66px; background: #111; }
 @media (max-width: 600px) { .secondarySlider { padding: 20px 12px 66px; } }
+
+.backgroundSlider { background: #080808; }

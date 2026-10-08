@@ -1,5 +1,5 @@
 import "server-only";
-import { normalizeHeroImagePlacement } from "@/lib/hero-image-placement";
+import { normalizeHeroImagePlacement, normalizeHeroImageOpacity } from "@/lib/hero-image-placement";
 
 import { createHash, randomUUID } from "node:crypto";
 import { ObjectId, type Document } from "mongodb";
@@ -44,8 +44,11 @@ function toSlide(doc: Document): HeroSlideConfig {
   return {
     id: String(doc._id),
     kind: kind(doc.kind),
-    section: doc.section === "secondary" ? "secondary" : "primary",
+    section: doc.section === "secondary" || doc.section === "tertiary" ? doc.section : "primary",
     tickerText: text(doc.tickerText),
+    imageOpacity: normalizeHeroImageOpacity(doc.imageOpacity),
+    secondaryButton: text(doc.secondaryButton),
+    secondaryHref: text(doc.secondaryHref),
     productId: text(doc.productId) || null,
     label: text(doc.label),
     title: text(doc.title),
@@ -68,8 +71,11 @@ function toSlide(doc: Document): HeroSlideConfig {
 
 function fields(input: Record<string, unknown>, current?: HeroSlideConfig) {
   return {
-    section: input.section !== undefined ? (input.section === "secondary" ? "secondary" : "primary") : current?.section ?? "primary",
+    section: input.section !== undefined ? (input.section === "secondary" || input.section === "tertiary" ? input.section : "primary") : current?.section ?? "primary",
     tickerText: text(input.tickerText, current?.tickerText),
+    imageOpacity: normalizeHeroImageOpacity(input.imageOpacity, current?.imageOpacity),
+    secondaryButton: text(input.secondaryButton, current?.secondaryButton),
+    secondaryHref: text(input.secondaryHref, current?.secondaryHref),
     kind: input.kind !== undefined ? kind(input.kind) : current?.kind ?? "custom",
     productId: text(input.productId, current?.productId ?? "") || null,
     label: text(input.label, current?.label),

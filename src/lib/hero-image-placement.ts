@@ -12,3 +12,7 @@ export function normalizeHeroImagePlacement(value: unknown, fallback?: HeroImage
   const source = value && typeof value === "object" ? value as Record<string, unknown> : {};
   return { desktop: placement(source.desktop, fallback?.desktop || defaultPlacement), mobile: placement(source.mobile, fallback?.mobile || defaultPlacement) };
 }
+
+export function normalizeHeroImageOpacity(value: unknown, fallback = 40): number {
+  return numeric(value, fallback, 0, 100);
+}
