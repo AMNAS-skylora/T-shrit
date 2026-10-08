@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { ComfortHero } from "@/components/ComfortHero";
+import { HomeHeroSlider } from "@/components/HomeHeroSlider";
 import {
   ChangeEvent,
   FormEvent,
@@ -64,7 +64,7 @@ const emptyDraft: Draft = {
 const inputClass =
   "mt-1.5 min-h-11 w-full rounded-xl border border-black/10 bg-white px-3 text-sm outline-none transition focus:border-[#001cac] focus:ring-2 focus:ring-[#001cac]/10";
 const labelClass =
-  "text-[9px] font-bold uppercase tracking-[.1em] text-black/45";
+  "text-[10px] font-bold uppercase tracking-[.1em] text-black/45";
 
 function dateTimeInput(value?: string | null) {
   if (!value) return "";
@@ -470,7 +470,7 @@ export function AdminHeroManager() {
             Hero builder
           </h1>
           <p className="mt-2 max-w-xl text-xs leading-5 text-black/45">
-            Manage the first hero, then add extra slides. The first hero uses a large title, model image and a real product card.
+            Add two or three heroes and turn them on. Live slides rotate automatically every five seconds in one white slider; the product section below is black.
           </p>
         </div>
 
@@ -486,7 +486,7 @@ export function AdminHeroManager() {
       {storeSettings ? (
         <section className="mt-5 overflow-hidden rounded-[22px] bg-white ring-1 ring-black/[.06]">
           <div className="grid gap-0 lg:grid-cols-[minmax(0,1.25fr)_minmax(300px,.75fr)]">
-            <div className="min-w-0"><ComfortHero settings={storeSettings} products={products} preview /></div>
+            <div className="min-w-0"><HomeHeroSlider settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview /></div>
 
             <div className="flex flex-col justify-between p-4 sm:p-5">
               <div>
@@ -510,8 +510,7 @@ export function AdminHeroManager() {
                 </div>
 
                 <p className="mt-3 text-[10px] leading-5 text-black/45">
-                  Always available as the first hero. Custom, product and offer
-                  heroes are shown after this slide.
+                  When enabled, this is the first slide. Enabled custom, product and offer heroes rotate in the same slider, in position order.
                 </p>
 
                 <div className="mt-4 rounded-xl bg-[#f7f7f8] p-3">
@@ -570,7 +569,7 @@ export function AdminHeroManager() {
         <div className="mb-3">
           <p className={labelClass}>Custom hero slides</p>
           <p className="mt-1 text-[10px] text-black/40">
-            These slides appear after the default hero when enabled.
+            Enabled, live slides join the automatic slider. Hidden, scheduled and ended slides stay out until their live time.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
@@ -607,7 +606,7 @@ export function AdminHeroManager() {
         <AdminDrawer
           open={defaultDrawerOpen}
           title="Edit default hero"
-          description="This built-in hero is always Hero 01 when enabled. Custom hero slides follow after it."
+          description="This is the first slide when enabled. Other enabled heroes rotate in the same slider."
           onClose={() => {
             if (!defaultSaving && !defaultUploading) {
               setDefaultDrawerOpen(false);
@@ -671,22 +670,6 @@ export function AdminHeroManager() {
               <p className={labelClass}>Content</p>
               <div className="mt-3 grid gap-3">
                 <label>
-                  <span className={labelClass}>Label</span>
-                  <input
-                    value={storeSettings.homeDefaultHeroLabel}
-                    onChange={(event) =>
-                      patchDefaultHero({
-                        homeDefaultHeroLabel: event.target.value,
-                      })
-                    }
-                    className={inputClass}
-                  />
-                </label>
-                <label>
-                  <span className={labelClass}>Brand</span>
-                  <input value={storeSettings.homeDefaultHeroBrand} onChange={(event) => patchDefaultHero({ homeDefaultHeroBrand: event.target.value })} className={inputClass} />
-                </label>
-                <label>
                   <span className={labelClass}>Title</span>
                   <textarea
                     value={storeSettings.homeDefaultHeroTitle}
@@ -696,18 +679,6 @@ export function AdminHeroManager() {
                       })
                     }
                     className={inputClass}
-                  />
-                </label>
-                <label>
-                  <span className={labelClass}>Subtitle</span>
-                  <textarea
-                    value={storeSettings.homeDefaultHeroSubtitle}
-                    onChange={(event) =>
-                      patchDefaultHero({
-                        homeDefaultHeroSubtitle: event.target.value,
-                      })
-                    }
-                    className={inputClass + " min-h-24 resize-y py-3"}
                   />
                 </label>
                 <div className="grid gap-3 md:grid-cols-2">
@@ -968,52 +939,6 @@ export function AdminHeroManager() {
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
             <p className={labelClass}>Content</p>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <label>
-                <span className={labelClass}>Eyebrow / label</span>
-                <input
-                  value={draft.label}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      label: event.target.value,
-                    }))
-                  }
-                  placeholder="KLEID.IN"
-                  className={inputClass}
-                />
-              </label>
-
-              <label>
-                <span className={labelClass}>Badge</span>
-                <input
-                  value={draft.badge}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      badge: event.target.value,
-                    }))
-                  }
-                  placeholder="NEW DROP"
-                  className={inputClass}
-                />
-              </label>
-
-              {draft.kind === "offer" ? (
-                <label className="md:col-span-2">
-                  <span className={labelClass}>Offer / discount text</span>
-                  <input
-                    value={draft.discountText}
-                    onChange={(event) =>
-                      setDraft((current) => ({
-                        ...current,
-                        discountText: event.target.value,
-                      }))
-                    }
-                    placeholder="UP TO 40% OFF"
-                    className={inputClass}
-                  />
-                </label>
-              ) : null}
 
               <label className="md:col-span-2">
                 <span className={labelClass}>Hero title</span>
@@ -1032,25 +957,6 @@ export function AdminHeroManager() {
                   }
                   required={draft.kind !== "product"}
                   className={inputClass}
-                />
-              </label>
-
-              <label className="md:col-span-2">
-                <span className={labelClass}>Subtitle</span>
-                <textarea
-                  value={draft.subtitle}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      subtitle: event.target.value,
-                    }))
-                  }
-                  placeholder={
-                    draft.kind === "product"
-                      ? "Leave empty to use product description"
-                      : "Short hero description"
-                  }
-                  className={inputClass + " min-h-24 resize-y py-3"}
                 />
               </label>
             </div>
@@ -1087,24 +993,6 @@ export function AdminHeroManager() {
                   placeholder="/products or https://..."
                   className={inputClass}
                 />
-              </label>
-
-              <label>
-                <span className={labelClass}>Button style</span>
-                <select
-                  value={draft.ctaStyle}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      ctaStyle: event.target.value as HeroCtaStyle,
-                    }))
-                  }
-                  className={inputClass}
-                >
-                  <option value="light">Light</option>
-                  <option value="dark">Dark</option>
-                  <option value="outline">Outline</option>
-                </select>
               </label>
 
               <label>
@@ -1251,26 +1139,6 @@ export function AdminHeroManager() {
             </div>
 
             <div className="mt-3 grid gap-2 md:grid-cols-2">
-              <button
-                type="button"
-                onClick={() =>
-                  setDraft((current) => ({
-                    ...current,
-                    showCountdown:
-                      Boolean(current.endsAt) && !current.showCountdown,
-                  }))
-                }
-                disabled={!draft.endsAt}
-                className={
-                  "flex min-h-12 items-center justify-between rounded-xl border px-4 text-left text-xs font-bold disabled:opacity-40 " +
-                  (draft.showCountdown
-                    ? "border-[#001cac] bg-[#001cac]/[.04] text-[#001cac]"
-                    : "border-black/10")
-                }
-              >
-                <span>Countdown timer</span>
-                <span>{draft.showCountdown ? "ON" : "OFF"}</span>
-              </button>
 
               <label className="flex min-h-12 items-center justify-between rounded-xl border border-black/10 px-4 text-xs font-bold">
                 <span>Slide enabled</span>
