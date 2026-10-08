@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { AdminHeroImageControls } from "@/components/AdminHeroImageControls";
+import { normalizeHeroImagePlacement, type HeroImagePlacement } from "@/lib/hero-image-placement";
 import { HomeHeroSlider } from "@/components/HomeHeroSlider";
 import {
   ChangeEvent,
@@ -37,6 +39,7 @@ type Draft = {
   showCountdown: boolean;
   ctaStyle: HeroCtaStyle;
   imagePosition: HeroImagePosition;
+  imagePlacement: HeroImagePlacement;
   enabled: boolean;
   order: string;
 };
@@ -57,6 +60,7 @@ const emptyDraft: Draft = {
   showCountdown: false,
   ctaStyle: "dark",
   imagePosition: "center",
+  imagePlacement: normalizeHeroImagePlacement(undefined),
   enabled: true,
   order: "0",
 };
@@ -161,7 +165,6 @@ export function AdminHeroManager() {
 
   const previewImage = draft.imageUrl || productImage;
 
-  const defaultPreviewImage = storeSettings?.homeDefaultHeroImageUrl || "";
 
   function patchDefaultHero(patch: Partial<StoreSettings>) {
     setStoreSettings((current) =>
@@ -293,6 +296,7 @@ export function AdminHeroManager() {
       showCountdown: Boolean(slide.showCountdown),
       ctaStyle: slide.ctaStyle ?? "dark",
       imagePosition: slide.imagePosition ?? "center",
+      imagePlacement: normalizeHeroImagePlacement(slide.imagePlacement),
       enabled: slide.enabled,
       order: String(slide.order),
     });
@@ -725,44 +729,6 @@ export function AdminHeroManager() {
                 ) : null}
               </div>
 
-              <div className="relative mt-3 aspect-[16/9] overflow-hidden rounded-xl bg-[#e9e7e2]">
-                {defaultPreviewImage ? (
-                  storeSettings.homeDefaultHeroImageUrl.startsWith("blob:") ? (
-                    <img
-                      src={storeSettings.homeDefaultHeroImageUrl}
-                      alt=""
-                      className={
-                        "h-full w-full object-contain " +
-                        (storeSettings.homeDefaultHeroImagePosition === "left"
-                          ? "object-left"
-                          : storeSettings.homeDefaultHeroImagePosition === "right"
-                            ? "object-right"
-                            : "object-center")
-                      }
-                    />
-                  ) : (
-                    <Image
-                      src={defaultPreviewImage}
-                      alt=""
-                      fill
-                      sizes="640px"
-                      className={
-                        "object-contain " +
-                        (storeSettings.homeDefaultHeroImagePosition === "left"
-                          ? "object-left"
-                          : storeSettings.homeDefaultHeroImagePosition === "right"
-                            ? "object-right"
-                            : "object-center")
-                      }
-                    />
-                  )
-                ) : (
-                  <div className="grid h-full place-items-center text-[10px] text-black/35">
-                    Light default background
-                  </div>
-                )}
-              </div>
-
               <div className="mt-3 grid grid-cols-2 gap-2">
                 <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-black/20 px-3 text-center text-[10px] font-bold">
                   {storeSettings.homeDefaultHeroImageUrl
@@ -812,6 +778,13 @@ export function AdminHeroManager() {
                   <option value="right">Right</option>
                 </select>
               </label>
+              <AdminHeroImageControls
+                value={storeSettings.homeDefaultHeroImagePlacement}
+                onChange={(homeDefaultHeroImagePlacement) => patchDefaultHero({ homeDefaultHeroImagePlacement })}
+                settings={storeSettings}
+                products={products}
+                disabled={defaultSaving || defaultUploading}
+              />
             </section>
           </div>
         </AdminDrawer>
@@ -1030,39 +1003,13 @@ export function AdminHeroManager() {
               ) : null}
             </div>
 
-            {previewImage ? (
-              <div className="relative mt-3 aspect-[16/9] overflow-hidden rounded-xl bg-black/[.04]">
-                {draft.imageUrl.startsWith("blob:") ? (
-                  <img
-                    src={draft.imageUrl}
-                    alt=""
-                    className={
-                      "h-full w-full object-contain " +
-                      (draft.imagePosition === "left"
-                        ? "object-left"
-                        : draft.imagePosition === "right"
-                          ? "object-right"
-                          : "object-center")
-                    }
-                  />
-                ) : (
-                  <Image
-                    src={previewImage}
-                    alt=""
-                    fill
-                    sizes="640px"
-                    className={
-                      "object-contain " +
-                      (draft.imagePosition === "left"
-                        ? "object-left"
-                        : draft.imagePosition === "right"
-                          ? "object-right"
-                          : "object-center")
-                    }
-                  />
-                )}
-              </div>
-            ) : null}
+            {storeSettings ? <AdminHeroImageControls
+              value={draft.imagePlacement}
+              onChange={(imagePlacement) => setDraft((current) => ({ ...current, imagePlacement }))}
+              settings={{ ...storeSettings, homeDefaultHeroTitle: draft.title || selectedProduct?.name || "", homeDefaultHeroImageUrl: previewImage, homeDefaultHeroImagePosition: draft.imagePosition, homeDefaultHeroButtonLabel: draft.button, homeDefaultHeroButtonHref: draft.href }}
+              products={selectedProduct ? [selectedProduct] : []}
+              disabled={saving || uploading}
+            /> : null}
 
             <div className="mt-3 grid grid-cols-2 gap-2">
               <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-black/20 px-3 text-center text-[10px] font-bold">

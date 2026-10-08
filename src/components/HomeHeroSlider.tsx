@@ -49,7 +49,7 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
     onTouchEnd={(event) => { if (touchStart.current !== null) { const distance = event.changedTouches[0].clientX - touchStart.current; if (Math.abs(distance) > 50) move(distance < 0 ? 1 : -1); touchStart.current = null; } }}>
     {active.length ? <div className={styles.track} style={{ transform: `translateX(-${selected * 100}%)` }} aria-live={automatic ? "off" : "polite"}>
       {active.map((slide, index) => <div key={slide.id} className={styles.slide} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${active.length}`} aria-hidden={index !== selected} inert={index !== selected}>
-        <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />
+        <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />
       </div>)}
     </div> : preview ? <p className={styles.noSlides}>Turn on First hero or add an enabled slide to preview the slider.</p> : null}
     {active.length > 1 ? <div className={styles.controls}>
