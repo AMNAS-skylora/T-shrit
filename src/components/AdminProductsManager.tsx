@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState, type ReactNode } from "react";
+import { ChangeEvent, FormEvent, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import { AdminProductImport } from "@/components/AdminProductImport";
 import { AdminProductPlacementManager } from "@/components/AdminProductPlacementManager";
@@ -94,13 +94,7 @@ function csv(value: string) {
     .filter(Boolean);
 }
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
+
 
 function dateTimeInput(value?: string) {
   if (!value) return "";
@@ -159,10 +153,12 @@ function Toggle({
 
 export function AdminProductsManager() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState("");
@@ -179,7 +175,7 @@ export function AdminProductsManager() {
       setMessage(
         error instanceof Error ? error.message : "Could not load products.",
       ),
-    );
+    ).finally(() => setLoading(false));
 
     const params = new URLSearchParams(window.location.search);
     if (params.get("new") === "1") {
@@ -195,7 +191,7 @@ export function AdminProductsManager() {
   }, []);
 
   const filtered = useMemo(() => {
-    const value = query.trim().toLowerCase();
+    const value = deferredQuery.trim().toLowerCase();
     if (!value) return products;
 
     return products.filter((product) =>
@@ -204,7 +200,7 @@ export function AdminProductsManager() {
         .toLowerCase()
         .includes(value),
     );
-  }, [products, query]);
+  }, [products, deferredQuery]);
 
   const stats = useMemo(
     () => ({
@@ -399,7 +395,12 @@ export function AdminProductsManager() {
         throw new Error(data.error || "Could not save product.");
       }
 
-      await load();
+      const saved: Product = data.product;
+      setProducts((current) => {
+        const others = current.filter((product) => product.id !== saved.id)
+          .map((product) => saved.spotlight ? { ...product, spotlight: false } : product);
+        return wasEditing ? current.map((product) => product.id === saved.id ? saved : saved.spotlight ? { ...product, spotlight: false } : product) : [saved, ...others];
+      });
       setDrawerOpen(false);
       clearDraft();
       setMessage(wasEditing ? "Product updated." : "Product created.");
@@ -426,7 +427,7 @@ export function AdminProductsManager() {
       return;
     }
 
-    await load();
+    setProducts((current) => current.filter((product) => product.id !== id));
     setMessage("Product deleted.");
   }
 
@@ -589,7 +590,12 @@ export function AdminProductsManager() {
           </div>
         </div>
 
-        {filtered.length ? (
+        {loading ? (
+          <div role="status" className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <span className="sr-only">Loading products…</span>
+            {Array.from({ length: 6 }, (_, index) => <div key={index} className="h-64 rounded-2xl bg-black/[.03]" />)}
+          </div>
+        ) : filtered.length ? (
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {filtered.map((product) => {
               const offerStatus = getProductOfferStatus(product);
@@ -806,35 +812,6 @@ export function AdminProductsManager() {
                     setDraft((current) => ({
                       ...current,
                       name: event.target.value,
-                      slug: current.slug || slugify(event.target.value),
-                    }))
-                  }
-                  required
-                  className={inputClass}
-                />,
-              )}
-              {field(
-                "SKU",
-                <input
-                  value={draft.sku}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      sku: event.target.value,
-                    }))
-                  }
-                  required
-                  className={inputClass}
-                />,
-              )}
-              {field(
-                "Slug",
-                <input
-                  value={draft.slug}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      slug: event.target.value,
                     }))
                   }
                   required
