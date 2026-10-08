@@ -1,19 +1,12 @@
 import { normalizeHeroImagePlacement, type HeroImagePlacement } from "@/lib/hero-image-placement";
 import type { HeroSlideConfig } from "@/data/hero-slides";
-import type { StoreSettings } from "@/types/commerce";
 import type { Product } from "@/types/product";
 import { getProductPrimaryImage } from "@/lib/product-images";
 
 export type ComfortSlide = { id: string; title: string; imageUrl: string; imagePosition: "left" | "center" | "right"; imagePlacement: HeroImagePlacement; button: string; href: string; product?: Product };
-export function getComfortSlides(settings: StoreSettings, slides: HeroSlideConfig[], products: Product[], now: number): ComfortSlide[] {
+export function getComfortSlides(slides: HeroSlideConfig[], products: Product[], now: number): ComfortSlide[] {
   const active = products.filter((product) => product.status === "active");
-  const candidates = active.filter((product) => getProductPrimaryImage(product));
-  const spotlight = candidates.find((product) => product.spotlight) || candidates[0];
-  const result: ComfortSlide[] = settings.homeDefaultHeroEnabled ? [{
-    id: "default", title: settings.homeDefaultHeroTitle, imageUrl: settings.homeDefaultHeroImageUrl,
-    imagePosition: settings.homeDefaultHeroImagePosition, imagePlacement: normalizeHeroImagePlacement(settings.homeDefaultHeroImagePlacement), button: settings.homeDefaultHeroButtonLabel || "Shop collection",
-    href: settings.homeDefaultHeroButtonHref || "/products", product: spotlight,
-  }] : [];
+  const result: ComfortSlide[] = [];
   for (const slide of [...slides].sort((a, b) => a.order - b.order)) {
     if (!slide.enabled) continue;
     const start = slide.startsAt ? Date.parse(slide.startsAt) : NaN;
@@ -23,7 +16,7 @@ export function getComfortSlides(settings: StoreSettings, slides: HeroSlideConfi
     // A product campaign must not expose an unpublished or deleted product.
     if (slide.kind === "product" && !linked) continue;
     result.push({ id: slide.id, title: slide.title || linked?.name || "", imageUrl: slide.imageUrl || (linked ? getProductPrimaryImage(linked) : ""),
-      imagePosition: slide.imagePosition || "center", imagePlacement: normalizeHeroImagePlacement(slide.imagePlacement), button: slide.button || "Shop collection",
+      imagePosition: "center", imagePlacement: normalizeHeroImagePlacement(slide.imagePlacement), button: slide.button || "Shop collection",
       href: slide.href || (linked ? "/products/" + linked.slug : "/products"), product: linked });
   }
   return result;

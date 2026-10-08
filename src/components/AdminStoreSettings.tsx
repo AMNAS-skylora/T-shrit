@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type { StoreSettings } from "@/types/commerce";
 
-const sectionControls = [["homeDefaultHeroEnabled", "First hero"], ["homeCatalogEnabled", "Product catalog"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
+const sectionControls = [["homeCatalogEnabled", "Product catalog"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
 
 function label(key: string) {
   return key

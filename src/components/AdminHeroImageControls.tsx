@@ -23,8 +23,8 @@ export function AdminHeroImageControls({ value, onChange, settings, products, di
     onChange(normalizeHeroImagePlacement({ ...placement, [device]: { ...placement[device], [field]: next } }));
   }
   return <fieldset disabled={disabled} className="mt-4 min-w-0 border-t border-black/10 pt-4 disabled:opacity-60">
-    <legend className="px-1 text-xs font-semibold">Image size & position</legend>
-    <p className="mt-2 text-xs leading-5 text-black/50">Set desktop and mobile separately. Negative horizontal values move left; negative vertical values move up. Save the hero to publish.</p>
+    <legend className="px-1 text-xs font-semibold">Image size</legend>
+    <p className="mt-2 text-xs leading-5 text-black/50">The image stays centered. Adjust its size for desktop and mobile, then save the hero to publish.</p>
     <div className="mt-3 flex gap-2">{(["desktop", "mobile"] as const).map((item) => <button type="button" key={item} aria-pressed={device === item} onClick={() => setDevice(item)} className={"min-h-11 rounded-lg px-4 text-xs font-semibold " + (device === item ? "bg-[#001cac] !text-white" : "border border-black/10")}>{item === "desktop" ? "Desktop" : "Mobile"}</button>)}</div>
     <div ref={container} className="mt-3 w-full overflow-hidden rounded-xl border border-black/10">
       <div className="relative mx-auto" style={{ width: frameWidth * scale, height: 580 * scale }}>
@@ -35,12 +35,10 @@ export function AdminHeroImageControls({ value, onChange, settings, products, di
     </div>
     <div className="mt-4 grid gap-4">{([
       { key: "scale", label: "Image size", min: 40, max: 180 },
-      { key: "x", label: "Horizontal position", min: -60, max: 60 },
-      { key: "y", label: "Vertical position", min: -60, max: 60 },
     ] as const).map(({ key, label, min, max }) => <label key={key} className="block text-xs font-semibold">
       <span className="flex justify-between gap-3"><span>{label}</span><span>{placement[device][key]}%</span></span>
       <input type="range" min={min} max={max} step="1" value={placement[device][key]} onChange={(event) => update(key, Number(event.target.value))} className="mt-2 min-h-11 w-full accent-[#001cac]" />
     </label>)}</div>
-    <button type="button" onClick={() => onChange({ ...placement, [device]: { scale: 100, x: 0, y: 0 } })} className="mt-3 min-h-11 rounded-lg border border-black/10 px-4 text-xs font-semibold">Reset {device} image</button>
+    <button type="button" onClick={() => onChange({ ...placement, [device]: { scale: 100 } })} className="mt-3 min-h-11 rounded-lg border border-black/10 px-4 text-xs font-semibold">Reset {device} image</button>
   </fieldset>;
 }

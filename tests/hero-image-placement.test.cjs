@@ -11,11 +11,11 @@ function load(path, dependencies = {}) {
 }
 const placement = load('src/lib/hero-image-placement.ts');
 const defaults = placement.normalizeHeroImagePlacement();
-const custom = { desktop: { scale: 125, x: -15, y: -5 }, mobile: { scale: 85, x: 10, y: 12 } };
-test('legacy images retain their framing; invalid values fall back and extreme values are bounded', () => {
-  assert.deepEqual(defaults, { desktop: { scale: 100, x: 0, y: 0 }, mobile: { scale: 100, x: 0, y: 0 } });
-  assert.deepEqual(placement.normalizeHeroImagePlacement({ desktop: { scale: Infinity, x: -999, y: 999 }, mobile: { scale: 1000, x: '30', y: null } }), { desktop: { scale: 100, x: -60, y: 60 }, mobile: { scale: 180, x: 0, y: 0 } });
-  assert.deepEqual(placement.normalizeHeroImagePlacement({ mobile: { scale: 40 } }, custom), { desktop: custom.desktop, mobile: { scale: 40, x: 10, y: 12 } });
+const custom = { desktop: { scale: 125 }, mobile: { scale: 85 } };
+test('image sizes are bounded and saved movement offsets are discarded', () => {
+  assert.deepEqual(defaults, { desktop: { scale: 100 }, mobile: { scale: 100 } });
+  assert.deepEqual(placement.normalizeHeroImagePlacement({ desktop: { scale: Infinity, x: -999, y: 999 }, mobile: { scale: 1000, x: '30', y: null } }), { desktop: { scale: 100 }, mobile: { scale: 180 } });
+  assert.deepEqual(placement.normalizeHeroImagePlacement({ mobile: { scale: 40 } }, custom), { desktop: custom.desktop, mobile: { scale: 40 } });
 });
 test('first hero placement saves and reads without unrelated settings updates resetting it', async () => {
   let row = { key: 'storefront', homeDefaultHeroImagePlacement: custom, homeDefaultHeroEnabled: true };
@@ -38,7 +38,30 @@ test('custom hero placement survives edits, supports partial device patches and 
   await heroes.updateHeroSlide(String(id), { title: 'Updated' });
   assert.deepEqual(row.imagePlacement, custom);
   const updated = await heroes.updateHeroSlide(String(id), { imagePlacement: { mobile: { scale: 110 } } });
-  assert.deepEqual(updated.imagePlacement, { desktop: custom.desktop, mobile: { scale: 110, x: 10, y: 12 } });
+  assert.deepEqual(updated.imagePlacement, { desktop: custom.desktop, mobile: { scale: 110 } });
   delete row.imagePlacement;
   assert.deepEqual((await heroes.getHeroSlide(String(id))).imagePlacement, defaults);
+});
+test('existing first hero migrates once into an editable slide and never reappears after deletion', async () => {
+  let settingsRow = { key: 'storefront', homeDefaultHeroEnabled: true, homeDefaultHeroTitle: 'Existing hero', homeDefaultHeroImageUrl: '/existing.png', homeDefaultHeroImagePlacement: { desktop: { scale: 125, x: -20 }, mobile: { scale: 85, y: 30 } } };
+  let rows = [{ _id: new ObjectId(), title: 'Other', order: 5, enabled: true }];
+  const db = { collection(name) {
+    if (name === 'siteSettings') return { findOne: async () => settingsRow, updateOne: async (_, update) => { settingsRow = { ...settingsRow, ...update.$set }; } };
+    return {
+      updateOne: async (filter, update) => { if (!rows.some(row => String(row._id) === String(filter._id))) rows.push({ _id: filter._id, ...update.$setOnInsert }); },
+      find: filter => {
+        let limit = Infinity;
+        const cursor = { sort: () => cursor, limit: count => { limit = count; return cursor; }, toArray: async () => rows.filter(row => !filter.enabled || row.enabled).sort((a,b) => a.order - b.order).slice(0, limit) };
+        return cursor;
+      },
+    };
+  } };
+  const heroes = load('src/lib/mongodb-hero.ts', { mongodb: { ObjectId }, '@/lib/mongodb': { getDb: async () => db }, '@/lib/hero-image-placement': placement });
+  const listed = await heroes.listHeroSlides({ enabledOnly: true });
+  assert.equal(listed.length, 2); assert.equal(listed[0].title, 'Existing hero'); assert.equal(listed[0].imageUrl, '/existing.png');
+  assert.deepEqual(listed[0].imagePlacement, custom); assert.equal(listed[0].imagePosition, 'center');
+  assert.equal(settingsRow.homeDefaultHeroMigrated, true); assert.equal(settingsRow.homeDefaultHeroEnabled, false);
+  assert.equal((await heroes.listHeroSlides()).length, 2);
+  rows = rows.filter(row => String(row._id) !== listed[0].id);
+  assert.equal((await heroes.listHeroSlides()).length, 1);
 });
