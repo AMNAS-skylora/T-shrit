@@ -1,0 +1,112 @@
+/* Shared form rules for the admin shell, drawers and sign-in screen. */
+[data-admin-ui] {
+  --admin-field-border: #d7dce5;
+  --admin-field-focus: #001cac;
+  --admin-field-radius: 12px;
+}
+
+[data-admin-ui] :is(form, fieldset, label) { min-width: 0; }
+[data-admin-ui] label:not([class~="flex"]):not([class~="inline-flex"]) { display: block; }
+[data-admin-ui] label {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #394150;
+  letter-spacing: normal;
+  text-transform: none;
+}
+[data-admin-ui] label > span:not(.sr-only),
+[data-admin-ui] legend {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #394150;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+[data-admin-ui] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]), select, textarea) {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--admin-field-border);
+  border-radius: var(--admin-field-radius);
+  background-color: #fff;
+  padding: 11px 14px;
+  color: #161b26;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  letter-spacing: normal;
+  text-transform: none;
+  outline: none;
+  box-shadow: none;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+[data-admin-ui] label > :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]), select, textarea) { margin-top: 8px; }
+[data-admin-ui] input[class~="pr-12"] { padding-right: 48px; }
+[data-admin-ui] textarea { min-height: 112px; resize: vertical; }
+[data-admin-ui] :is(input, textarea)::placeholder { color: #7a8290; opacity: 1; }
+[data-admin-ui] :is(input, select, textarea):focus-visible {
+  border-color: var(--admin-field-focus);
+  outline: 2px solid #001cac25;
+  outline-offset: 1px;
+  box-shadow: none;
+}
+[data-admin-ui] :is(input, select, textarea):user-invalid,
+[data-admin-ui] :is(input, select, textarea)[aria-invalid="true"] { border-color: #c53535; }
+[data-admin-ui] :is(input, select, textarea):disabled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+[data-admin-ui] input[readonly], [data-admin-ui] textarea[readonly] { background-color: #f8f9fb; }
+[data-admin-ui] :is(input[type="checkbox"], input[type="radio"]) {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: var(--admin-field-focus);
+}
+[data-admin-ui] input[type="range"] { accent-color: var(--admin-field-focus); }
+[data-admin-ui] input[type="color"] { min-width: 44px; min-height: 44px; }
+
+[data-admin-form] .grid:has(> label) { gap: 16px; }
+[data-admin-form] > section {
+  padding: 20px;
+  border-radius: 16px;
+}
+[data-admin-form] > section + section { margin-top: 20px; }
+[data-admin-form] :is(h3, legend) { font-size: 14px; font-weight: 600; }
+[data-admin-form] [role="alert"] {
+  border-radius: 10px;
+  color: #b42318;
+  font-size: 13px;
+  line-height: 1.6;
+}
+[data-admin-form] :is(p, div)[role="status"] { font-size: 13px; line-height: 1.6; }
+
+:is([data-admin-ui][data-admin-form], [data-admin-ui] [data-admin-form], [data-admin-ui] [data-admin-actions]) button:not([role="switch"]):not([aria-label]) {
+  min-height: 44px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+[data-admin-ui] :is(button, a, input[type="checkbox"], input[type="radio"], input[type="range"], input[type="color"]):focus-visible {
+  outline: 2px solid var(--admin-field-focus);
+  outline-offset: 3px;
+}
+[data-admin-ui] button:disabled { cursor: not-allowed; }
+[data-admin-actions], [data-admin-actions] > div { gap: 12px; }
+
+@media (max-width: 640px) {
+  [data-admin-ui] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]), select, textarea) { font-size: 16px; }
+  [data-admin-form] > section { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-admin-ui] :is(input, select, textarea) { transition: none; }
+}

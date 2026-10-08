@@ -108,7 +108,7 @@ export function AdminOrdersManager() {
     </div>
     {message ? <p role="status" className="mt-4 rounded-xl bg-green-50 p-3 text-xs text-green-700">{message}</p> : null}
     <AdminDrawer open={drawerOpen} title="Create manual order" description="Add customer details and a product to create an order." onClose={() => { if (!creating) setDrawerOpen(false); }}>
-      <form onSubmit={create} className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
+      <form data-admin-form onSubmit={create} className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
         <fieldset disabled={creating} className="grid gap-4 sm:grid-cols-2 disabled:opacity-60">
           <label className="text-xs font-semibold">Customer name<input value={customerName} onChange={(event) => setCustomerName(event.target.value)} autoComplete="name" required className={fieldClass} /></label>
           <label className="text-xs font-semibold">Phone<input type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="tel" required className={fieldClass} /></label>

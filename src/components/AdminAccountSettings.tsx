@@ -45,7 +45,7 @@ export function AdminAccountSettings() {
       <div><h2 className="text-lg font-semibold">Admin account</h2><p className="mt-1 text-sm text-black/55">{loading ? "Loading account…" : savedEmail || "Account unavailable"}</p></div>
       {!editing ? <button type="button" disabled={loading || !savedEmail} onClick={() => { setEditing(true); setMessage(""); }} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold disabled:opacity-50">Change email / password</button> : null}
     </div>
-    {editing ? <form onSubmit={save} className="mt-5 grid gap-4 md:grid-cols-2">
+    {editing ? <form data-admin-form onSubmit={save} className="mt-5 grid gap-4 md:grid-cols-2">
       <label className="text-xs font-semibold">Login email<input type="email" autoComplete="username" value={email} required maxLength={254} disabled={saving} onChange={(event) => setEmail(event.target.value)} className={inputClass} /></label>
       <label className="text-xs font-semibold">Current password<input type={showPassword ? "text" : "password"} autoComplete="current-password" value={currentPassword} required maxLength={256} disabled={saving} onChange={(event) => setCurrentPassword(event.target.value)} className={inputClass} /></label>
       <label className="text-xs font-semibold">New password<input type={showPassword ? "text" : "password"} autoComplete="new-password" value={newPassword} minLength={12} maxLength={256} disabled={saving} onChange={(event) => setNewPassword(event.target.value)} className={inputClass} /><span className="mt-1 block font-normal text-black/45">At least 12 characters. Leave blank to keep your password.</span></label>

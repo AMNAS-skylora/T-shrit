@@ -546,7 +546,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div data-admin-actions className="flex flex-wrap gap-2">
           <button type="button" onClick={reset} disabled={!dirty || saving || Boolean(uploading)} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold disabled:opacity-50">Reset changes</button>
           <Link
             href={"/products/" + draft.slug}
@@ -573,7 +573,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
       ) : null}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><nav aria-label="Product sections" className="flex flex-wrap gap-2">{[["details", "Details"], ["sizes", "Sizes"], ["colours", "Colours"], ["offer", "Offer"], ["homepage", "Homepage"], ["images", "Images"]].map(([id, label]) => <a key={id} href={"#product-" + id} className="inline-flex min-h-11 items-center rounded-xl border border-black/10 bg-white px-3 text-xs font-semibold hover:bg-[#eef2ff]">{label}</a>)}</nav><p aria-live="polite" className={"text-xs font-semibold " + (dirty ? "text-amber-700" : "text-black/45")}>{dirty ? "Unsaved changes" : "All changes saved"}</p></div>
-      <fieldset disabled={saving} className="mt-5 grid min-w-0 gap-4 border-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
+      <fieldset data-admin-form disabled={saving} className="mt-5 grid min-w-0 gap-4 border-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="order-2 min-w-0 space-y-4 xl:order-1">
           <section id="product-details" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
             <div className="flex items-center justify-between gap-3">
@@ -1270,7 +1270,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
         </aside>
       </fieldset>
 
-      <div className="fixed bottom-[78px] left-3 right-3 z-[90] flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-2 shadow-lg md:bottom-4 md:left-auto md:right-5">
+      <div data-admin-actions className="fixed bottom-[78px] left-3 right-3 z-[90] flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-2 shadow-lg md:bottom-4 md:left-auto md:right-5">
         <span className="hidden px-2 text-xs text-black/50 sm:block">{dirty ? "Unsaved changes" : "Saved"}</span>
         <button
           type="button"

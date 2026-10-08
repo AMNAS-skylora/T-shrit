@@ -107,7 +107,7 @@ export function AdminDrawer({
         </div>
 
         {footer ? (
-          <footer className="sticky bottom-0 z-10 border-t border-black/10 bg-white px-4 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:px-6">
+          <footer data-admin-actions className="sticky bottom-0 z-10 border-t border-black/10 bg-white px-4 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:px-6">
             {footer}
           </footer>
         ) : null}

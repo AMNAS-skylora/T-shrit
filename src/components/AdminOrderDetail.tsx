@@ -67,7 +67,7 @@ export function AdminOrderDetail({ orderId }: { orderId: string }) {
           </section>
           <section className="grid gap-5 rounded-2xl bg-white p-5 ring-1 ring-black/5 sm:grid-cols-2"><div><h2 className="text-sm font-semibold">Customer</h2><p className="mt-3 break-words text-sm font-semibold">{order.customer.name}</p><div className="mt-2 flex flex-col items-start gap-2 text-xs leading-5 text-black/55"><a href={"tel:" + order.customer.phone} className="break-all hover:underline">{order.customer.phone}</a>{order.customer.email ? <a href={"mailto:" + order.customer.email} className="break-all hover:underline">{order.customer.email}</a> : null}</div></div><div><h2 className="text-sm font-semibold">Delivery address</h2><p className="mt-3 break-words text-xs leading-6 whitespace-pre-line">{[order.customer.address, order.customer.city, order.customer.state, order.customer.pincode].filter(Boolean).join(", ")}</p></div></section>
         </div>
-        <form onSubmit={save} className="min-w-0 rounded-2xl bg-white p-5 ring-1 ring-black/5">
+        <form data-admin-form onSubmit={save} className="min-w-0 rounded-2xl bg-white p-5 ring-1 ring-black/5">
           <h2 className="text-base font-semibold">Manage order</h2>
           <fieldset disabled={saving} className="mt-4 space-y-4 disabled:opacity-60">
             <label className="block text-xs font-semibold">Order status<select value={draft.status} onChange={(event) => change({ status: event.target.value as OrderStatus })} className={inputClass}>{orderStatuses.map((status) => <option key={status} value={status}>{status.replaceAll("-", " ")}</option>)}</select></label>

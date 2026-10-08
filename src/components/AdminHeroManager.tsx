@@ -461,7 +461,7 @@ export function AdminHeroManager() {
           </div>
         }
       >
-        <form
+        <form data-admin-form
           id="hero-builder-form"
           onSubmit={save}
           className="space-y-4"
