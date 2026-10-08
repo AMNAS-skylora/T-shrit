@@ -1,4 +1,5 @@
 import "server-only";
+import { getAdminAccount, verifyAccountPassword } from "@/lib/admin-account";
 
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
@@ -39,6 +40,7 @@ export type AdminPermission = (typeof ADMIN_PERMISSIONS)[number];
 type SessionPayload = {
   email: string;
   exp: number;
+  version?: string;
 };
 
 function encode(value: string) {
@@ -59,28 +61,27 @@ function safeEqual(left: string, right: string) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-export function verifyAdminCredentials(email: string, password: string) {
-  const env = getAdminEnvironment();
-  if (!env) return false;
-  return (
-    safeEqual(email.trim().toLowerCase(), env.email) &&
-    safeEqual(password, env.password)
-  );
+export async function verifyAdminCredentials(email: string, password: string) {
+  if (typeof email !== "string" || typeof password !== "string" || password.length > 256) return null;
+  const account = await getAdminAccount();
+  if (!account || !safeEqual(email.trim().toLowerCase(), account.email) || !await verifyAccountPassword(account, password)) return null;
+  return account;
 }
 
-export function createAdminSessionToken(email: string) {
+export function createAdminSessionToken(email: string, version = "bootstrap") {
   const env = getAdminEnvironment();
   if (!env) throw new Error("Admin authentication is not configured.");
 
   const payload: SessionPayload = {
     email: email.trim().toLowerCase(),
+    version,
     exp: Math.floor(Date.now() / 1000) + SESSION_AGE_SECONDS,
   };
   const encoded = encode(JSON.stringify(payload));
   return `${encoded}.${sign(encoded, env.sessionSecret)}`;
 }
 
-export function verifyAdminSessionToken(token?: string | null) {
+export async function verifyAdminSessionToken(token?: string | null) {
   if (!token) return false;
   const env = getAdminEnvironment();
   if (!env) return false;
@@ -91,32 +92,35 @@ export function verifyAdminSessionToken(token?: string | null) {
 
   try {
     const payload = JSON.parse(decode(encoded)) as SessionPayload;
-    return (
-      payload.email === env.email &&
+    if (!Number.isFinite(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000)) return false;
+    const account = await getAdminAccount();
+    return Boolean(account && (
+      payload.email === account.email &&
+      (payload.version ?? "bootstrap") === account.version &&
       Number.isFinite(payload.exp) &&
       payload.exp > Math.floor(Date.now() / 1000)
-    );
+    ));
   } catch {
     return false;
   }
 }
 
-export function isAdminApiRequest(request: NextRequest) {
+export async function isAdminApiRequest(request: NextRequest) {
   return verifyAdminSessionToken(request.cookies.get(ADMIN_COOKIE)?.value);
 }
 
-export function hasAdminPermission(
+export async function hasAdminPermission(
   request: NextRequest,
   permission?: AdminPermission,
 ) {
-  if (!isAdminApiRequest(request)) return false;
+  if (!await isAdminApiRequest(request)) return false;
   if (!permission) return true;
   return ADMIN_PERMISSIONS.includes(permission);
 }
 
 export async function requireAdminPage() {
   const cookieStore = await cookies();
-  if (!verifyAdminSessionToken(cookieStore.get(ADMIN_COOKIE)?.value)) {
+  if (!await verifyAdminSessionToken(cookieStore.get(ADMIN_COOKIE)?.value)) {
     redirect("/admin/login");
   }
 }

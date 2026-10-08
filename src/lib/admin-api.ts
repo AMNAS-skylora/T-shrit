@@ -5,11 +5,11 @@ import {
   type AdminPermission,
 } from "@/lib/admin-auth";
 
-export function requireAdminRequest(
+export async function requireAdminRequest(
   request: NextRequest,
   permission?: AdminPermission,
 ) {
-  if (hasAdminPermission(request, permission)) return null;
+  if (await hasAdminPermission(request, permission)) return null;
 
   return NextResponse.json(
     {

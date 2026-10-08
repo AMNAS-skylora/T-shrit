@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
-  const denied = requireAdminRequest(request);
+  const denied = await requireAdminRequest(request);
   if (denied) return denied;
   try {
     const productId = request.nextUrl.searchParams.get("productId") || undefined;
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
-  const denied = requireAdminRequest(request);
+  const denied = await requireAdminRequest(request);
   if (denied) return denied;
   try {
     const body = (await request.json()) as {

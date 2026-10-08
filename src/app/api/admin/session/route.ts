@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   return NextResponse.json({
     configured: Boolean(getAdminEnvironment()),
-    authenticated: isAdminApiRequest(request),
+    authenticated: await isAdminApiRequest(request),
   });
 }
 
@@ -34,7 +34,13 @@ export async function POST(request: NextRequest) {
     | { email?: string; password?: string }
     | null;
 
-  if (!body || !verifyAdminCredentials(body.email ?? "", body.password ?? "")) {
+  let account;
+  try {
+    account = body ? await verifyAdminCredentials(body.email ?? "", body.password ?? "") : null;
+  } catch {
+    return NextResponse.json({ error: "Could not verify login. Check the database connection." }, { status: 503 });
+  }
+  if (!account) {
     return NextResponse.json(
       { error: "Invalid email or password." },
       { status: 401 },
@@ -44,7 +50,7 @@ export async function POST(request: NextRequest) {
   const response = NextResponse.json({ ok: true });
   response.cookies.set(
     ADMIN_COOKIE,
-    createAdminSessionToken(body.email ?? ""),
+    createAdminSessionToken(account.email, account.version),
     adminCookieOptions,
   );
   return response;

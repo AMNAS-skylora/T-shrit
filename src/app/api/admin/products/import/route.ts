@@ -61,7 +61,7 @@ function slugify(value: string) {
 }
 
 export async function POST(request: NextRequest) {
-  const denied = requireAdminRequest(request);
+  const denied = await requireAdminRequest(request);
   if (denied) return denied;
 
   try {

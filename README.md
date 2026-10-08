@@ -100,3 +100,7 @@ The storefront only displays products and hero slides published through MongoDB.
 Section visibility is managed in Admin → Settings → Edit settings → Section visibility. All new section switches default to On, including for existing databases. Save applies the switches to the storefront without deleting content. Footer visibility applies across public pages.
 
 Copy `.env.example` to `.env.local` for local setup, or set these variables on the hosting server. MongoDB, admin credentials and signed Cloudinary upload credentials are required for live administration. `/api/health` returns 503 until these are configured and the database responds; Admin Settings shows the connection status. Without MongoDB configuration the storefront shows an empty catalog. A configured database failure displays an error rather than sample inventory.
+
+## Admin account settings
+
+Admin → Settings has separate store contact and login account sections. Store support email and WhatsApp details are independent from the admin login email. Configure the initial login and session secret through the server environment. After MongoDB is configured, the signed-in admin can change their login email/password with their current password. Saved account credentials override the initial environment login, use salted scrypt password hashes, and invalidate older sessions. The current browser receives a fresh session. New passwords must contain at least 12 characters; leaving the new password blank changes only the email. Keep the server session secret configured.

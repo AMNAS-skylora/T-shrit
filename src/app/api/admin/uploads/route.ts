@@ -28,7 +28,7 @@ type CloudinaryUploadResult = {
 };
 
 export async function POST(request: NextRequest) {
-  const denied = requireAdminRequest(request, "uploads.create");
+  const denied = await requireAdminRequest(request, "uploads.create");
   if (denied) return denied;
 
   try {
