@@ -163,21 +163,32 @@ export function AdminProductsManager() {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [retry, setRetry] = useState(0);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [sort, setSort] = useState("default");
+  const [deletingId, setDeletingId] = useState("");
 
-  async function load() {
-    const response = await fetch("/api/admin/products", { cache: "no-store" });
+  async function load(signal?: AbortSignal) {
+    const response = await fetch("/api/admin/products", { cache: "no-store", signal });
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not load products.");
+    if (signal?.aborted) return;
     setProducts(data.products || []);
+    setLoadError("");
   }
 
   useEffect(() => {
-    void load().catch((error) =>
-      setMessage(
-        error instanceof Error ? error.message : "Could not load products.",
-      ),
-    ).finally(() => setLoading(false));
+    const controller = new AbortController();
+    setLoading(true); setLoadError("");
+    void load(controller.signal)
+      .catch((error) => { if (!controller.signal.aborted) setLoadError(error instanceof Error ? error.message : "Could not load products."); })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false); });
+    return () => controller.abort();
+  }, [retry]);
 
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("new") === "1") {
       setEditingId(null);
@@ -191,17 +202,21 @@ export function AdminProductsManager() {
     }
   }, []);
 
+  const categories = useMemo(() => Array.from(new Set(products.map((product) => product.category).filter(Boolean))).sort((a, b) => a.localeCompare(b)), [products]);
   const filtered = useMemo(() => {
     const value = deferredQuery.trim().toLowerCase();
-    if (!value) return products;
-
-    return products.filter((product) =>
-      [product.name, product.sku, product.category, product.slug]
-        .join(" ")
-        .toLowerCase()
-        .includes(value),
+    const result = products.filter((product) =>
+      (statusFilter === "all" || product.status === statusFilter) &&
+      (categoryFilter === "all" || product.category === categoryFilter) &&
+      (!value || [product.name, product.sku, product.category, product.slug].join(" ").toLowerCase().includes(value)),
     );
-  }, [products, deferredQuery]);
+    if (sort === "name") result.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "price-low") result.sort((a, b) => a.price - b.price);
+    if (sort === "price-high") result.sort((a, b) => b.price - a.price);
+    if (sort === "stock") result.sort((a, b) => a.stock - b.stock);
+    return result;
+  }, [products, deferredQuery, statusFilter, categoryFilter, sort]);
+  const clearFilters = () => { setQuery(""); setStatusFilter("all"); setCategoryFilter("all"); setSort("default"); };
 
   const stats = useMemo(
     () => ({
@@ -415,21 +430,16 @@ export function AdminProductsManager() {
   }
 
   async function remove(id: string) {
-    if (!window.confirm("Delete this product?")) return;
-
-    setMessage("");
-    const response = await fetch("/api/admin/products/" + id, {
-      method: "DELETE",
-    });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setMessage(data.error || "Could not delete product.");
-      return;
-    }
-
-    setProducts((current) => current.filter((product) => product.id !== id));
-    setMessage("Product deleted.");
+    if (deletingId || !window.confirm("Delete this product?")) return;
+    setDeletingId(id); setMessage("");
+    try {
+      const response = await fetch("/api/admin/products/" + id, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not delete product.");
+      setProducts((current) => current.filter((product) => product.id !== id));
+      setMessage("Product deleted.");
+    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not delete product."); }
+    finally { setDeletingId(""); }
   }
 
   function fileInput(
@@ -448,7 +458,7 @@ export function AdminProductsManager() {
             <p className="mt-1 text-[10px] leading-4 text-black/45">{helper}</p>
           </div>
           {uploading === field ? (
-            <span className="text-[9px] font-bold uppercase tracking-[.08em] text-[#001cac]">
+            <span className="text-[10px] font-bold uppercase tracking-[.08em] text-[#001cac]">
               Uploading…
             </span>
           ) : null}
@@ -508,7 +518,7 @@ export function AdminProductsManager() {
   );
 
   return (
-    <div>
+    <div className="min-w-0">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">
@@ -518,8 +528,7 @@ export function AdminProductsManager() {
             Products
           </h1>
           <p className="mt-2 max-w-xl text-xs leading-5 text-black/45">
-            Product data stays clean on the page. Add and edit actions open in a
-            focused panel.
+            Find products, manage details and keep your catalog up to date.
           </p>
         </div>
 
@@ -546,31 +555,28 @@ export function AdminProductsManager() {
             key={String(label)}
             className="rounded-2xl bg-white p-4 ring-1 ring-black/5"
           >
-            <p className="text-[9px] font-bold uppercase tracking-[.1em] text-black/40">
+            <p className="text-[10px] font-bold uppercase tracking-[.1em] text-black/40">
               {label}
             </p>
             <strong className="mt-2 block text-2xl tracking-[-.04em]">
-              {value}
+              {loading || loadError ? "—" : value}
             </strong>
           </article>
         ))}
       </div>
 
       {message ? (
-        <div className="mt-4 rounded-xl border border-black/5 bg-white px-4 py-3 text-xs font-medium text-black/60">
+        <div role="status" className="mt-4 rounded-xl border border-black/5 bg-white px-4 py-3 text-xs font-medium text-black/60">
           {message}
         </div>
       ) : null}
 
-      <AdminProductPlacementManager
-        products={products}
-        onChanged={load}
-      />
+      {!loading && !loadError && products.length ? <details className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-black/5"><summary className="min-h-11 cursor-pointer text-sm font-semibold leading-[44px]">Homepage placements</summary><p className="text-xs leading-5 text-black/45">Arrange featured products, animations and spotlight.</p><AdminProductPlacementManager products={products} onChanged={load} /></details> : null}
 
       <section className="mt-4 rounded-[22px] bg-white p-4 ring-1 ring-black/[.06] md:p-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-[.12em] text-[#001cac]">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-[#001cac]">
               Product catalog
             </p>
             <h2 className="mt-1 text-lg font-bold tracking-[-.025em]">
@@ -581,22 +587,21 @@ export function AdminProductsManager() {
             </p>
           </div>
 
-          <div className="w-full sm:w-auto">
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search name, SKU, category…"
-              className="min-h-11 w-full rounded-xl border border-black/10 bg-[#fafafa] px-3 text-sm outline-none transition focus:border-[#001cac] focus:bg-white focus:ring-2 focus:ring-[#001cac]/10 sm:w-72"
-            />
-          </div>
         </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_150px_170px_170px]">
+          <label className="min-w-0 text-xs font-semibold">Search products<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Name, SKU or category" className={inputClass + " min-h-11"} /></label>
+          <label className="text-xs font-semibold">Status<select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className={inputClass + " min-h-11"}><option value="all">All statuses</option><option value="active">Active</option><option value="draft">Draft</option><option value="sold-out">Sold out</option></select></label>
+          <label className="min-w-0 text-xs font-semibold">Category<select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className={inputClass + " min-h-11"}><option value="all">All categories</option>{categories.map((category) => <option key={category} value={category}>{category}</option>)}</select></label>
+          <label className="text-xs font-semibold">Sort by<select value={sort} onChange={(event) => setSort(event.target.value)} className={inputClass + " min-h-11"}><option value="default">Default order</option><option value="name">Name A–Z</option><option value="price-low">Price low to high</option><option value="price-high">Price high to low</option><option value="stock">Lowest stock first</option></select></label>
+        </div>
+        {query || statusFilter !== "all" || categoryFilter !== "all" || sort !== "default" ? <button type="button" onClick={clearFilters} className="mt-2 min-h-11 text-xs font-semibold !text-[#001cac]">Clear filters</button> : null}
 
         {loading ? (
           <div role="status" className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <span className="sr-only">Loading products…</span>
             {Array.from({ length: 6 }, (_, index) => <div key={index} className="h-64 rounded-2xl bg-black/[.03]" />)}
           </div>
-        ) : filtered.length ? (
+        ) : loadError ? <div role="alert" className="mt-5 rounded-xl border border-red-100 p-5"><p className="text-sm text-red-600">{loadError}</p><button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button></div> : filtered.length ? (
           <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             {filtered.map((product) => {
               const offerStatus = getProductOfferStatus(product);
@@ -605,11 +610,11 @@ export function AdminProductsManager() {
               return (
                 <article
                   key={product.id}
-                  className="group overflow-hidden rounded-[20px] border border-black/[.07] bg-white transition duration-200 hover:-translate-y-0.5 hover:border-black/[.12] hover:shadow-[0_14px_36px_rgba(0,0,0,.07)]"
+                  className="group min-w-0 overflow-hidden rounded-[20px] border border-black/[.07] bg-white transition duration-200 hover:-translate-y-0.5 hover:border-black/[.12] hover:shadow-[0_14px_36px_rgba(0,0,0,.07)]"
                 >
                   <Link
                     href={"/admin/products/" + product.id}
-                    className="relative block aspect-[4/4.6] overflow-hidden bg-[#f4f4f5]"
+                    className="relative block aspect-[4/3] overflow-hidden bg-[#f4f4f5]"
                   >
                     {image ? (
                       <Image
@@ -624,7 +629,7 @@ export function AdminProductsManager() {
                         <span className="grid h-11 w-11 place-items-center rounded-full bg-black/[.04] text-lg">
                           ◻
                         </span>
-                        <span className="text-[9px] font-bold uppercase tracking-[.1em]">
+                        <span className="text-[10px] font-bold uppercase tracking-[.1em]">
                           No image
                         </span>
                       </div>
@@ -633,7 +638,7 @@ export function AdminProductsManager() {
                     <div className="absolute left-3 top-3 flex max-w-[calc(100%-24px)] flex-wrap gap-1.5">
                       <span
                         className={
-                          "rounded-full px-2.5 py-1 text-[8px] font-bold uppercase backdrop-blur-md " +
+                          "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase  " +
                           (product.status === "active"
                             ? "bg-white/90 text-emerald-700"
                             : product.status === "sold-out"
@@ -645,19 +650,19 @@ export function AdminProductsManager() {
                       </span>
 
                       {offerStatus !== "off" ? (
-                        <span className="rounded-full bg-[#001cac]/90 px-2.5 py-1 text-[8px] font-bold uppercase text-white backdrop-blur-md">
+                        <span className="rounded-full bg-[#001cac]/90 px-2.5 py-1 text-[10px] font-bold uppercase text-white ">
                           Offer {offerStatus}
                         </span>
                       ) : null}
 
                       {product.featured ? (
-                        <span className="rounded-full bg-black/75 px-2.5 py-1 text-[8px] font-bold uppercase text-white backdrop-blur-md">
+                        <span className="rounded-full bg-black/75 px-2.5 py-1 text-[10px] font-bold uppercase text-white ">
                           Featured
                         </span>
                       ) : null}
                     </div>
 
-                    <div className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-[8px] font-bold uppercase text-black/55 backdrop-blur-md">
+                    <div className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-bold uppercase text-black/55 ">
                       Stock {product.stock}
                     </div>
                   </Link>
@@ -667,11 +672,11 @@ export function AdminProductsManager() {
                       <div className="min-w-0">
                         <Link
                           href={"/admin/products/" + product.id}
-                          className="block truncate text-[13px] font-bold tracking-[-.02em] transition hover:text-[#001cac]"
+                          className="block break-words text-sm font-bold tracking-[-.02em] transition hover:text-[#001cac]"
                         >
                           {product.name}
                         </Link>
-                        <p className="mt-1 truncate text-[9px] uppercase tracking-[.06em] text-black/35">
+                        <p className="mt-1 truncate text-[10px] uppercase tracking-[.06em] text-black/35">
                           {product.category || "Uncategorized"} · {product.sku}
                         </p>
                       </div>
@@ -679,7 +684,7 @@ export function AdminProductsManager() {
                       {product.featuredAnimationEnabled ? (
                         <span
                           title="Product animation enabled"
-                          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#001cac]/[.07] text-[9px] font-black text-[#001cac]"
+                          className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#001cac]/[.07] text-[10px] font-black text-[#001cac]"
                         >
                           A
                         </span>
@@ -688,29 +693,29 @@ export function AdminProductsManager() {
 
                     <div className="mt-4 grid grid-cols-3 gap-2">
                       <div className="rounded-xl bg-[#f7f7f8] p-2.5">
-                        <span className="block text-[7px] font-bold uppercase tracking-[.08em] text-black/30">
+                        <span className="block text-[10px] font-bold uppercase tracking-[.08em] text-black/30">
                           Price
                         </span>
-                        <strong className="mt-1 block truncate text-[11px]">
+                        <strong className="mt-1 block break-words text-xs">
                           ₹{product.price.toLocaleString("en-IN")}
                         </strong>
                       </div>
                       <div className="rounded-xl bg-[#f7f7f8] p-2.5">
-                        <span className="block text-[7px] font-bold uppercase tracking-[.08em] text-black/30">
+                        <span className="block text-[10px] font-bold uppercase tracking-[.08em] text-black/30">
                           Cost
                         </span>
-                        <strong className="mt-1 block truncate text-[11px]">
+                        <strong className="mt-1 block break-words text-xs">
                           {product.costPrice !== undefined
                             ? "₹" + product.costPrice.toLocaleString("en-IN")
                             : "—"}
                         </strong>
                       </div>
                       <div className="rounded-xl bg-[#f7f7f8] p-2.5">
-                        <span className="block text-[7px] font-bold uppercase tracking-[.08em] text-black/30">
-                          Order
+                        <span className="block text-[10px] font-bold uppercase tracking-[.08em] text-black/30">
+                          Stock
                         </span>
-                        <strong className="mt-1 block truncate text-[11px]">
-                          {product.sortOrder ?? "—"}
+                        <strong className="mt-1 block break-words text-xs">
+                          {product.stock}
                         </strong>
                       </div>
                     </div>
@@ -734,10 +739,11 @@ export function AdminProductsManager() {
                       <button
                         type="button"
                         onClick={() => void remove(product.id)}
+                        disabled={Boolean(deletingId)}
                         aria-label={"Delete " + product.name}
-                        className="min-h-11 rounded-xl border border-red-100 bg-red-50 px-3 text-[10px] font-bold text-red-600 transition hover:bg-red-100"
+                        className="min-h-11 rounded-xl border border-red-100 bg-red-50 px-3 text-[10px] font-bold !text-red-600 transition hover:bg-red-100 disabled:opacity-50"
                       >
-                        Delete
+                        {deletingId === product.id ? "Deleting…" : "Delete"}
                       </button>
                     </div>
                   </div>
@@ -753,12 +759,12 @@ export function AdminProductsManager() {
             <p className="mt-3 text-xs font-bold">
               {products.length ? "No matching products" : "No products yet"}
             </p>
-            <p className="mt-1 max-w-xs text-[9px] leading-4 text-black/35">
+            <p className="mt-1 max-w-xs text-[10px] leading-4 text-black/35">
               {products.length
                 ? "Try another product name, SKU or category."
                 : "Create your first product and its image will appear here."}
             </p>
-            {!products.length ? (
+            {products.length ? <button type="button" onClick={clearFilters} className="mt-4 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold !text-[#001cac]">Clear filters</button> : (
               <button
                 type="button"
                 onClick={openCreate}
@@ -766,7 +772,7 @@ export function AdminProductsManager() {
               >
                 + Add product
               </button>
-            ) : null}
+            )}
           </div>
         )}
       </section>
