@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import type { Product } from "@/types/product";
 
 // Wake exactly at an offer boundary, rather than waiting for the next poll.
-export function useOfferClock(product?: Partial<Product>) {
+export function useOfferClock(product?: Partial<Product>, tickCountdown = true) {
   const [now, setNow] = useState(() => Date.now());
   const start = product?.offerEnabled ? product.offerStartsAt : undefined;
   const end = product?.offerEnabled ? product.offerEndsAt : undefined;
-  const countdown = Boolean(product?.offerCountdown);
+  const countdown = tickCountdown && Boolean(product?.offerCountdown);
   const saleEnd = product?.saleEndsAt;
   useEffect(() => {
     if (!start && !end && !saleEnd) return;
@@ -19,7 +19,7 @@ export function useOfferClock(product?: Partial<Product>) {
       setNow(current);
       if (document.hidden) return;
       const future = [start, end, saleEnd].map((date) => date ? Date.parse(date) : NaN).filter((time) => Number.isFinite(time) && time > current);
-      const next = Math.min(current + (countdown || saleEnd ? 1000 : 60000), ...future);
+      const next = Math.min(current + (tickCountdown && (countdown || saleEnd) ? 1000 : 60000), ...future);
       timer = window.setTimeout(sync, Math.max(16, next - current));
     };
     sync();
@@ -30,6 +30,6 @@ export function useOfferClock(product?: Partial<Product>) {
       document.removeEventListener("visibilitychange", sync);
       window.removeEventListener("focus", sync);
     };
-  }, [start, end, saleEnd, countdown]);
+  }, [start, end, saleEnd, countdown, tickCountdown]);
   return now;
 }

@@ -145,7 +145,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     [draft],
   );
 
-  const offerNow = useOfferClock(draft ?? undefined);
+  const offerNow = useOfferClock(draft ?? undefined, false);
   const offerStatus = useMemo(
     () => (draft ? getProductOfferStatus(draft, offerNow) : "off"),
     [draft, offerNow],
@@ -585,22 +585,6 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                 <input
                   value={draft.name}
                   onChange={(event) => patch({ name: event.target.value })}
-                  className={inputClass}
-                />
-              </label>
-              <label>
-                <span className={labelClass}>SKU</span>
-                <input
-                  value={draft.sku}
-                  onChange={(event) => patch({ sku: event.target.value })}
-                  className={inputClass}
-                />
-              </label>
-              <label>
-                <span className={labelClass}>Slug</span>
-                <input
-                  value={draft.slug}
-                  onChange={(event) => patch({ slug: event.target.value })}
                   className={inputClass}
                 />
               </label>

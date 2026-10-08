@@ -17,7 +17,6 @@ type ImportResult = {
 const headers = [
   "sku",
   "name",
-  "slug",
   "category",
   "price",
   "compare_at_price",
