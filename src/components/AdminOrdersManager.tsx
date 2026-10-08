@@ -1,22 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { AdminDrawer } from "@/components/AdminDrawer";
-import type { Order, OrderStatus } from "@/types/admin";
+import type { Order } from "@/types/admin";
+import { orderStatuses as statuses } from "@/lib/order-statuses";
 import type { Product } from "@/types/product";
-
-const statuses: OrderStatus[] = [
-  "new",
-  "confirmed",
-  "processing",
-  "packed",
-  "shipped",
-  "out-for-delivery",
-  "delivered",
-  "cancelled",
-  "returned",
-  "refunded",
-];
 
 export function AdminOrdersManager() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -170,7 +159,7 @@ export function AdminOrdersManager() {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-t border-black/5 align-top">
-                  <td className="py-3 font-semibold">{order.orderNumber}</td>
+                  <td className="py-3 font-semibold"><Link href={"/admin/orders/" + order.id} className="!text-[#001cac] hover:underline">{order.orderNumber}</Link><Link href={"/admin/orders/" + order.id} className="mt-2 inline-flex min-h-11 items-center rounded-lg border border-black/10 px-3 text-[10px] !text-[#001cac]">View details →</Link></td>
                   <td>
                     <strong>{order.customer.name}</strong>
                     <div className="mt-1 text-black/45">{order.customer.phone}</div>
