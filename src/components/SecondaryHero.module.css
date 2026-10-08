@@ -4,7 +4,7 @@
 .copy h2 { margin: 0; font-family: Impact, "Arial Narrow", Arial, sans-serif; font-size: clamp(34px, 6.5cqw, 88px); font-weight: 900; line-height: .98; letter-spacing: -.035em; text-transform: uppercase; white-space: pre-line; overflow-wrap: anywhere; }
 .description { max-width: 370px; margin: 18px 0 0; font-size: 13px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
-.actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; padding: 12px 18px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 8px; min-width: 0; max-width: 100%; padding: 12px 18px; text-align: center; overflow-wrap: anywhere; border-radius: 999px; font-size: 11px; font-weight: 700; }
 .primary { background: #001cac; color: #fff !important; }
 .secondary { border: 1px solid #10130f30; background: #ffffffb3; color: #10130f !important; }
 .media { position: absolute; z-index: 0; top: 0; bottom: 0; right: 0; width: 52%; background: #edf0eb; overflow: hidden; clip-path: polygon(14% 0,100% 0,100% 100%,0 100%); }
@@ -18,16 +18,18 @@
 .ticker > span { color: #c6ff36; font-size: 16px; }
 .empty { position: absolute; top: 40%; left: 20%; right: 12%; font-size: 12px; color: #5c6455; text-align: center; }
 @container (max-width: 600px) {
-  .copy { width: 100%; padding: 22px 22px 285px; }
+  .campaign { display: flex; flex-direction: column; }
+  .copy { order: 1; width: 100%; padding: 22px; }
   .brand { margin-bottom: 20px; font-size: 14px; }
   .copy h2 { max-width: 100%; font-size: clamp(30px,11cqw,60px); }
   .description { font-size: 12px; margin-top: 12px; }
   .actions { margin-top: 16px; gap: 8px; }
-  .actions a { font-size: 10px; padding: 10px 14px; }
-  .media { top: auto; bottom: 42px; height: 235px; width: 100%; clip-path: none; }
+  .actions a { flex: 1 1 120px; font-size: 12px; padding: 10px 14px; }
+  .media { position: relative; order: 2; flex: 1 0 235px; min-height: 235px; top: auto; bottom: auto; height: 235px; width: 100%; clip-path: none; }
   .media > img { transform: scale(var(--campaign-mobile-scale,1)); }
   .product { top: auto; bottom: 185px; left: 22px; width: 70px; padding: 6px; border-radius: 12px; }
   .arc { width: 50px; height: 50px; left: auto; right: 25px; bottom: 65px; border-width: 8px; }
-  .ticker { gap: 10px; padding: 8px 12px; }
-  .ticker p { font-size: 11px; }
+  .ticker { position: relative; order: 3; gap: 10px; padding: 10px 12px; }
+  .ticker p { min-width: 0; font-size: 12px; }
+  .arc { display: none; }
 }

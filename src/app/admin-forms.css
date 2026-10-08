@@ -110,3 +110,7 @@
 @media (prefers-reduced-motion: reduce) {
   [data-admin-ui] :is(input, select, textarea) { transition: none; }
 }
+
+@media (max-width: 640px) {
+  [data-admin-drawer] { top: 0; bottom: auto; height: 100dvh; max-height: 100dvh; padding-top: env(safe-area-inset-top); }
+}

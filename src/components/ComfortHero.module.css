@@ -6,37 +6,39 @@
 .productName { color: #fff; background: #191919; padding: 8px; font-size: 11px; font-weight: 700; overflow-wrap: anywhere; }
 .product img { width: 100%; height: 130px; object-fit: contain; }
 .productPrice { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; font-size: 10px; }
-.actions { position: absolute; z-index: 4; bottom: 70px; left: 5%; right: 5%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; padding: 12px 20px; border-radius: 999px; font-size: 11px; font-weight: 700; }
+.actions { position: absolute; z-index: 4; bottom: 24px; left: 5%; right: 5%; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.actions a { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; min-width: 0; max-width: 100%; padding: 12px 20px; text-align: center; overflow-wrap: anywhere; border-radius: 999px; font-size: 11px; font-weight: 700; }
 .primary { background: #001cac; color: #fff !important; }
 .secondary { background: #ffffffd9; border: 1px solid #16161330; color: #161613 !important; }
 .empty { position: absolute; top: 42%; left: 28%; width: 35%; font-size: 12px; line-height: 1.6; text-align: center; color: #666; }
 @container (max-width: 600px) {
   .title { font-size: 15cqw; }
   .model { left: 11%; width: 78%; height: 70%; transform: scale(var(--image-mobile-scale, 1)); }
-  .product { right: 5%; top: 43%; width: 27%; padding: 6px; }
-  .product img { height: 95px; }
-  .productName { font-size: 10px; padding: 5px; }
-  .productPrice { font-size: 9px; }
+  .product { right: 5%; top: 40%; width: 30%; padding: 6px; }
+  .product img { height: 80px; }
+  .productName { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: 11px; line-height: 1.4; padding: 5px; }
+  .productPrice { font-size: 11px; }
+  .actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+  .actions a { padding: 10px 12px; font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { .product { transition: none; } }
 
 .slider { position: relative; overflow: hidden; background: #fff; color: #161613; touch-action: pan-y; }
 .track { display: flex; align-items: stretch; transition: transform .65s cubic-bezier(.22,.61,.36,1); }
 .slide { flex: 0 0 100%; width: 100%; min-width: 0; }
-.controls { position: absolute; z-index: 5; left: 0; right: 0; bottom: 12px; display: flex; justify-content: center; align-items: center; gap: 6px; }
-.controls button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; padding: 0 10px; border: 0; background: #fff; color: #161613; border-radius: 50px; font-size: 12px; cursor: pointer; }
+.controls { position: relative; z-index: 5; display: flex; flex-wrap: nowrap; justify-content: center; align-items: center; gap: 4px; min-height: 68px; padding: 12px 8px; }
+.controls button { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; flex-shrink: 0; padding: 0 8px; border: 0; background: #fff; color: #161613; border-radius: 50px; font-size: 11px; cursor: pointer; }
 .controls button:focus-visible { outline: 2px solid #001cac; outline-offset: 2px; }
-.dots { display: flex; flex-wrap: wrap; justify-content: center; }
-.dots button { min-width: 32px; padding: 0 6px; }
+.dots { display: flex; flex-wrap: nowrap; justify-content: center; }
+.dots button { min-width: 44px; padding: 0 6px; }
 .dots span { width: 6px; height: 6px; border-radius: 50%; background: #aaa; }
 .dots button[aria-current="true"] span { width: 18px; border-radius: 5px; background: #001cac; }
 .noSlides { margin: 0; padding: 32px; font-size: 13px; }
 @media (prefers-reduced-motion: reduce) { .track { transition: none; } }
 
-.controls select { max-width: 130px; min-height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 8px; background: #fff; color: #161613; font-size: 12px; }
+.controls select { width: auto; min-width: 64px; max-width: 110px; min-height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 8px; background: #fff; color: #161613; font-size: 12px; }
 
-.secondarySlider { padding: 32px 5% 66px; background: #111; }
-@media (max-width: 600px) { .secondarySlider { padding: 20px 12px 66px; } }
+.secondarySlider { padding: 32px 5% 12px; background: #111; }
+@media (max-width: 600px) { .secondarySlider { padding: 20px 12px 8px; } }
 
 .backgroundSlider { background: #080808; }

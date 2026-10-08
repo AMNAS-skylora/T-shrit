@@ -77,9 +77,10 @@ export function AdminDrawer({
         aria-modal="true"
         aria-label={title}
         data-admin-ui
+        data-admin-drawer
         className="absolute inset-y-0 right-0 flex w-full flex-col bg-[#f7f7f8] shadow-2xl sm:max-w-[720px]"
       >
-        <header className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-black/10 bg-white px-4 py-4 sm:px-6">
+        <header className="sticky top-0 z-10 shrink-0 flex items-start justify-between gap-4 border-b border-black/10 bg-white px-4 py-4 sm:px-6">
           <div className="min-w-0">
             <p className="text-[9px] font-bold uppercase tracking-[.16em] text-[#001cac]">
               KLEID.IN ADMIN
@@ -102,12 +103,12 @@ export function AdminDrawer({
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overscroll-contain overflow-y-auto px-4 py-5 sm:px-6">
+        <div className="min-h-0 flex-1 overscroll-contain overflow-x-hidden overflow-y-auto px-4 py-5 sm:px-6">
           {children}
         </div>
 
         {footer ? (
-          <footer data-admin-actions className="sticky bottom-0 z-10 border-t border-black/10 bg-white px-4 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:px-6">
+          <footer data-admin-actions className="sticky bottom-0 z-10 shrink-0 border-t border-black/10 bg-white px-4 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:px-6">
             {footer}
           </footer>
         ) : null}
