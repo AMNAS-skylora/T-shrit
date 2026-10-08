@@ -35,3 +35,6 @@
 @media (prefers-reduced-motion: reduce) { .track { transition: none; } }
 
 .controls select { max-width: 130px; min-height: 44px; border: 1px solid #ddd; border-radius: 8px; padding: 0 8px; background: #fff; color: #161613; font-size: 12px; }
+
+.secondarySlider { padding: 32px 5% 66px; background: #111; }
+@media (max-width: 600px) { .secondarySlider { padding: 20px 12px 66px; } }

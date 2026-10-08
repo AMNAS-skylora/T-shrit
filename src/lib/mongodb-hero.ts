@@ -44,6 +44,8 @@ function toSlide(doc: Document): HeroSlideConfig {
   return {
     id: String(doc._id),
     kind: kind(doc.kind),
+    section: doc.section === "secondary" ? "secondary" : "primary",
+    tickerText: text(doc.tickerText),
     productId: text(doc.productId) || null,
     label: text(doc.label),
     title: text(doc.title),
@@ -66,6 +68,8 @@ function toSlide(doc: Document): HeroSlideConfig {
 
 function fields(input: Record<string, unknown>, current?: HeroSlideConfig) {
   return {
+    section: input.section !== undefined ? (input.section === "secondary" ? "secondary" : "primary") : current?.section ?? "primary",
+    tickerText: text(input.tickerText, current?.tickerText),
     kind: input.kind !== undefined ? kind(input.kind) : current?.kind ?? "custom",
     productId: text(input.productId, current?.productId ?? "") || null,
     label: text(input.label, current?.label),
