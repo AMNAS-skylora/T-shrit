@@ -5,6 +5,7 @@ export type AboutPrinciple = {
 
 export type StoreSettings = {
   whatsappNumber: string;
+  phoneNumber: string;
   instagramUrl: string;
   facebookUrl: string;
   supportEmail: string;

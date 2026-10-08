@@ -3,6 +3,7 @@ import { publicEnv } from "@/lib/public-env";
 
 export const localStoreSettings: StoreSettings = {
   whatsappNumber: publicEnv.whatsappNumber,
+  phoneNumber: publicEnv.phoneNumber,
   instagramUrl: publicEnv.instagramUrl,
   facebookUrl: publicEnv.facebookUrl,
   supportEmail: publicEnv.supportEmail,

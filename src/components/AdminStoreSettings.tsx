@@ -21,7 +21,6 @@ export function AdminStoreSettings() {
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [contactOpen, setContactOpen] = useState(false);
 
   async function loadSettings() {
     const response = await fetch("/api/admin/settings", { cache: "no-store" });
@@ -102,7 +101,6 @@ export function AdminStoreSettings() {
         JSON.stringify(data.settings.aboutPrinciples || [], null, 2),
       );
       setDrawerOpen(false);
-      setContactOpen(false);
       setMessage("Store settings saved.");
     } catch (error) {
       setMessage(
@@ -124,7 +122,7 @@ export function AdminStoreSettings() {
   const entries = Object.entries(settings).filter(
     ([key]) =>
       !sectionControls.some(([field]) => field === key) &&
-      key !== "supportEmail" && key !== "whatsappNumber" &&
+      !(["supportEmail", "whatsappNumber", "phoneNumber", "instagramUrl", "facebookUrl"].includes(key)) &&
       key !== "aboutPrinciples" &&
       key !== "homeShowcaseProductUrls" &&
       !key.startsWith("homeDefaultHero") &&
@@ -159,19 +157,28 @@ export function AdminStoreSettings() {
       </div>
 
       <section className="mt-6 rounded-2xl bg-white p-5 ring-1 ring-black/5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold">Store contact details</h2>
-          {!contactOpen ? <button type="button" onClick={() => { setContactOpen(true); setMessage(""); }} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Edit contact details</button> : null}
-        </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <label className="text-xs font-semibold">Support email
-            {contactOpen ? <input type="email" value={settings.supportEmail} onChange={(event) => update("supportEmail", event.target.value)} className={controlClass} /> : <span className="mt-2 block break-all text-sm font-normal text-black/60">{settings.supportEmail || "Not configured"}</span>}
-          </label>
-          <label className="text-xs font-semibold">WhatsApp number
-            {contactOpen ? <><input type="tel" value={settings.whatsappNumber} onChange={(event) => update("whatsappNumber", event.target.value)} className={controlClass} /><span className="mt-1 block font-normal text-black/45">Include the country code.</span></> : <span className="mt-2 block break-all text-sm font-normal text-black/60">{settings.whatsappNumber || "Not configured"}</span>}
-          </label>
-        </div>
-        {contactOpen ? <div className="mt-4 flex gap-2"><button type="button" disabled={saving} onClick={() => { setContactOpen(false); void closeDrawer(); }} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Cancel</button><button type="button" disabled={saving} onClick={() => void save()} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold text-white disabled:opacity-50">{saving ? "Saving…" : "Save contact details"}</button></div> : null}
+        <h2 className="text-lg font-semibold">Store contact details</h2>
+        <p className="mt-1 text-xs text-black/50">Click any field to edit, then save your changes.</p>
+        <form onSubmit={(event) => { event.preventDefault(); void save(); }}>
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            <label className="text-xs font-semibold">Email
+              <input type="email" autoComplete="email" value={settings.supportEmail} disabled={saving} onChange={(event) => update("supportEmail", event.target.value)} className={controlClass} placeholder="Your store email" />
+            </label>
+            <label className="text-xs font-semibold">Phone number
+              <input type="tel" autoComplete="tel" value={settings.phoneNumber} disabled={saving} onChange={(event) => update("phoneNumber", event.target.value)} className={controlClass} placeholder="Include the country code" />
+            </label>
+            <label className="text-xs font-semibold">WhatsApp number
+              <input type="tel" value={settings.whatsappNumber} disabled={saving} onChange={(event) => update("whatsappNumber", event.target.value)} className={controlClass} placeholder="Include the country code" />
+            </label>
+            <label className="text-xs font-semibold">Instagram URL
+              <input type="url" value={settings.instagramUrl} disabled={saving} onChange={(event) => update("instagramUrl", event.target.value)} className={controlClass} placeholder="https://www.instagram.com/yourname/" />
+            </label>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button type="button" disabled={saving} onClick={() => void closeDrawer()} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Reset changes</button>
+            <button type="submit" disabled={saving} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold text-white disabled:opacity-50">{saving ? "Saving…" : "Save contact details"}</button>
+          </div>
+        </form>
       </section>
 
       {message ? (
