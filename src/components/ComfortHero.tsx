@@ -9,7 +9,6 @@ export function ComfortHero({ settings, products, preview = false }: { settings:
   const product = candidates.find((item) => item.spotlight) || candidates[0];
   const Title = preview ? "h3" : "h1";
   return <section aria-label="First hero" className={styles.hero}>
-    <div className={styles.labels}><span>{settings.homeDefaultHeroLabel}</span><span>{settings.homeDefaultHeroBrand}</span><span>{product?.category}</span></div>
     <Title className={styles.title}>{settings.homeDefaultHeroTitle}</Title>
     {settings.homeDefaultHeroImageUrl ? <img src={settings.homeDefaultHeroImageUrl} alt="Featured collection" className={styles.model} style={{ objectPosition: settings.homeDefaultHeroImagePosition + " bottom" }} /> : preview ? <p className={styles.empty}>Upload your model image in First hero settings. A transparent cutout works best.</p> : null}
     <p className={styles.subtitle}>{settings.homeDefaultHeroSubtitle}</p>
