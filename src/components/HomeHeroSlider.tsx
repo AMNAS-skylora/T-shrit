@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { StoreSettings } from "@/types/commerce";
 import type { Product } from "@/types/product";
-import type { HeroSlideConfig } from "@/data/hero-slides";
+import type { HeroSection, HeroSlideConfig } from "@/data/hero-slides";
 import { getComfortSlides } from "@/lib/comfort-slides";
+import { SecondaryHero } from "@/components/SecondaryHero";
 import { ComfortHero } from "@/components/ComfortHero";
 import styles from "./ComfortHero.module.css";
 
-export function HomeHeroSlider({ settings, products, slides, initialNow, preview = false }: { settings: StoreSettings; products: Product[]; slides: HeroSlideConfig[]; initialNow: number; preview?: boolean }) {
+export function HomeHeroSlider({ settings, products, slides, initialNow, preview = false, section = "primary" }: { settings: StoreSettings; products: Product[]; slides: HeroSlideConfig[]; initialNow: number; preview?: boolean; section?: HeroSection }) {
   const [now, setNow] = useState(initialNow);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
@@ -18,7 +19,7 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   const [reducedMotion, setReducedMotion] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const touchStart = useRef<number | null>(null);
-  const active = useMemo(() => getComfortSlides(slides, products, now), [slides, products, now]);
+  const active = useMemo(() => getComfortSlides(slides, products, now, section), [slides, products, now, section]);
   const selected = Math.max(0, active.findIndex((slide) => slide.id === selectedId));
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
@@ -42,14 +43,14 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   function move(direction: number) {
     if (active.length > 1) setSelectedId(active[(selected + direction + active.length) % active.length].id);
   }
-  return <div ref={root} data-motion-owned className={styles.slider} role="region" aria-roledescription="carousel" aria-label="Featured collections"
+  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : ""}`} role="region" aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : "Featured collections"}
     onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
     onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onTouchStart={(event) => { touchStart.current = event.touches[0].clientX; }}
     onTouchEnd={(event) => { if (touchStart.current !== null) { const distance = event.changedTouches[0].clientX - touchStart.current; if (Math.abs(distance) > 50) move(distance < 0 ? 1 : -1); touchStart.current = null; } }}>
     {active.length ? <div className={styles.track} style={{ transform: `translateX(-${selected * 100}%)` }} aria-live={automatic ? "off" : "polite"}>
       {active.map((slide, index) => <div key={slide.id} className={styles.slide} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${active.length}`} aria-hidden={index !== selected} inert={index !== selected}>
-        <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />
+        {section === "secondary" ? <SecondaryHero slide={slide} preview={preview} /> : <ComfortHero settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />}
       </div>)}
     </div> : preview ? <p className={styles.noSlides}>Add and enable a slide to preview the slider.</p> : null}
     {active.length > 1 ? <div className={styles.controls}>

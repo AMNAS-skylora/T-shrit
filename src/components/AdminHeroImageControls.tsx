@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { SecondaryHero } from "@/components/SecondaryHero";
+import type { HeroSection } from "@/data/hero-slides";
 import { ComfortHero } from "@/components/ComfortHero";
 import { normalizeHeroImagePlacement, type HeroImagePlacement, type ImagePlacement } from "@/lib/hero-image-placement";
 import type { StoreSettings } from "@/types/commerce";
 import type { Product } from "@/types/product";
 
-export function AdminHeroImageControls({ value, onChange, settings, products, disabled = false }: { value?: HeroImagePlacement; onChange: (value: HeroImagePlacement) => void; settings: StoreSettings; products: Product[]; disabled?: boolean }) {
+export function AdminHeroImageControls({ value, onChange, settings, products, disabled = false, section = "primary", subtitle = "", tickerText = "" }: { value?: HeroImagePlacement; onChange: (value: HeroImagePlacement) => void; settings: StoreSettings; products: Product[]; disabled?: boolean; section?: HeroSection; subtitle?: string; tickerText?: string }) {
   const [device, setDevice] = useState<"desktop" | "mobile">("desktop");
   const [width, setWidth] = useState(500);
+  const [frameHeight, setFrameHeight] = useState(580);
+  const previewFrame = useRef<HTMLDivElement>(null);
   const container = useRef<HTMLDivElement>(null);
   const placement = normalizeHeroImagePlacement(value);
   const frameWidth = device === "desktop" ? 1280 : 375;
@@ -17,7 +21,9 @@ export function AdminHeroImageControls({ value, onChange, settings, products, di
     if (!container.current) return;
     const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
     observer.observe(container.current);
-    return () => observer.disconnect();
+    const heightObserver = new ResizeObserver(([entry]) => setFrameHeight(entry.contentRect.height));
+    if (previewFrame.current) heightObserver.observe(previewFrame.current);
+    return () => { observer.disconnect(); heightObserver.disconnect(); };
   }, []);
   function update(field: keyof ImagePlacement, next: number) {
     onChange(normalizeHeroImagePlacement({ ...placement, [device]: { ...placement[device], [field]: next } }));
@@ -27,9 +33,9 @@ export function AdminHeroImageControls({ value, onChange, settings, products, di
     <p className="mt-2 text-xs leading-5 text-black/50">The image stays centered. Adjust its size for desktop and mobile, then save the hero to publish.</p>
     <div className="mt-3 flex gap-2">{(["desktop", "mobile"] as const).map((item) => <button type="button" key={item} aria-pressed={device === item} onClick={() => setDevice(item)} className={"min-h-11 rounded-lg px-4 text-xs font-semibold " + (device === item ? "bg-[#001cac] !text-white" : "border border-black/10")}>{item === "desktop" ? "Desktop" : "Mobile"}</button>)}</div>
     <div ref={container} className="mt-3 w-full overflow-hidden rounded-xl border border-black/10">
-      <div className="relative mx-auto" style={{ width: frameWidth * scale, height: 580 * scale }}>
-        <div className="absolute left-0 top-0" style={{ width: frameWidth, transform: `scale(${scale})`, transformOrigin: "top left" }}>
-          <div inert><ComfortHero settings={{ ...settings, homeDefaultHeroImagePlacement: placement }} products={products} preview /></div>
+      <div className="relative mx-auto" style={{ width: frameWidth * scale, height: frameHeight * scale }}>
+        <div ref={previewFrame} className="absolute left-0 top-0" style={{ width: frameWidth, transform: `scale(${scale})`, transformOrigin: "top left" }}>
+          <div inert>{section === "secondary" ? <SecondaryHero slide={{ id: "preview", title: settings.homeDefaultHeroTitle, subtitle, tickerText, imageUrl: settings.homeDefaultHeroImageUrl, imagePosition: "center", imagePlacement: placement, button: settings.homeDefaultHeroButtonLabel || "Shop collection", href: settings.homeDefaultHeroButtonHref || "/products", product: products.find((product) => product.status === "active") }} preview /> : <ComfortHero settings={{ ...settings, homeDefaultHeroImagePlacement: placement }} products={products} preview />}</div>
         </div>
       </div>
     </div>

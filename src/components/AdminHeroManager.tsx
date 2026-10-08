@@ -14,6 +14,7 @@ import {
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type {
   HeroCtaStyle,
+  HeroSection,
   HeroSlideConfig,
   HeroSlideKind,
 } from "@/data/hero-slides";
@@ -23,6 +24,8 @@ import { getProductPrimaryImage } from "@/lib/product-images";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
 
 type Draft = {
+  section: HeroSection;
+  tickerText: string;
   title: string;
   label: string;
   subtitle: string;
@@ -43,6 +46,8 @@ type Draft = {
 };
 
 const emptyDraft: Draft = {
+  section: "primary",
+  tickerText: "",
   title: "",
   label: "KLEID.IN",
   subtitle: "",
@@ -165,10 +170,11 @@ export function AdminHeroManager() {
     setDraft(emptyDraft);
   }
 
-  function openCreate(kind: HeroSlideKind = "custom") {
+  function openCreate(kind: HeroSlideKind = "custom", section: HeroSection = "primary") {
     reset();
     setDraft({
       ...emptyDraft,
+      section,
       kind,
       button:
         kind === "product"
@@ -186,6 +192,8 @@ export function AdminHeroManager() {
   function edit(slide: HeroSlideConfig) {
     setEditingId(slide.id);
     setDraft({
+      section: slide.section || "primary",
+      tickerText: slide.tickerText || "",
       title: slide.title,
       label: slide.label,
       subtitle: slide.subtitle,
@@ -392,13 +400,16 @@ export function AdminHeroManager() {
         </button>
       </div>
 
-      {storeSettings ? <div className="mt-5 overflow-hidden rounded-2xl border border-black/10"><HomeHeroSlider settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview /></div> : null}
+      {storeSettings ? <div className="mt-5 space-y-5">{(["primary", "secondary"] as const).map((section) => <section key={section} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+        <div className="flex items-center justify-between gap-3 p-4"><h2 className="text-sm font-semibold">{section === "primary" ? "First section · Centered hero" : "Second section · Campaign card"}</h2><button type="button" onClick={() => openCreate("custom", section)} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold !text-white">+ Add slide</button></div>
+        <HomeHeroSlider section={section} settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview />
+      </section>)}</div> : null}
 
       <div className="mt-5">
         <div className="mb-3">
           <p className={labelClass}>Hero slides</p>
           <p className="mt-1 text-[10px] text-black/40">
-            Every slide uses the same layout. There is no default slide or slide-count limit. Only enabled, live slides are shown.
+            Choose First section or Second section for each slide. Each section rotates its own enabled, live slides. There is no slide-count limit.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
@@ -466,6 +477,10 @@ export function AdminHeroManager() {
           onSubmit={save}
           className="space-y-4"
         >
+          <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
+            <label><span className={labelClass}>Homepage section / layout</span><select value={draft.section} onChange={(event) => setDraft((current) => ({ ...current, section: event.target.value as HeroSection }))} className={inputClass}><option value="primary">First section · Centered hero</option><option value="secondary">Second section · Campaign card</option></select></label>
+            <p className="mt-3 text-xs leading-5 text-black/50">Slides appear only in the selected section, sorted by their position.</p>
+          </section>
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
             <p className={labelClass}>Hero type</p>
             <div className="mt-3 grid grid-cols-2 gap-2">
@@ -556,7 +571,7 @@ export function AdminHeroManager() {
 
               <label className="md:col-span-2">
                 <span className={labelClass}>Hero title</span>
-                <input
+                <textarea
                   value={draft.title}
                   onChange={(event) =>
                     setDraft((current) => ({
@@ -575,6 +590,11 @@ export function AdminHeroManager() {
               </label>
             </div>
           </section>
+
+          {draft.section === "secondary" ? <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5"><div className="grid gap-4">
+            <label><span className={labelClass}>Description (optional)</span><textarea value={draft.subtitle} onChange={(event) => setDraft((current) => ({ ...current, subtitle: event.target.value }))} className={inputClass} /></label>
+            <label><span className={labelClass}>Bottom announcement strip (optional)</span><input value={draft.tickerText} onChange={(event) => setDraft((current) => ({ ...current, tickerText: event.target.value }))} className={inputClass} placeholder="Your campaign announcement" /></label>
+          </div></section> : null}
 
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
             <p className={labelClass}>Button / action</p>
@@ -629,6 +649,9 @@ export function AdminHeroManager() {
             </div>
 
             {storeSettings ? <AdminHeroImageControls
+              section={draft.section}
+              subtitle={draft.subtitle}
+              tickerText={draft.tickerText}
               value={draft.imagePlacement}
               onChange={(imagePlacement) => setDraft((current) => ({ ...current, imagePlacement }))}
               settings={{ ...storeSettings, homeDefaultHeroTitle: draft.title || selectedProduct?.name || "", homeDefaultHeroImageUrl: previewImage, homeDefaultHeroImagePosition: "center", homeDefaultHeroButtonLabel: draft.button, homeDefaultHeroButtonHref: draft.href }}
@@ -805,7 +828,7 @@ export function AdminHeroManager() {
 
               <div className="p-4">
                 <p className="text-[9px] font-bold uppercase tracking-[.1em] text-[#001cac]">
-                  Position {slide.order}
+                  {slide.section === "secondary" ? "Second section" : "First section"} · Position {slide.order}
                 </p>
                 <h2 className="mt-2 truncate font-bold">
                   {slide.title || linkedProduct?.name || "Untitled hero"}

@@ -32,12 +32,13 @@ test('first hero placement saves and reads without unrelated settings updates re
   assert.deepEqual((await settings.getStoreSettingsFromDb()).homeDefaultHeroImagePlacement, defaults);
 });
 test('custom hero placement survives edits, supports partial device patches and defaults for legacy slides', async () => {
-  const id = new ObjectId(); let row = { _id: id, title: 'Hero', imagePlacement: custom };
+  const id = new ObjectId(); let row = { _id: id, title: 'Hero', section: 'secondary', tickerText: 'Saved strip', imagePlacement: custom };
   const db = { collection: () => ({ findOne: async () => row, updateOne: async (_, update) => { row = { ...row, ...update.$set }; } }) };
   const heroes = load('src/lib/mongodb-hero.ts', { mongodb: { ObjectId }, '@/lib/mongodb': { getDb: async () => db }, '@/lib/hero-image-placement': placement });
   await heroes.updateHeroSlide(String(id), { title: 'Updated' });
   assert.deepEqual(row.imagePlacement, custom);
   const updated = await heroes.updateHeroSlide(String(id), { imagePlacement: { mobile: { scale: 110 } } });
+  assert.equal(updated.section, "secondary"); assert.equal(updated.tickerText, "Saved strip");
   assert.deepEqual(updated.imagePlacement, { desktop: custom.desktop, mobile: { scale: 110 } });
   delete row.imagePlacement;
   assert.deepEqual((await heroes.getHeroSlide(String(id))).imagePlacement, defaults);

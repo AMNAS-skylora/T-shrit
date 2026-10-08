@@ -36,3 +36,14 @@ test('all configured slides are retained beyond twelve slides', () => {
   const slides = Array.from({ length: 20 }, (_, index) => slide(String(index), { order: index }));
   assert.equal(getComfortSlides(slides, [], now).length, 20);
 });
+test('first and second sections rotate independently and old slides remain in the first section', () => {
+  const slides = [slide('old'), slide('first', { section: 'primary', order: 3 }), slide('campaign2', { section: 'secondary', order: 2 }), slide('campaign1', { section: 'secondary', order: 1 }), slide('hiddenCampaign', { section: 'secondary', enabled: false })];
+  assert.deepEqual(getComfortSlides(slides, [], now).map(s => s.id), ['old', 'first']);
+  assert.deepEqual(getComfortSlides(slides, [], now, 'secondary').map(s => s.id), ['campaign1', 'campaign2']);
+});
+test('campaign content uses saved text only and has no slide-count cap', () => {
+  const slides = Array.from({ length: 20 }, (_, index) => slide(String(index), { section: 'secondary', subtitle: 'Campaign description', tickerText: 'Saved announcement', imageUrl: '/campaign.png', order: index }));
+  const result = getComfortSlides(slides, [], now, 'secondary');
+  assert.equal(result.length, 20); assert.equal(result[0].subtitle, 'Campaign description'); assert.equal(result[0].tickerText, 'Saved announcement');
+  assert.equal(getComfortSlides([slide('empty', { section: 'secondary' })], [], now, 'secondary')[0].tickerText, '');
+});
