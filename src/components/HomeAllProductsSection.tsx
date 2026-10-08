@@ -4,11 +4,13 @@ import { HomeProductGridCard } from "@/components/HomeProductGridCard";
 export function HomeAllProductsSection({
   whatsappNumber,
   products = [],
+  layout = "grid",
   title = "ALL PRODUCTS",
   eyebrow = "",
 }: {
   whatsappNumber: string;
   products?: Product[];
+  layout?: "grid" | "rail" | "editorial";
   title?: string;
   eyebrow?: string;
 }) {
@@ -25,13 +27,14 @@ export function HomeAllProductsSection({
         </h2>
 
         {!products.length ? <p className="mt-8 text-sm text-black/50">The collection is coming soon.</p> : null}
-        <div className="mt-8 grid grid-cols-2 gap-x-2.5 gap-y-7 sm:gap-x-3.5 sm:gap-y-9 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11">
+        <div className={layout === "rail" ? "mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5" : layout === "editorial" ? "mt-8 grid grid-cols-1 gap-7 sm:grid-cols-2 sm:gap-9" : "mt-8 grid grid-cols-2 gap-x-2.5 gap-y-7 sm:gap-x-3.5 sm:gap-y-9 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11"}>
           {products.map((product) => (
+            <div key={product.id} className={layout === "rail" ? "w-[75vw] max-w-[380px] shrink-0 snap-start sm:w-[38vw] lg:w-[24vw]" : "min-w-0"}>
             <HomeProductGridCard
-              key={product.id}
               product={product}
               whatsappNumber={whatsappNumber}
             />
+            </div>
           ))}
         </div>
       </div>

@@ -126,6 +126,7 @@ export function AdminStoreSettings() {
       key !== "aboutPrinciples" &&
       key !== "homeShowcaseProductUrls" &&
       !key.startsWith("homeDefaultHero") &&
+      !["homeHeroLayout", "homeCatalogLayout", "homeFeaturedLayout"].includes(key) &&
       !key.startsWith("announcement"),
   ) as Array<[keyof StoreSettings, StoreSettings[keyof StoreSettings]]>;
 

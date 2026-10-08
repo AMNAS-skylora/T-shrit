@@ -3,7 +3,9 @@ export type AboutPrinciple = {
   copy: string;
 };
 
-export type StoreSettings = {
+import type { HomepageLayouts } from "@/lib/homepage-layouts";
+
+export type StoreSettings = HomepageLayouts & {
   whatsappNumber: string;
   phoneNumber: string;
   instagramUrl: string;

@@ -15,7 +15,7 @@ function money(value: number) {
   }).format(value);
 }
 
-export function FeaturedProductMotion({ products = [] }: { products?: Product[] }) {
+export function FeaturedProductMotion({ products = [], layout = "motion" }: { products?: Product[]; layout?: "motion" | "static" }) {
   const items = useMemo(() => products.filter((product) => Boolean(getProductPrimaryImage(product))).map((product) => ({
     id: product.id, name: product.name, description: product.description,
     price: product.price, image: getProductPrimaryImage(product) || "", href: `/products/${product.slug}`,
@@ -23,7 +23,7 @@ export function FeaturedProductMotion({ products = [] }: { products?: Product[] 
 
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
-  const reducedMotion = false;
+  const reducedMotion = layout === "static";
   const framesRef = useRef<number[]>([]);
   const transitionTimerRef = useRef<number | null>(null);
 
@@ -34,7 +34,8 @@ export function FeaturedProductMotion({ products = [] }: { products?: Product[] 
   }, [index, items.length]);
 
   useEffect(() => {
-    if (items.length <= 1 || reducedMotion) return;
+    if (reducedMotion) { setIndex(0); setVisible(true); return; }
+    if (items.length <= 1) return;
 
     const changeProduct = () => {
       if (document.hidden) return;
