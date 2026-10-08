@@ -1,4 +1,5 @@
 import "server-only";
+import { normalizeHeroImagePlacement } from "@/lib/hero-image-placement";
 
 import { randomUUID } from "node:crypto";
 import { ObjectId, type Document } from "mongodb";
@@ -57,6 +58,7 @@ function toSlide(doc: Document): HeroSlideConfig {
     showCountdown: bool(doc.showCountdown),
     ctaStyle: ctaStyle(doc.ctaStyle),
     imagePosition: imagePosition(doc.imagePosition),
+    imagePlacement: normalizeHeroImagePlacement(doc.imagePlacement),
     enabled: bool(doc.enabled, true),
     order: number(doc.order),
   };
@@ -89,6 +91,7 @@ function fields(input: Record<string, unknown>, current?: HeroSlideConfig) {
       input.imagePosition !== undefined
         ? imagePosition(input.imagePosition)
         : current?.imagePosition ?? "center",
+    imagePlacement: normalizeHeroImagePlacement(input.imagePlacement, current?.imagePlacement),
     enabled:
       typeof input.enabled === "boolean"
         ? input.enabled

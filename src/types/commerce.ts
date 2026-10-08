@@ -3,6 +3,7 @@ export type AboutPrinciple = {
   copy: string;
 };
 
+import type { HeroImagePlacement } from "@/lib/hero-image-placement";
 import type { HomepageLayouts } from "@/lib/homepage-layouts";
 
 export type StoreSettings = HomepageLayouts & {
@@ -35,6 +36,7 @@ export type StoreSettings = HomepageLayouts & {
   homeDefaultHeroButtonLabel: string;
   homeDefaultHeroButtonHref: string;
   homeDefaultHeroImageUrl: string;
+  homeDefaultHeroImagePlacement: HeroImagePlacement;
   homeDefaultHeroImagePosition: "left" | "center" | "right";
   homeCatalogEyebrow: string;
   homeCatalogTitle: string;

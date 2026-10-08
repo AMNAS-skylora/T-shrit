@@ -1,3 +1,5 @@
+import type { HeroImagePlacement } from "@/lib/hero-image-placement";
+
 export type HeroSlideKind = "product" | "offer" | "collection" | "custom";
 export type HeroCtaStyle = "light" | "dark" | "outline";
 export type HeroImagePosition = "left" | "center" | "right";
@@ -20,6 +22,7 @@ export type HeroSlideConfig = {
   endsAt?: string | null;
   showCountdown?: boolean;
   ctaStyle?: HeroCtaStyle;
+  imagePlacement?: HeroImagePlacement;
   imagePosition?: HeroImagePosition;
   enabled: boolean;
   order: number;

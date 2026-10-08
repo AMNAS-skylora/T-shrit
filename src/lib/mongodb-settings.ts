@@ -1,4 +1,5 @@
 import "server-only";
+import { normalizeHeroImagePlacement } from "@/lib/hero-image-placement";
 import { normalizeHomepageLayouts } from "@/lib/homepage-layouts";
 
 import { getDb } from "@/lib/mongodb";
@@ -63,6 +64,7 @@ function normalize(value: unknown): StoreSettings {
       );
   }
 
+  output.homeDefaultHeroImagePlacement = normalizeHeroImagePlacement(source.homeDefaultHeroImagePlacement);
   Object.assign(output, normalizeHomepageLayouts(source));
   return output;
 }

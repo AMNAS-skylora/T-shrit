@@ -9,7 +9,8 @@ function load(path, dependencies = {}) {
   return result.exports;
 }
 const images = load('src/lib/product-images.ts');
-const { getComfortSlides } = load('src/lib/comfort-slides.ts', { '@/lib/product-images': images });
+const placement = load('src/lib/hero-image-placement.ts');
+const { getComfortSlides } = load('src/lib/comfort-slides.ts', { '@/lib/product-images': images, '@/lib/hero-image-placement': placement });
 const settings = { homeDefaultHeroEnabled: true, homeDefaultHeroTitle: 'First', homeDefaultHeroImageUrl: '/model.png', homeDefaultHeroImagePosition: 'center' };
 const product = { id: 'p1', name: 'Shirt', slug: 'shirt', status: 'active', image: '/shirt.png', spotlight: true };
 const now = Date.parse('2026-10-08T12:00:00Z');
