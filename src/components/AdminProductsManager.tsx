@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChangeEvent, FormEvent, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import { AdminProductImport } from "@/components/AdminProductImport";
+import { AdminCategorySelect } from "@/components/AdminCategorySelect";
 import { AdminProductPlacementManager } from "@/components/AdminProductPlacementManager";
 import type {
   Product,
@@ -773,7 +774,7 @@ export function AdminProductsManager() {
       <AdminDrawer
         open={drawerOpen}
         title={editingId ? "Edit product" : "Add product"}
-        description="Basic details, offer, animation image and storefront placement are controlled here."
+        description="Create the product with basic details. Add sizes and colours on its detail page, and manage stock in Inventory."
         onClose={closeDrawer}
         footer={
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
@@ -818,19 +819,7 @@ export function AdminProductsManager() {
                   className={inputClass}
                 />,
               )}
-              {field(
-                "Category",
-                <input
-                  value={draft.category}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      category: event.target.value,
-                    }))
-                  }
-                  className={inputClass}
-                />,
-              )}
+              <AdminCategorySelect value={draft.category} onChange={(category) => setDraft((current) => ({ ...current, category }))} />
               {field(
                 "Price",
                 <input
@@ -879,21 +868,6 @@ export function AdminProductsManager() {
                 />,
               )}
               {field(
-                "Stock",
-                <input
-                  type="number"
-                  min="0"
-                  value={draft.stock}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      stock: event.target.value,
-                    }))
-                  }
-                  className={inputClass}
-                />,
-              )}
-              {field(
                 "Status",
                 <select
                   value={draft.status}
@@ -910,50 +884,9 @@ export function AdminProductsManager() {
                   <option value="sold-out">Sold out</option>
                 </select>,
               )}
-              {field(
-                "Catalog position",
-                <input
-                  type="number"
-                  value={draft.sortOrder}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      sortOrder: event.target.value,
-                    }))
-                  }
-                  placeholder="1, 2, 3…"
-                  className={inputClass}
-                />,
-              )}
-              {field(
-                "Sizes",
-                <input
-                  value={draft.sizes}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      sizes: event.target.value,
-                    }))
-                  }
-                  placeholder="S, M, L, XL"
-                  className={inputClass}
-                />,
-              )}
-              {field(
-                "Colours",
-                <input
-                  value={draft.colors}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      colors: event.target.value,
-                    }))
-                  }
-                  placeholder="Black, White"
-                  className={inputClass}
-                />,
-                true,
-              )}
+
+
+
               {field(
                 "Description",
                 <textarea
