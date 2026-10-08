@@ -2,6 +2,9 @@ import type { StoreSettings } from "@/types/commerce";
 import { publicEnv } from "@/lib/public-env";
 
 export const localStoreSettings: StoreSettings = {
+  homeHeroLayout: "original",
+  homeCatalogLayout: "grid",
+  homeFeaturedLayout: "motion",
   whatsappNumber: publicEnv.whatsappNumber,
   phoneNumber: publicEnv.phoneNumber,
   instagramUrl: publicEnv.instagramUrl,

@@ -1,4 +1,5 @@
 import "server-only";
+import { normalizeHomepageLayouts } from "@/lib/homepage-layouts";
 
 import { getDb } from "@/lib/mongodb";
 import { localStoreSettings } from "@/data/store";
@@ -62,6 +63,7 @@ function normalize(value: unknown): StoreSettings {
       );
   }
 
+  Object.assign(output, normalizeHomepageLayouts(source));
   return output;
 }
 

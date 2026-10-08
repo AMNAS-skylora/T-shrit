@@ -89,17 +89,17 @@ export default async function Home() {
     <div className="reference-home">
       {settings.homeAnimationBarsEnabled ? <HomepageAnimationBars bars={animationBars} placement="before-hero" /> : null}
       {settings.homeProductHeroEnabled && settings.homeProductSelectorEnabled ? <AutoOutfitHero products={showcaseProducts} /> : null}
-      {settings.homeProductHeroEnabled && productSlides.length ? <TopFashionHero products={activeProducts} heroSlides={productSlides} /> : null}
+      {settings.homeProductHeroEnabled && productSlides.length ? <TopFashionHero products={activeProducts} heroSlides={productSlides} fullscreen={settings.homeHeroLayout === "immersive"} /> : null}
       {settings.homeAnimationBarsEnabled ? <HomepageAnimationBars bars={animationBars} placement="after-hero" /> : null}
 
-      {settings.homeCustomOffersEnabled && customSlides.length ? <TopFashionHero products={[]} heroSlides={customSlides} fullscreen /> : null}
+      {settings.homeCustomOffersEnabled && customSlides.length ? <TopFashionHero products={[]} heroSlides={customSlides} fullscreen={settings.homeHeroLayout !== "split"} /> : null}
 
-      {settings.homeFeaturedEnabled ? <FeaturedProductMotion products={featuredProducts} /> : null}
+      {settings.homeFeaturedEnabled ? <FeaturedProductMotion products={featuredProducts} layout={settings.homeFeaturedLayout} /> : null}
 
       {settings.homeAboutEnabled ? <HomeAboutSection settings={settings} /> : null}
 
 
-      {settings.homeCatalogEnabled ? <HomeAllProductsSection products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
+      {settings.homeCatalogEnabled ? <HomeAllProductsSection layout={settings.homeCatalogLayout} products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
 
       {settings.homeDealersEnabled ? <HomeDealerSection settings={settings} /> : null}
 
