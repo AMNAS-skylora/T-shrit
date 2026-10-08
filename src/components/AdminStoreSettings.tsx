@@ -177,7 +177,7 @@ export function AdminStoreSettings() {
           </div>
           <div className="mt-4 flex gap-2">
             <button type="button" disabled={saving} onClick={() => void closeDrawer()} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Reset changes</button>
-            <button type="submit" disabled={saving} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold text-white disabled:opacity-50">{saving ? "Saving…" : "Save contact details"}</button>
+            <button type="submit" disabled={saving} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold !text-white disabled:opacity-50">{saving ? "Saving…" : "Save contact details"}</button>
           </div>
         </form>
       </section>
