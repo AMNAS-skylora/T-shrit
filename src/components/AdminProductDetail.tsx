@@ -24,7 +24,7 @@ const commonSizes = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "Free Size"
 const inputClass =
   "mt-1.5 w-full rounded-xl border border-black/10 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-[#001cac] focus:ring-2 focus:ring-[#001cac]/10";
 const labelClass =
-  "text-[9px] font-bold uppercase tracking-[.1em] text-black/45";
+  "text-[10px] font-bold uppercase tracking-[.1em] text-black/45";
 
 function cloneProduct(product: Product): Product {
   return {
@@ -121,25 +121,28 @@ export function AdminProductDetail({ productId }: { productId: string }) {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState("");
   const [customSize, setCustomSize] = useState("");
-
-  async function load() {
-    const response = await fetch("/api/admin/products/" + productId, {
-      cache: "no-store",
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "Could not load product.");
-    }
-    setDraft(cloneProduct(data.product));
-  }
+  const [savedProduct, setSavedProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [notFound, setNotFound] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
-    void load().catch((error) =>
-      setMessage(
-        error instanceof Error ? error.message : "Could not load product.",
-      ),
-    );
-  }, [productId]);
+    const controller = new AbortController();
+    setDraft(null); setSavedProduct(null); setLoading(true); setLoadError(""); setMessage(""); setNotFound(false); setCustomSize("");
+    async function load() {
+      try {
+        const response = await fetch("/api/admin/products/" + encodeURIComponent(productId), { cache: "no-store", signal: controller.signal });
+        const data = await response.json();
+        if (!response.ok) { setNotFound(response.status === 404); throw new Error(data.error || "Could not load product."); }
+        if (controller.signal.aborted) return;
+        setDraft(cloneProduct(data.product)); setSavedProduct(cloneProduct(data.product));
+      } catch (error) { if (!controller.signal.aborted) setLoadError(error instanceof Error ? error.message : "Could not load product."); }
+      finally { if (!controller.signal.aborted) setLoading(false); }
+    }
+    void load();
+    return () => controller.abort();
+  }, [productId, retry]);
 
   const totalStock = useMemo(
     () => (draft ? totalVariantStock(draft) : 0),
@@ -445,6 +448,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
   }
 
   async function save() {
+    if (saving || uploading) return;
     if (!draft) return;
     const offerError = validateProductOffer(draft);
     if (offerError) {
@@ -503,6 +507,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
       }
 
       setDraft(cloneProduct(data.product));
+      setSavedProduct(cloneProduct(data.product));
       setMessage("Product saved.");
     } catch (error) {
       setMessage(
@@ -513,36 +518,36 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     }
   }
 
+  const dirty = Boolean(draft && savedProduct && JSON.stringify(draft) !== JSON.stringify(savedProduct));
+  function reset() { if (savedProduct) { setDraft(cloneProduct(savedProduct)); setCustomSize(""); setMessage(""); } }
+
   if (!draft) {
-    return (
-      <div className="rounded-2xl bg-white p-5 text-sm text-black/50 ring-1 ring-black/5">
-        {message || "Loading product…"}
-      </div>
-    );
+    return <div className="min-w-0"><Link href="/admin/products" className="inline-flex min-h-11 items-center text-xs font-semibold !text-[#001cac]">← Back to products</Link>{loading ? <div role="status" aria-label="Loading product" className="mt-4 grid gap-4 lg:grid-cols-3"><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none lg:col-span-2" /><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none" /></div> : <div role="alert" className="mt-4 rounded-2xl bg-white p-5 ring-1 ring-black/5"><p className="text-sm text-red-600">{loadError || "Product not found."}</p>{!notFound ? <button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button> : null}</div>}</div>;
   }
 
   const variants = draft.colorVariants ?? [];
   const primaryPreviewImage = getProductPrimaryImage(draft);
 
   return (
-    <div className="pb-24">
+    <div className="min-w-0 pb-28">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link
             href="/admin/products"
-            className="text-[10px] font-bold uppercase tracking-[.12em] text-[#001cac]"
+            className="inline-flex min-h-11 items-center text-xs font-semibold !text-[#001cac]"
           >
             ← Products
           </Link>
-          <h1 className="mt-2 text-3xl font-bold tracking-[-.045em]">
+          <h1 className="mt-2 break-words text-3xl font-bold tracking-[-.045em]">
             {draft.name}
           </h1>
-          <p className="mt-2 text-xs text-black/45">
+          <p className="mt-2 break-words text-xs text-black/45">
             {draft.sku} · {draft.category || "No category"}
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={reset} disabled={!dirty || saving || Boolean(uploading)} className="min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold disabled:opacity-50">Reset changes</button>
           <Link
             href={"/products/" + draft.slug}
             target="_blank"
@@ -553,7 +558,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
           <button
             type="button"
             onClick={() => void save()}
-            disabled={saving || Boolean(uploading)}
+            disabled={!dirty || saving || Boolean(uploading)}
             className="min-h-11 rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white disabled:opacity-50"
           >
             {saving ? "Saving…" : "Save changes"}
@@ -567,15 +572,16 @@ export function AdminProductDetail({ productId }: { productId: string }) {
         </p>
       ) : null}
 
-      <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-4">
-          <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><nav aria-label="Product sections" className="flex flex-wrap gap-2">{[["details", "Details"], ["sizes", "Sizes"], ["colours", "Colours"], ["offer", "Offer"], ["homepage", "Homepage"], ["images", "Images"]].map(([id, label]) => <a key={id} href={"#product-" + id} className="inline-flex min-h-11 items-center rounded-xl border border-black/10 bg-white px-3 text-xs font-semibold hover:bg-[#eef2ff]">{label}</a>)}</nav><p aria-live="polite" className={"text-xs font-semibold " + (dirty ? "text-amber-700" : "text-black/45")}>{dirty ? "Unsaved changes" : "All changes saved"}</p></div>
+      <fieldset disabled={saving} className="mt-5 grid min-w-0 gap-4 border-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="order-2 min-w-0 space-y-4 xl:order-1">
+          <section id="product-details" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className={labelClass}>Product details</p>
                 <h2 className="mt-1 text-lg font-bold">Quick edit</h2>
               </div>
-              <span className="rounded-full bg-black/[.04] px-3 py-1.5 text-[9px] font-bold uppercase">
+              <span className="rounded-full bg-black/[.04] px-3 py-1.5 text-[10px] font-bold uppercase">
                 {draft.status}
               </span>
             </div>
@@ -677,7 +683,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             </div>
           </section>
 
-          <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+          <section id="product-sizes" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className={labelClass}>Sizes</p>
@@ -746,7 +752,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             ) : null}
           </section>
 
-          <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+          <section id="product-colours" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className={labelClass}>Variants</p>
@@ -819,7 +825,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                                 value: event.target.value,
                               }))
                             }
-                            className="h-[42px] w-12 rounded-lg border border-black/10 bg-white p-1"
+                            className="h-11 w-12 rounded-lg border border-black/10 bg-white p-1"
                           />
                           <input
                             value={variant.value}
@@ -836,7 +842,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                       <button
                         type="button"
                         onClick={() => removeVariant(index)}
-                        className="min-h-11 self-end rounded-xl border border-red-200 px-3 text-xs font-bold text-red-600"
+                        className="min-h-11 self-end rounded-xl border border-red-200 px-3 text-xs font-bold !text-red-600"
                       >
                         Remove
                       </button>
@@ -845,7 +851,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                     <div className="mt-4">
                       <div className="flex items-center justify-between">
                         <span className={labelClass}>Colour images</span>
-                        <span className="text-[9px] text-black/40">
+                        <span className="text-[10px] text-black/40">
                           {(variant.images ?? []).length} image(s)
                         </span>
                       </div>
@@ -878,7 +884,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                                     };
                                   })
                                 }
-                                className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-xs text-white"
+                                className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-xs !text-white"
                               >
                                 ×
                               </button>
@@ -919,7 +925,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                               key={size}
                               className="rounded-xl border border-black/10 bg-white p-3"
                             >
-                              <span className="text-[9px] font-bold text-black/45">
+                              <span className="text-[10px] font-bold text-black/45">
                                 {size}
                               </span>
                               <input
@@ -965,7 +971,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             )}
           </section>
 
-          <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+          <section id="product-offer" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
             <p className={labelClass}>Offer</p>
             <div className="mt-3">
               <Toggle
@@ -1066,7 +1072,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             ) : null}
           </section>
 
-          <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+          <section id="product-homepage" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
             <p className={labelClass}>Homepage placement</p>
 
             <div className="mt-3 grid gap-3">
@@ -1103,7 +1109,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                     placeholder="1"
                     className={inputClass}
                   />
-                  <span className="mt-1 block text-[9px] text-black/40">
+                  <span className="mt-1 block text-[10px] text-black/40">
                     You can also use ↑ ↓ reorder controls on the Products page.
                   </span>
                 </label>
@@ -1133,7 +1139,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                         <button
                           type="button"
                           onClick={() => patch({ featuredImage: undefined })}
-                          className="text-xs font-bold text-red-600"
+                          className="text-xs font-bold !text-red-600"
                         >
                           Remove
                         </button>
@@ -1152,7 +1158,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                       />
                     </label>
 
-                    <span className="mt-2 block text-[9px] leading-4 text-black/40">
+                    <span className="mt-2 block text-[10px] leading-4 text-black/40">
                       Transparent PNG/WebP works best for the front product layer.
                     </span>
                   </div>
@@ -1174,7 +1180,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                           onClick={() =>
                             patch({ showcaseBackgroundImage: undefined })
                           }
-                          className="mt-2 text-xs font-bold text-red-600"
+                          className="mt-2 text-xs font-bold !text-red-600"
                         >
                           Remove background
                         </button>
@@ -1195,7 +1201,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                       />
                     </label>
 
-                    <span className="mt-2 block text-[9px] leading-4 text-black/40">
+                    <span className="mt-2 block text-[10px] leading-4 text-black/40">
                       Landscape lifestyle image recommended for the selector stage.
                     </span>
                   </div>
@@ -1205,14 +1211,14 @@ export function AdminProductDetail({ productId }: { productId: string }) {
           </section>
         </div>
 
-        <aside className="space-y-4 xl:sticky xl:top-5 xl:self-start">
+        <aside id="product-images" className="order-1 min-w-0 scroll-mt-6 space-y-4 xl:order-2 xl:sticky xl:top-5 xl:self-start">
           <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
-            <div className="relative aspect-[4/5] bg-[#f1f1ef]">
+            <div className="relative h-60 bg-[#f1f1ef] xl:h-72">
               {primaryPreviewImage ? (
                 <img
                   src={primaryPreviewImage}
                   alt={draft.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain p-3"
                 />
               ) : (
                 <div className="grid h-full place-items-center text-xs text-black/40">
@@ -1235,7 +1241,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
           </section>
 
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
-            <p className={labelClass}>Live summary</p>
+            <p className={labelClass}>Current draft summary</p>
             <div className="mt-3 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <span className="text-xs text-black/50">Stock</span>
@@ -1262,16 +1268,17 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             </div>
           </section>
         </aside>
-      </div>
+      </fieldset>
 
-      <div className="fixed bottom-[78px] left-3 right-3 z-[90] md:bottom-4 md:left-auto md:right-5">
+      <div className="fixed bottom-[78px] left-3 right-3 z-[90] flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-2 shadow-lg md:bottom-4 md:left-auto md:right-5">
+        <span className="hidden px-2 text-xs text-black/50 sm:block">{dirty ? "Unsaved changes" : "Saved"}</span>
         <button
           type="button"
           onClick={() => void save()}
-          disabled={saving || Boolean(uploading)}
+          disabled={!dirty || saving || Boolean(uploading)}
           className="min-h-12 w-full rounded-xl bg-[#001cac] px-6 text-xs font-bold !text-white shadow-xl disabled:opacity-50 md:w-auto"
         >
-          {saving ? "Saving product…" : "Save product"}
+          {saving ? "Saving product…" : "Save changes"}
         </button>
       </div>
     </div>
