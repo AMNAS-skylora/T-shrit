@@ -264,7 +264,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <nav
         aria-label="Admin mobile navigation"
-        className="fixed bottom-0 left-0 right-0 z-[140] border-t border-black/10 bg-white/95 px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(0,0,0,.06)] backdrop-blur-xl md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-[140] border-t border-black/10 bg-white px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(0,0,0,.06)] md:hidden"
       >
         <div className="mx-auto grid max-w-[560px] grid-cols-5 gap-1">
           {mobilePrimary.map((item) => {

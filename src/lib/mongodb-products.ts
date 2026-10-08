@@ -1,3 +1,4 @@
+import { getProductIdentifiers } from "@/lib/product-identifiers";
 import { validateProductOffer } from "@/lib/product-offers";
 import "server-only";
 
@@ -34,13 +35,6 @@ function strings(value: unknown) {
     : [];
 }
 
-function slugify(value: string) {
-  return value
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 function status(value: unknown): ProductStatus {
   return value === "draft" || value === "sold-out" ? value : "active";
@@ -157,12 +151,11 @@ function productFields(
   current?: Product,
 ): Omit<Product, "id"> {
   const name = text(input.name, current?.name);
-  const sku = text(input.sku, current?.sku).toUpperCase();
-  const slug = slugify(text(input.slug, current?.slug || name));
+  const { sku, slug } = getProductIdentifiers(name, {
+    sku: text(input.sku), slug: text(input.slug),
+  }, randomUUID(), current);
 
   if (!name) throw new Error("Product name is required.");
-  if (!sku) throw new Error("SKU is required.");
-  if (!slug) throw new Error("Product slug is required.");
 
   const featured =
     typeof input.featured === "boolean" ? input.featured : current?.featured ?? false;

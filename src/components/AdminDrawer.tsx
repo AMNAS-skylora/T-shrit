@@ -68,7 +68,7 @@ export function AdminDrawer({
         type="button"
         aria-label="Close panel"
         onClick={onClose}
-        className="absolute inset-0 bg-black/35 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black/35"
       />
 
       <section
