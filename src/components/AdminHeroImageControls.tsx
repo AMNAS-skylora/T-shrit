@@ -21,6 +21,7 @@ export function AdminHeroImageControls({ value, onChange, settings, products, di
   const frameWidth = device === "desktop" ? 1280 : 375;
   const scale = Math.min(1, width / frameWidth);
   useEffect(() => {
+    if (window.matchMedia("(max-width: 640px)").matches) setDevice("mobile");
     if (!container.current) return;
     const observer = new ResizeObserver(([entry]) => setWidth(entry.contentRect.width));
     observer.observe(container.current);
