@@ -527,7 +527,7 @@ export function AdminAnimationBarManager() {
           </div>
         }
       >
-        <form
+        <form data-admin-form
           id="animation-bar-form"
           onSubmit={save}
           className="space-y-4"

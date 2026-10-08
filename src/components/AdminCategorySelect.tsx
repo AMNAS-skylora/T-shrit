@@ -47,16 +47,16 @@ export function AdminCategorySelect({ value, onChange }: { value: string; onChan
   return (
     <div>
       <label htmlFor={id} className="text-[10px] font-bold uppercase tracking-[.08em] text-black/50">Category</label>
-      <div className="mt-1.5 flex gap-2">
+      <div className="mt-2 flex gap-2">
         <select id={id} value={value} onChange={(event) => onChange(event.target.value)} className={inputClass} disabled={busy}>
           <option value="">{loading ? "Loading categories…" : "Select category"}</option>
           {options.map((category) => <option key={category} value={category}>{category}</option>)}
         </select>
         <button type="button" onClick={() => { setAdding(!adding); setError(""); }} disabled={busy} className="shrink-0 rounded-xl border border-black/10 px-3 text-xs font-semibold">{adding ? "Cancel" : "+ Add"}</button>
       </div>
-      {adding ? <div className="mt-2 flex gap-2">
+      {adding ? <div className="mt-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
         <input aria-label="New category name" value={name} onChange={(event) => setName(event.target.value)} maxLength={80} autoFocus disabled={busy} className={inputClass} placeholder="Category name" onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); void add(); } }} />
-        <button type="button" onClick={() => void add()} disabled={busy || !name.trim()} className="shrink-0 rounded-xl bg-[#001cac] px-3 text-xs font-semibold text-white disabled:opacity-50">{busy ? "Adding…" : "Add category"}</button>
+        <button type="button" onClick={() => void add()} disabled={busy || !name.trim()} className="shrink-0 rounded-xl bg-[#001cac] px-3 text-xs font-semibold !text-white disabled:opacity-50">{busy ? "Adding…" : "Add category"}</button>
       </div> : null}
       {error ? <p role="alert" className="mt-2 text-xs text-red-600">{error}</p> : null}
     </div>

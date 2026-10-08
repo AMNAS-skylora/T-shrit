@@ -160,7 +160,7 @@ export function AdminStoreSettings() {
       <section className="mt-6 rounded-2xl bg-white p-5 ring-1 ring-black/5">
         <h2 className="text-lg font-semibold">Store contact details</h2>
         <p className="mt-1 text-xs text-black/50">Click any field to edit, then save your changes.</p>
-        <form onSubmit={(event) => { event.preventDefault(); void save(); }}>
+        <form data-admin-form onSubmit={(event) => { event.preventDefault(); void save(); }}>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <label className="text-xs font-semibold">Email
               <input type="email" autoComplete="email" value={settings.supportEmail} disabled={saving} onChange={(event) => update("supportEmail", event.target.value)} className={controlClass} placeholder="Your store email" />

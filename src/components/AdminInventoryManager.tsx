@@ -537,7 +537,7 @@ export function AdminInventoryManager() {
         description="Increase or decrease stock for a product, colour or exact size."
         onClose={closeDrawer}
       >
-        <form
+        <form data-admin-form
           onSubmit={submit}
           className="grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/5 md:grid-cols-2"
         >

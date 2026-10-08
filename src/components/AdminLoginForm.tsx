@@ -73,7 +73,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form
+    <form data-admin-ui data-admin-form
       onSubmit={submit}
       className="w-full max-w-[420px] rounded-[24px] border border-black/10 bg-white p-6 shadow-sm md:p-8"
     >

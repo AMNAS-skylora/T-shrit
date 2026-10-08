@@ -807,7 +807,7 @@ export function AdminProductsManager() {
           </div>
         }
       >
-        <form id="admin-product-form" onSubmit={submit} className="space-y-5">
+        <form data-admin-form id="admin-product-form" onSubmit={submit} className="space-y-5">
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
             <h3 className="text-sm font-bold">Product details</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
