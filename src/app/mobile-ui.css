@@ -1,0 +1,38 @@
+/* Keep controls usable on touchscreens without changing desktop typography. */
+button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+button, a { touch-action: manipulation; }
+button:focus-visible, a:focus-visible { outline: 2px solid #001cac; outline-offset: 3px; }
+@media (max-width: 767px) {
+  main { min-width: 0; }
+  main h1, main h2, [data-admin-ui] h1, [data-admin-ui] h2 { overflow-wrap: anywhere; }
+  [data-admin-ui] { min-width: 0; }
+  [data-admin-ui] input:not([type="checkbox"]):not([type="radio"]),
+  [data-admin-ui] select, [data-admin-ui] textarea,
+  main input:not([type="checkbox"]):not([type="radio"]), main select, main textarea {
+    max-width: 100%; min-width: 0; font-size: 16px !important;
+  }
+  [data-admin-ui] button, [data-admin-ui] a,
+  .size-picker button, .product-detail-size-options button, .product-action-buttons a {
+    min-height: 44px;
+  }
+  [data-admin-ui] button { white-space: normal; overflow-wrap: anywhere; }
+  [data-admin-ui] [role="dialog"] { max-height: 100dvh; }
+  .selected-product-details { max-width: calc(100% - 40px); }
+}
+@media (max-width: 639px) {
+  [data-product-hero] { display: flex; flex-direction: column; height: auto; min-height: 100svh; padding-top: 64px; padding-bottom: 220px; width: 100%; }
+  [data-product-hero] .selected-product-details { position: relative; top: auto; left: auto; right: auto; margin: 16px 20px; padding: 18px; }
+  [data-product-hero] .selected-product-name { font-size: clamp(28px, 8vw, 40px); }
+  [data-product-hero] [data-hero-product-image] { position: relative; bottom: auto; right: auto; width: 80%; height: 28svh; margin: 0 auto; order: 1; }
+  [data-admin-ui] main { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+}
+
+/* Keep catalog CTA colors above global anchor rules on every viewport. */
+#all-products .home-product-whatsapp-button,
+#all-products .home-product-whatsapp-button:visited,
+#all-products .home-product-whatsapp-button:hover,
+#all-products .home-product-whatsapp-button:active {
+  background-color: #000 !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff;
+}
