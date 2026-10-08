@@ -11,7 +11,6 @@ export type StoreSettings = {
   footerTagline: string;
   homeProductHeroEnabled: boolean;
   homeProductSelectorEnabled: boolean;
-  demoProductsEnabled: boolean;
   homeCustomOffersEnabled: boolean;
   homeFeaturedEnabled: boolean;
   homeAboutEnabled: boolean;

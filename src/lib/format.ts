@@ -35,7 +35,7 @@ export function getProductWhatsappUrl(
   const orderPrice = activeOffer ? getProductOfferPrice(product) : product.price;
 
   const lines = [
-    product.demo ? "Hi KLEID.IN, I am enquiring about this demo preview product:" : "Hi KLEID.IN, I would like to order this product:",
+    "Hi KLEID.IN, I would like to order this product:",
     "",
     product.name,
     `Price: ${formatPrice(orderPrice)}`,

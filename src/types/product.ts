@@ -11,7 +11,6 @@ export type ProductColorVariant = {
 };
 
 export type Product = {
-  demo?: boolean;
   id: string;
   sku: string;
   name: string;

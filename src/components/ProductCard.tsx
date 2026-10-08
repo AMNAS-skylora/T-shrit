@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: Product }) {
   const currentImage = getProductImageForColor(product, selectedColor);
   const currentStock = selectedVariant?.stock ?? product.stock;
   const soldOut = product.status === "sold-out" || currentStock <= 0;
-  const limitedStock = !product.demo && !soldOut && currentStock <= 7;
+  const limitedStock = !soldOut && currentStock <= 7;
   const activeProductOffer = isProductOfferActive(product, now);
   const offerPrice = getProductOfferPrice(product, now);
   const legacyOffer =
@@ -70,9 +70,7 @@ export function ProductCard({ product }: { product: Product }) {
 
   const badge = useMemo(
     () =>
-      product.demo
-        ? "Demo preview"
-        : soldOut
+      soldOut
         ? "Sold out"
         : limitedStock
           ? `Limited stock · ${currentStock} left`
@@ -84,7 +82,6 @@ export function ProductCard({ product }: { product: Product }) {
               ? "New"
               : product.category,
     [
-      product.demo,
       currentStock,
       hasOffer,
       limitedStock,
@@ -115,7 +112,6 @@ export function ProductCard({ product }: { product: Product }) {
         >
           {currentImage ? (
             <Image
-          unoptimized={product.demo}
               key={currentImage}
               src={currentImage}
               alt={`${product.name} — ${selectedColor}`}

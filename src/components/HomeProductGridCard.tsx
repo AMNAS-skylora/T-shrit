@@ -5,6 +5,7 @@ import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
+import { getProductPrimaryImage } from "@/lib/product-images";
 import type { Product } from "@/types/product";
 
 export function HomeProductGridCard({
@@ -14,6 +15,7 @@ export function HomeProductGridCard({
   product: Product;
   whatsappNumber: string;
 }) {
+  const image = getProductPrimaryImage(product);
   const now = useOfferClock(product);
   const offerActive = isProductOfferActive(product, now);
   const price = getProductOfferPrice(product, now);
@@ -30,14 +32,13 @@ export function HomeProductGridCard({
       />
 
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f1ef]">
-        <Image
-          unoptimized={product.demo}
-          src={product.image || "/images/product-1.png"}
+        {image ? <Image
+          src={image}
           alt={product.name}
           fill
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
           className="object-contain p-4 transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-        />
+        /> : <span className="flex h-full items-center justify-center text-xs text-black/50">No image</span>}
       </div>
 
       <div className="pt-3">

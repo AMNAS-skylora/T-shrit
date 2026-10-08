@@ -1,17 +1,14 @@
 import type { Product } from "@/types/product";
 import { HomeProductGridCard } from "@/components/HomeProductGridCard";
-import { homeDemoProducts } from "@/lib/home-demo-products";
 
 export function HomeAllProductsSection({
   whatsappNumber,
   products = [],
-  demo = true,
   title = "ALL PRODUCTS",
   eyebrow = "",
 }: {
   whatsappNumber: string;
   products?: Product[];
-  demo?: boolean;
   title?: string;
   eyebrow?: string;
 }) {
@@ -27,9 +24,9 @@ export function HomeAllProductsSection({
           {title}
         </h2>
 
-        {!products.length && !demo ? <p className="mt-8 text-sm text-black/50">The collection is coming soon.</p> : null}
+        {!products.length ? <p className="mt-8 text-sm text-black/50">The collection is coming soon.</p> : null}
         <div className="mt-8 grid grid-cols-2 gap-x-2.5 gap-y-7 sm:gap-x-3.5 sm:gap-y-9 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11">
-          {(products.length ? products : demo ? homeDemoProducts : []).map((product) => (
+          {products.map((product) => (
             <HomeProductGridCard
               key={product.id}
               product={product}
