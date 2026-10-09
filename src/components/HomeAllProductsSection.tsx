@@ -19,7 +19,7 @@ export function HomeAllProductsSection({
   return (
     <section
       id="all-products"
-      className={"scroll-mt-20 px-3 py-14 sm:px-5 sm:py-18 lg:px-6 lg:py-20 " + (theme === "dark" ? "bg-black text-white" : "bg-white text-[#111]")}
+      className={"scroll-mt-20 px-3 py-14 sm:px-5 sm:py-18 lg:px-6 lg:py-20 " + (theme === "dark" ? "bg-black text-white" : "bg-[#fafafa] text-[#111]")}
       aria-label="All products"
     >
       <div className="mx-auto w-full max-w-[1600px]">
