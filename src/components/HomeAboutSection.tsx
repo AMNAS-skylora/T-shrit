@@ -5,12 +5,6 @@ import styles from "./HomeAboutSection.module.css";
 export function HomeAboutSection() {
   return <section id="about" aria-labelledby="home-about-title" className={styles.section}>
     <div className={styles.layout}>
-      <div className={styles.images}>
-        {homeAbout.images.map(image => <div key={image.url} className={styles.image}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={image.url} alt={image.alt} loading="lazy" decoding="async" />
-        </div>)}
-      </div>
       <div className={styles.copy}>
         <p className={styles.eyebrow}>{homeAbout.eyebrow}</p>
         <h2 id="home-about-title" className={styles.title}>{homeAbout.title.replace(/\n/g, " ")}</h2>

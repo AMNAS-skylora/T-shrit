@@ -16,11 +16,9 @@ const { HomeAboutSection } = load('src/components/HomeAboutSection.tsx', {
   './HomeAboutSection.module.css': { default: { section: 'section' } },
   'next/link': { default: props => React.createElement('a', props, props.children) },
 });
-test('About renders permanent copy and three editorial photos without saved settings', () => {
+test('About renders permanent copy and product link without photos', () => {
   const html = renderToStaticMarkup(React.createElement(HomeAboutSection));
   assert.match(html, /ABOUT KLEID.IN/); assert.match(html, /EVERYDAY COMFORT/);
-  assert.equal((html.match(/<img /g) || []).length, 3);
-  assert.equal((html.match(/loading="lazy"/g) || []).length, 3);
+  assert.doesNotMatch(html, /<img /);
   assert.match(html, /href="\/products"/);
-  for (const image of homeAbout.images) { assert.ok(image.source.startsWith('https://www.pexels.com/')); assert.ok(image.alt); assert.ok(image.photographer); }
 });
