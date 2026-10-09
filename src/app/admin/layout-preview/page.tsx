@@ -15,6 +15,6 @@ export default async function LayoutPreview({ searchParams }: { searchParams: Pr
   return <main className="bg-white text-black">
     <p className="border-b border-black/10 px-4 py-3 text-xs font-semibold">Layout preview · Unsaved selection</p>
     {params.section === "homeHeroLayout" ? <HomeHeroSlider settings={settings} products={products} slides={slides} initialNow={Date.now()} preview /> : null}
-    {params.section === "homeCatalogLayout" ? <HomeAllProductsSection theme="dark" products={products} layout={layouts.homeCatalogLayout} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
+    {params.section === "homeCatalogLayout" ? <HomeAllProductsSection theme="light" products={products} layout={layouts.homeCatalogLayout} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
   </main>;
 }
