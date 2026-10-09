@@ -1,10 +1,12 @@
 import Link from "next/link";
+import { AboutHangerImage } from "@/components/AboutHangerImage";
 import { homeAbout } from "@/data/home-about";
 import styles from "./HomeAboutSection.module.css";
 
 export function HomeAboutSection() {
   return <section id="about" aria-labelledby="home-about-title" className={styles.section}>
     <div className={styles.layout}>
+      <AboutHangerImage />
       <div className={styles.copy}>
         <p className={styles.eyebrow}>{homeAbout.eyebrow}</p>
         <h2 id="home-about-title" className={styles.title}>{homeAbout.title.replace(/\n/g, " ")}</h2>
