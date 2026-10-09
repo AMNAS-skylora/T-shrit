@@ -42,3 +42,8 @@
 @media (max-width: 600px) { .secondarySlider { padding: 20px 12px 8px; } }
 
 .backgroundSlider { background: #080808; }
+
+/* Keep the public first slider at screen height, including its control row. */
+.fullViewport { --hero-controls-height: 0px; }
+.fullViewport.hasControls { --hero-controls-height: 68px; }
+.fullViewport .hero { min-height: max(400px, calc(100vh - var(--hero-controls-height))); min-height: max(400px, calc(100svh - var(--hero-controls-height))); }
