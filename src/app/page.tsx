@@ -1,4 +1,5 @@
 import { getActiveHeroSlides } from "@/lib/hero";
+import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHeroSlider } from "@/components/HomeHeroSlider";
 import { HomeAllProductsSection } from "@/components/HomeAllProductsSection";
 import { getCatalogProducts } from "@/lib/catalog";
@@ -14,6 +15,7 @@ export default async function Home() {
     <HomeHeroSlider settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="secondary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="tertiary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
+    <HomeAboutSection settings={settings} />
     {settings.homeCatalogEnabled ? <HomeAllProductsSection theme="dark" layout={settings.homeCatalogLayout} products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
   </div>;
 }
