@@ -46,7 +46,7 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   function move(direction: number) {
     if (active.length > 1) setSelectedId(active[(selected + direction + active.length) % active.length].id);
   }
-  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : section === "tertiary" && (active.length || preview) ? styles.backgroundSlider : ""}`} role="region" aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : section === "tertiary" ? "Background collections" : "Featured collections"}
+  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "primary" && active.length && !preview ? styles.fullViewport : ""} ${active.length > 1 ? styles.hasControls : ""} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : section === "tertiary" && (active.length || preview) ? styles.backgroundSlider : ""}`} role="region" aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : section === "tertiary" ? "Background collections" : "Featured collections"}
     onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
     onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onTouchStart={(event) => { touchStart.current = (event.target as Element).closest("button, select, input, textarea") ? null : { x: event.touches[0].clientX, y: event.touches[0].clientY }; }}
