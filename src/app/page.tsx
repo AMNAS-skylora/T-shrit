@@ -15,7 +15,7 @@ export default async function Home() {
     <HomeHeroSlider settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="secondary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="tertiary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
-    <HomeAboutSection settings={settings} />
+    <HomeAboutSection />
     {settings.homeCatalogEnabled ? <HomeAllProductsSection theme="dark" layout={settings.homeCatalogLayout} products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
   </div>;
 }

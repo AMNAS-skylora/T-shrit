@@ -2,7 +2,7 @@
 
 import { getHeroSwipeDirection, type SwipePoint } from "@/lib/hero-swipe";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { StoreSettings } from "@/types/commerce";
 import type { Product } from "@/types/product";
 import type { HeroSection, HeroSlideConfig } from "@/data/hero-slides";
@@ -24,6 +24,22 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   const touchStart = useRef<SwipePoint | null>(null);
   const active = useMemo(() => getComfortSlides(slides, products, now, section), [slides, products, now, section]);
   const selected = Math.max(0, active.findIndex((slide) => slide.id === selectedId));
+  useLayoutEffect(() => {
+    const element = root.current;
+    if (!element || preview || section !== "primary" || !active.length) return;
+    const measure = () => {
+      const top = Math.max(0, element.getBoundingClientRect().top + window.scrollY);
+      element.style.setProperty("--hero-top-offset", `${top}px`);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    const main = element.closest("main");
+    const header = document.querySelector(".site-header");
+    if (main) observer.observe(main);
+    if (header) observer.observe(header);
+    window.addEventListener("resize", measure);
+    return () => { observer.disconnect(); window.removeEventListener("resize", measure); };
+  }, [preview, section, active.length]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
