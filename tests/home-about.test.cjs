@@ -13,6 +13,7 @@ function load(path, dependencies = {}) {
 const { homeAbout } = load('src/data/home-about.ts');
 const { HomeAboutSection } = load('src/components/HomeAboutSection.tsx', {
   '@/data/home-about': { homeAbout },
+  './HomeAboutSection.module.css': { default: { section: 'section' } },
   'next/link': { default: props => React.createElement('a', props, props.children) },
 });
 test('About renders permanent copy and three editorial photos without saved settings', () => {
