@@ -13,12 +13,13 @@ function load(path, dependencies = {}) {
 const { homeAbout } = load('src/data/home-about.ts');
 const { HomeAboutSection } = load('src/components/HomeAboutSection.tsx', {
   '@/data/home-about': { homeAbout },
+  '@/components/AboutHangerImage': { AboutHangerImage: () => React.createElement('img', { src: '/images/about/tshirts-hanger.png', alt: 'T-shirts on hangers' }) },
   './HomeAboutSection.module.css': { default: { section: 'section' } },
   'next/link': { default: props => React.createElement('a', props, props.children) },
 });
-test('About renders permanent copy and product link without photos', () => {
+test('About renders permanent copy, local hanger image and product link', () => {
   const html = renderToStaticMarkup(React.createElement(HomeAboutSection));
   assert.match(html, /ABOUT KLEID.IN/); assert.match(html, /EVERYDAY COMFORT/);
-  assert.doesNotMatch(html, /<img /);
+  assert.match(html, /src="\/images\/about\/tshirts-hanger.png"/);
   assert.match(html, /href="\/products"/);
 });
