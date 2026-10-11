@@ -12,7 +12,7 @@ import type {
   ProductOfferType,
   ProductStatus,
 } from "@/types/product";
-import { getProductOfferStatus } from "@/lib/product-offers";
+import { getProductOfferErrors, getProductOfferStatus, validateProductOffer } from "@/lib/product-offers";
 import { getProductPrimaryImage } from "@/lib/product-images";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
 
@@ -161,6 +161,8 @@ export function AdminProductsManager() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [message, setMessage] = useState("");
+  const offerInput = { price: Number(draft.price), offerEnabled: draft.offerEnabled, offerType: draft.offerType, offerValue: Number(draft.offerValue), offerStartsAt: draft.offerStartsAt, offerEndsAt: draft.offerEndsAt };
+  const offerErrors = getProductOfferErrors(offerInput);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState("");
   const [loadError, setLoadError] = useState("");
@@ -346,8 +348,10 @@ export function AdminProductsManager() {
     setMessage("");
 
     try {
-      if (draft.offerEnabled && Number(draft.offerValue) <= 0) {
-        throw new Error("Offer value must be greater than 0.");
+      const offerError = validateProductOffer(offerInput);
+      if (offerError) {
+        document.querySelector<HTMLElement>('#admin-product-form [aria-invalid="true"]')?.focus();
+        throw new Error(offerError);
       }
 
       const payload = {
@@ -826,10 +830,13 @@ export function AdminProductsManager() {
               <AdminCategorySelect value={draft.category} onChange={(category) => setDraft((current) => ({ ...current, category }))} />
               {field(
                 "Price",
-                <input
+                <>
+                    <input
                   type="number"
                   min="0"
                   value={draft.price}
+                      aria-invalid={Boolean(offerErrors.price)}
+                      aria-describedby={offerErrors.price ? "manager-error-price" : undefined}
                   onChange={(event) =>
                     setDraft((current) => ({
                       ...current,
@@ -838,7 +845,9 @@ export function AdminProductsManager() {
                   }
                   required
                   className={inputClass}
-                />,
+                />
+                    {offerErrors.price ? <span id="manager-error-price" role="alert" className="admin-field-error">{offerErrors.price}</span> : null}
+                  </>,
               )}
               {field(
                 "Cost price",
@@ -909,8 +918,6 @@ export function AdminProductsManager() {
                 setDraft((current) => ({
                   ...current,
                   offerEnabled: checked,
-                  offerStartsAt: checked ? current.offerStartsAt || dateTimeInput(new Date().toISOString()) : current.offerStartsAt,
-                  offerEndsAt: checked ? current.offerEndsAt || dateTimeInput(new Date(Date.now() + 86400000).toISOString()) : current.offerEndsAt,
                 }))
               }
               title="Product offer"
@@ -922,8 +929,11 @@ export function AdminProductsManager() {
                 <div className="grid gap-3 md:grid-cols-2">
                   {field(
                     "Offer type",
+                    <>
                     <select
                       value={draft.offerType}
+                      aria-invalid={Boolean(offerErrors.offerType)}
+                      aria-describedby={offerErrors.offerType ? "manager-error-offerType" : undefined}
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -935,7 +945,9 @@ export function AdminProductsManager() {
                       <option value="percentage">Percentage off</option>
                       <option value="fixed">Fixed amount off</option>
                       <option value="sale-price">Final sale price</option>
-                    </select>,
+                    </select>
+                    {offerErrors.offerType ? <span id="manager-error-offerType" role="alert" className="admin-field-error">{offerErrors.offerType}</span> : null}
+                  </>,
                   )}
                   {field(
                     draft.offerType === "percentage"
@@ -943,19 +955,23 @@ export function AdminProductsManager() {
                       : draft.offerType === "fixed"
                         ? "Discount amount"
                         : "Sale price",
+                    <>
                     <input
                       type="number"
                       min="0"
                       value={draft.offerValue}
+                      aria-invalid={Boolean(offerErrors.offerValue)}
+                      aria-describedby={offerErrors.offerValue ? "manager-error-offerValue" : undefined}
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
                           offerValue: event.target.value,
                         }))
                       }
-                      required={draft.offerEnabled}
                       className={inputClass}
-                    />,
+                    />
+                    {offerErrors.offerValue ? <span id="manager-error-offerValue" role="alert" className="admin-field-error">{offerErrors.offerValue}</span> : null}
+                  </>,
                   )}
                   {field(
                     "Offer label",
@@ -986,10 +1002,13 @@ export function AdminProductsManager() {
                     />,
                   )}
                   {field(
-                    "Starts at",
+                    "Starts at (optional)",
+                    <>
                     <input
                       type="datetime-local"
                       value={draft.offerStartsAt}
+                      aria-invalid={Boolean(offerErrors.offerStartsAt)}
+                      aria-describedby={offerErrors.offerStartsAt ? "manager-error-offerStartsAt" : undefined}
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -997,14 +1016,18 @@ export function AdminProductsManager() {
                         }))
                       }
                       className={inputClass}
-                    />,
+                    />
+                    {offerErrors.offerStartsAt ? <span id="manager-error-offerStartsAt" role="alert" className="admin-field-error">{offerErrors.offerStartsAt}</span> : null}
+                  </>,
                   )}
                   {field(
-                    "Ends at",
+                    "Ends at (optional)",
+                    <>
                     <input
                       type="datetime-local"
                       value={draft.offerEndsAt}
-                      required={draft.offerEnabled}
+                      aria-invalid={Boolean(offerErrors.offerEndsAt)}
+                      aria-describedby={offerErrors.offerEndsAt ? "manager-error-offerEndsAt" : undefined}
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -1012,11 +1035,13 @@ export function AdminProductsManager() {
                         }))
                       }
                       className={inputClass}
-                    />,
+                    />
+                    {offerErrors.offerEndsAt ? <span id="manager-error-offerEndsAt" role="alert" className="admin-field-error">{offerErrors.offerEndsAt}</span> : null}
+                  </>,
                   )}
                 </div>
 
-                <p className="mt-4 text-xs text-black/50">The countdown appears automatically until the offer ends.</p>
+                <p className="mt-4 text-xs text-black/50">Dates are optional. Without an end time, the offer stays active until you turn it off. An end time adds the countdown.</p>
               </div>
             ) : null}
           </section>

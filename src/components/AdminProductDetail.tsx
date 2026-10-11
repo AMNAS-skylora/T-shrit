@@ -15,7 +15,7 @@ import type {
   ProductOfferType,
   ProductStatus,
 } from "@/types/product";
-import { getProductOfferCountdown, getProductOfferPrice, getProductOfferStatus, validateProductOffer } from "@/lib/product-offers";
+import { getProductOfferErrors, getProductOfferCountdown, getProductOfferPrice, getProductOfferStatus, validateProductOffer } from "@/lib/product-offers";
 import { getProductPrimaryImage } from "@/lib/product-images";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
 
@@ -148,6 +148,8 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     () => (draft ? totalVariantStock(draft) : 0),
     [draft],
   );
+
+  const offerErrors = getProductOfferErrors(draft ?? {});
 
   const offerNow = useOfferClock(draft ?? undefined);
   const offerStatus = useMemo(
@@ -453,7 +455,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     const offerError = validateProductOffer(draft);
     if (offerError) {
       setMessage(offerError);
-      window.requestAnimationFrame(() => document.getElementById("product-feedback")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+      window.requestAnimationFrame(() => { const field = document.querySelector<HTMLElement>('[data-admin-ui] [aria-invalid="true"]'); field?.focus(); field?.scrollIntoView({ behavior: "smooth", block: "center" }); });
       return;
     }
     setSaving(true);
@@ -602,11 +604,14 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                   type="number"
                   min="0"
                   value={draft.price}
+                    aria-invalid={Boolean(offerErrors.price)}
+                    aria-describedby={offerErrors.price ? "detail-error-price" : undefined}
                   onChange={(event) =>
                     patch({ price: Math.max(0, Number(event.target.value)) })
                   }
                   className={inputClass}
                 />
+                  {offerErrors.price ? <span id="detail-error-price" role="alert" className="admin-field-error">{offerErrors.price}</span> : null}
               </label>
               <label>
                 <span className={labelClass}>Cost price</span>
@@ -960,7 +965,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             <div className="mt-3">
               <Toggle
                 checked={Boolean(draft.offerEnabled)}
-                onChange={(checked) => patch({ offerEnabled: checked, offerCountdown: checked, ...(checked ? { offerStartsAt: draft.offerStartsAt || new Date().toISOString(), offerEndsAt: draft.offerEndsAt || new Date(Date.now() + 86400000).toISOString() } : {}) })}
+                onChange={(checked) => patch({ offerEnabled: checked })}
                 label="Enable product offer"
                 help="Offer card appears on storefront only when this is enabled and active."
               />
@@ -972,6 +977,8 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                   <span className={labelClass}>Offer type</span>
                   <select
                     value={draft.offerType ?? "percentage"}
+                    aria-invalid={Boolean(offerErrors.offerType)}
+                    aria-describedby={offerErrors.offerType ? "detail-error-offerType" : undefined}
                     onChange={(event) =>
                       patch({
                         offerType: event.target.value as ProductOfferType,
@@ -983,6 +990,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                     <option value="fixed">Fixed amount off</option>
                     <option value="sale-price">Final sale price</option>
                   </select>
+                  {offerErrors.offerType ? <span id="detail-error-offerType" role="alert" className="admin-field-error">{offerErrors.offerType}</span> : null}
                 </label>
                 <label>
                   <span className={labelClass}>Offer value</span>
@@ -990,6 +998,8 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                     type="number"
                     min="0"
                     value={draft.offerValue ?? ""}
+                    aria-invalid={Boolean(offerErrors.offerValue)}
+                    aria-describedby={offerErrors.offerValue ? "detail-error-offerValue" : undefined}
                     onChange={(event) =>
                       patch({
                         offerValue: event.target.value
@@ -999,6 +1009,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                     }
                     className={inputClass}
                   />
+                  {offerErrors.offerValue ? <span id="detail-error-offerValue" role="alert" className="admin-field-error">{offerErrors.offerValue}</span> : null}
                 </label>
                 <label>
                   <span className={labelClass}>Label</span>
@@ -1021,29 +1032,34 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                   />
                 </label>
                 <label>
-                  <span className={labelClass}>Starts at (your local time)</span>
+                  <span className={labelClass}>Starts at (optional, local time)</span>
                   <input
                     type="datetime-local"
                     value={toLocalDateTime(draft.offerStartsAt)}
+                    aria-invalid={Boolean(offerErrors.offerStartsAt)}
+                    aria-describedby={offerErrors.offerStartsAt ? "detail-error-offerStartsAt" : undefined}
                     onChange={(event) =>
                       patch({ offerStartsAt: toIso(event.target.value) })
                     }
                     className={inputClass}
                   />
+                  {offerErrors.offerStartsAt ? <span id="detail-error-offerStartsAt" role="alert" className="admin-field-error">{offerErrors.offerStartsAt}</span> : null}
                 </label>
                 <label>
-                  <span className={labelClass}>Ends at (your local time)</span>
+                  <span className={labelClass}>Ends at (optional, local time)</span>
                   <input
                     type="datetime-local"
                     value={toLocalDateTime(draft.offerEndsAt)}
-                    required={Boolean(draft.offerEnabled)}
+                    aria-invalid={Boolean(offerErrors.offerEndsAt)}
+                    aria-describedby={offerErrors.offerEndsAt ? "detail-error-offerEndsAt" : undefined}
                     onChange={(event) =>
                       patch({ offerEndsAt: toIso(event.target.value) })
                     }
                     className={inputClass}
                   />
+                  {offerErrors.offerEndsAt ? <span id="detail-error-offerEndsAt" role="alert" className="admin-field-error">{offerErrors.offerEndsAt}</span> : null}
                 </label>
-                <p className="text-xs text-black/50 md:col-span-2">Customers see the remaining days, hours, minutes and seconds. The original price returns automatically when the offer ends.</p>
+                <p className="text-xs text-black/50 md:col-span-2">Leave dates empty to keep the offer active until you turn it off. Add an end time to show a countdown and return to the original price automatically.</p>
               </div>
             ) : null}
           </section>

@@ -1,23 +1,31 @@
 import type { Product } from "@/types/product";
 
-export function validateProductOffer(product: Partial<Product>): string | null {
-  if (!product.offerEnabled) return null;
+export type ProductOfferField = "price" | "offerValue" | "offerType" | "offerStartsAt" | "offerEndsAt";
+export function getProductOfferErrors(product: Partial<Product>): Partial<Record<ProductOfferField, string>> {
+  if (!product.offerEnabled) return {};
+  const errors: Partial<Record<ProductOfferField, string>> = {};
   const value = Number(product.offerValue);
-  if (!Number.isFinite(value) || value <= 0) return "Enter a positive offer value.";
   const type = product.offerType ?? "percentage";
-  if (type === "percentage" && value > 100) return "Percentage discount cannot exceed 100%.";
-  if (type !== "percentage" && value > Number(product.price)) return "Offer value cannot exceed the product price.";
   const price = Number(product.price);
-  if (!Number.isFinite(price) || price <= 0) return "Set a positive product price before enabling an offer.";
-  if (!["percentage", "fixed", "sale-price"].includes(type)) return "Choose a valid offer type.";
-  const discounted = type === "percentage" ? Math.round(price * (1 - value / 100)) : type === "fixed" ? price - value : value;
-  if (discounted >= price) return "The offer price must be lower than the product price.";
+  if (!Number.isFinite(price) || price <= 0) errors.price = "Set a positive product price before enabling an offer.";
+  if (!["percentage", "fixed", "sale-price"].includes(type)) errors.offerType = "Choose a valid offer type.";
+  if (!Number.isFinite(value) || value <= 0) errors.offerValue = "Enter an offer value greater than 0.";
+  else if (type === "percentage" && value > 100) errors.offerValue = "Percentage discount cannot exceed 100%.";
+  else if (type !== "percentage" && value > price) errors.offerValue = "Offer value cannot exceed the product price.";
+  else {
+    const discounted = type === "percentage" ? Math.round(price * (1 - value / 100)) : type === "fixed" ? price - value : value;
+    if (discounted >= price) errors.offerValue = "The offer price must be lower than the product price.";
+  }
   const start = product.offerStartsAt ? Date.parse(product.offerStartsAt) : null;
   const end = product.offerEndsAt ? Date.parse(product.offerEndsAt) : null;
-  if ((start !== null && !Number.isFinite(start)) || (end !== null && !Number.isFinite(end))) return "Enter valid offer start and end times.";
-  if (start !== null && end !== null && end <= start) return "Offer end time must be after its start time.";
-  if (end === null) return "Add an end time for the offer.";
-  return null;
+  if (start !== null && !Number.isFinite(start)) errors.offerStartsAt = "Enter a valid offer start time.";
+  if (end !== null && !Number.isFinite(end)) errors.offerEndsAt = "Enter a valid offer end time.";
+  if (start !== null && end !== null && end <= start) errors.offerEndsAt = "Offer end time must be after its start time.";
+  return errors;
+}
+
+export function validateProductOffer(product: Partial<Product>): string | null {
+  return Object.values(getProductOfferErrors(product))[0] ?? null;
 }
 
 export function isProductOfferActive(product: Product, now = Date.now()) {
