@@ -21,7 +21,7 @@ export default async function Home() {
     <FeaturedProductMotion products={activeProducts} layout={settings.homeFeaturedLayout} />
     <HomeAboutSection />
     {settings.homeCatalogEnabled ? <HomeAllProductsSection theme="light" layout={settings.homeCatalogLayout} products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
-    <HomeDealersSection products={products} whatsappNumber={settings.whatsappNumber} />
+    <HomeDealersSection enabled={settings.homeDealersEnabled} products={products} whatsappNumber={settings.whatsappNumber} />
     <HomeSpotlightSection product={activeProducts.find((product) => product.spotlight)} badge="Single product spotlight" />
   </div>;
 }

@@ -17,7 +17,7 @@ export const localStoreSettings: StoreSettings = {
   homeFeaturedEnabled: true,
   homeAboutEnabled: true,
   homeCatalogEnabled: true,
-  homeDealersEnabled: true,
+  homeDealersEnabled: false,
   homeSpotlightEnabled: true,
   homeAnimationBarsEnabled: true,
   footerEnabled: true,

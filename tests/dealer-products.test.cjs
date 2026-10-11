@@ -30,9 +30,10 @@ const {HomeDealersSection}=load('src/components/HomeDealersSection.tsx',{
 });
 test('homepage Dealers section shows information instead of product cards and hides when all are off',()=>{
  const products=[{name:'Enabled tee',wholesaleEnabled:true,status:'active'},{name:'Hidden tee',wholesaleEnabled:false,status:'active'}];
- const html=renderToStaticMarkup(React.createElement(HomeDealersSection,{products,whatsappNumber:''}));
+ const html=renderToStaticMarkup(React.createElement(HomeDealersSection,{products,whatsappNumber:'',enabled:true}));
+ assert.equal(renderToStaticMarkup(React.createElement(HomeDealersSection,{products,whatsappNumber:'',enabled:false})), '');
  assert.match(html,/id="dealers"/);assert.match(html,/href="\/wholesale"/);assert.match(html,/Plan your quantity/);assert.doesNotMatch(html,/Enabled tee|Hidden tee|<select|<article|wa.me/);
- assert.equal(renderToStaticMarkup(React.createElement(HomeDealersSection,{products:[],whatsappNumber:''})), '');
+ assert.equal(renderToStaticMarkup(React.createElement(HomeDealersSection,{products:[],whatsappNumber:'',enabled:true})), '');
 });
 test('admin action failures scroll to and focus their alert; success feedback does not',()=>{
  let effect;const calls=[];

@@ -57,6 +57,7 @@ export function Header({
   overlayHome?: boolean;
 }) {
   const pathname = usePathname();
+  const visibleNav = nav.filter(item => item.href !== "/wholesale" || settings.homeDealersEnabled);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuMounted, setMenuMounted] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -181,7 +182,7 @@ export function Header({
         </Link>
 
         <nav className="nav desktop-nav" aria-label="Primary navigation">
-          {nav.map((item) => (
+          {visibleNav.map((item) => (
             <Link
               key={item.label}
               href={item.href}
@@ -251,7 +252,7 @@ export function Header({
           aria-label="Mobile navigation"
         >
           <nav className="mobile-card-nav" aria-label="Mobile navigation">
-            {nav.map((item, index) => (
+            {visibleNav.map((item, index) => (
               <Link
                 key={item.label}
                 href={item.href}

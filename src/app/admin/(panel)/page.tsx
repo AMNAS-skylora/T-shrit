@@ -1,3 +1,4 @@
+import { AdminDealersToggle } from "@/components/AdminDealersToggle";
 import Link from "next/link";
 import { getDashboardMetrics } from "@/lib/dashboard";
 import { formatPrice } from "@/lib/format";
@@ -151,7 +152,7 @@ export default async function AdminDashboardPage() {
   let metrics: Awaited<ReturnType<typeof getDashboardMetrics>>;
   try { metrics = await getDashboardMetrics(); }
   catch {
-    return <div className="min-w-0"><p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">CONTROL CENTER</p><h1 className="mt-2 text-3xl font-bold">Dashboard</h1><div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5"><h2 className="text-base font-semibold">Could not load dashboard</h2><p className="mt-2 text-sm leading-6 text-black/50">Store data is temporarily unavailable. Try loading the dashboard again.</p><a href="/admin" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#001cac] px-5 text-xs font-semibold !text-white">Retry dashboard</a></div><nav aria-label="Store management" className="mt-4 grid gap-3 sm:grid-cols-3">{[["/admin/products", "Products"], ["/admin/orders", "Orders"], ["/admin/inventory", "Inventory"]].map(([href, label]) => <Link key={href} href={href} className="flex min-h-11 items-center justify-between rounded-xl bg-white px-4 text-sm font-semibold ring-1 ring-black/5">{label}<span aria-hidden="true">→</span></Link>)}</nav></div>;
+    return <div className="min-w-0"><p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">CONTROL CENTER</p><h1 className="mt-2 text-3xl font-bold">Dashboard</h1><div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5"><h2 className="text-base font-semibold">Could not load dashboard</h2><p className="mt-2 text-sm leading-6 text-black/50">Store data is temporarily unavailable. Try loading the dashboard again.</p><a href="/admin" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#001cac] px-5 text-xs font-semibold !text-white">Retry dashboard</a></div><AdminDealersToggle /><nav aria-label="Store management" className="mt-4 grid gap-3 sm:grid-cols-3">{[["/admin/products", "Products"], ["/admin/orders", "Orders"], ["/admin/inventory", "Inventory"]].map(([href, label]) => <Link key={href} href={href} className="flex min-h-11 items-center justify-between rounded-xl bg-white px-4 text-sm font-semibold ring-1 ring-black/5">{label}<span aria-hidden="true">→</span></Link>)}</nav></div>;
   }
   const maxDailyRevenue = Math.max(
     1,
@@ -283,6 +284,8 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
       </header>
+
+      <AdminDealersToggle />
 
       <section className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <MetricCard
