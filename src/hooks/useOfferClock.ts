@@ -1,11 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useInitialOfferTime } from "@/components/OfferClockProvider";
 import type { Product } from "@/types/product";
 
 // Wake exactly at an offer boundary, rather than waiting for the next poll.
 export function useOfferClock(product?: Partial<Product>, tickCountdown = true) {
-  const [now, setNow] = useState(() => Date.now());
+  // The serialized server snapshot also seeds the first browser render.
+  // Read the browser clock only after hydration, in the effect below.
+  const initialNow = useInitialOfferTime();
+  const [now, setNow] = useState(initialNow);
   const start = product?.offerEnabled ? product.offerStartsAt : undefined;
   const end = product?.offerEnabled ? product.offerEndsAt : undefined;
   const countdown = tickCountdown && Boolean(end);
