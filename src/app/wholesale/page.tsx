@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import styles from "./page.module.css";
 import { getDealerProducts } from "@/lib/dealer-products";
 import type { Metadata } from "next";
@@ -20,6 +21,8 @@ export default async function WholesalePage() {
     getCatalogProducts(),
     getStoreSettings(),
   ]);
+
+  if (!settings.homeDealersEnabled) notFound();
 
   const activeProducts = getDealerProducts(products);
   const whatsappHref = getWholesaleWhatsappUrl(settings.whatsappNumber);

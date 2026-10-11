@@ -17,6 +17,8 @@ export async function generateMetadata({
   params,
 }: WholesaleProductPageProps): Promise<Metadata> {
   const { slug } = await params;
+  const settings = await getStoreSettings();
+  if (!settings.homeDealersEnabled) notFound();
   const product = await getWholesaleProductBySlug(slug);
 
   if (!product) return { title: "Dealer product not found" };
@@ -36,7 +38,7 @@ export default async function WholesaleProductPage({
     getStoreSettings(),
   ]);
 
-  if (!product || product.status === "draft" || !product.wholesaleEnabled) notFound();
+  if (!settings.homeDealersEnabled || !product || product.status === "draft" || !product.wholesaleEnabled) notFound();
 
   const minimum = product.wholesaleMinOrder ?? 1;
   const whatsappHref = getWholesaleProductWhatsappUrl(

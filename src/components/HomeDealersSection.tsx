@@ -4,8 +4,8 @@ import { getWholesaleWhatsappUrl } from "@/lib/format";
 import type { Product } from "@/types/product";
 import styles from "./HomeDealersSection.module.css";
 
-export function HomeDealersSection({ products, whatsappNumber }: { products: Product[]; whatsappNumber: string }) {
-  if (!getDealerProducts(products).length) return null;
+export function HomeDealersSection({ products, whatsappNumber, enabled }: { products: Product[]; whatsappNumber: string; enabled: boolean }) {
+  if (!enabled || !getDealerProducts(products).length) return null;
   const whatsappHref = getWholesaleWhatsappUrl(whatsappNumber);
   return <section id="dealers" aria-labelledby="home-dealers-title" className={styles.section}>
     <div className={styles.layout}>
