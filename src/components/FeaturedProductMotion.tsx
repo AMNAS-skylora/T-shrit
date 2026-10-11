@@ -1,186 +1,84 @@
 "use client";
 
-import type { Product } from "@/types/product";
-import { getProductPrimaryImage } from "@/lib/product-images";
-import { getProductOfferCountdown, getProductOfferPrice } from "@/lib/product-offers";
-import { useOfferClock } from "@/hooks/useOfferClock";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-
-function money(value: number) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import type { Product } from "@/types/product";
+import { getFeaturedProducts } from "@/lib/featured-products";
+import { getProductPrimaryImage } from "@/lib/product-images";
+import { getProductOfferPrice } from "@/lib/product-offers";
+import { formatPrice } from "@/lib/format";
+import { useOfferClock } from "@/hooks/useOfferClock";
+import { OfferCountdown } from "@/components/OfferCountdown";
+import styles from "./FeaturedProductMotion.module.css";
 
 export function FeaturedProductMotion({ products = [], layout = "motion" }: { products?: Product[]; layout?: "motion" | "static" }) {
-  const items = useMemo(() => products.filter((product) => Boolean(getProductPrimaryImage(product))).map((product) => ({
-    id: product.id, name: product.name, description: product.description,
-    price: product.price, image: getProductPrimaryImage(product) || "", href: `/products/${product.slug}`,
-  })), [products]);
-
+  const items = useMemo(() => getFeaturedProducts(products), [products]);
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
-  const reducedMotion = layout === "static";
-  const framesRef = useRef<number[]>([]);
-  const transitionTimerRef = useRef<number | null>(null);
-
+  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
+  const [reduced, setReduced] = useState(false);
+  const root = useRef<HTMLElement>(null);
+  const timer = useRef<number>(0);
+  const frame = useRef<number>(0);
+  const activeIndex = index < items.length ? index : 0;
+  const current = items[activeIndex];
+  const now = useOfferClock(current);
 
   useEffect(() => {
-    if (index < items.length) return;
-    setIndex(0);
-  }, [index, items.length]);
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(preference.matches);
+    const visibility = () => setPageVisible(!document.hidden);
+    sync(); visibility();
+    preference.addEventListener("change", sync);
+    document.addEventListener("visibilitychange", visibility);
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.15 });
+    if (root.current) observer?.observe(root.current);
+    if (!observer) setInView(true);
+    return () => { preference.removeEventListener("change", sync); document.removeEventListener("visibilitychange", visibility); observer?.disconnect(); };
+  }, []);
 
+  function select(next: number) {
+    window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current);
+    if (reduced || layout === "static") { setIndex(next); setVisible(true); return; }
+    setVisible(false);
+    timer.current = window.setTimeout(() => {
+      setIndex(next);
+      frame.current = window.requestAnimationFrame(() => { frame.current = window.requestAnimationFrame(() => setVisible(true)); });
+    }, 260);
+  }
   useEffect(() => {
-    if (reducedMotion) { setIndex(0); setVisible(true); return; }
-    if (items.length <= 1) return;
-
-    const changeProduct = () => {
-      if (document.hidden) return;
-      setVisible(false);
-
-      if (transitionTimerRef.current !== null) {
-        window.clearTimeout(transitionTimerRef.current);
-      }
-
-      transitionTimerRef.current = window.setTimeout(() => {
-        setIndex((current) => (current + 1) % items.length);
-
-        framesRef.current = [window.requestAnimationFrame(() => {
-          framesRef.current.push(window.requestAnimationFrame(() => setVisible(true)));
-        })];
-
-        transitionTimerRef.current = null;
-      }, 380);
-    };
-
-    const timer = window.setInterval(changeProduct, 5000);
-
-    return () => {
-      window.clearInterval(timer);
-      framesRef.current.forEach((frame) => window.cancelAnimationFrame(frame));
-      framesRef.current = [];
-      if (transitionTimerRef.current !== null) {
-        window.clearTimeout(transitionTimerRef.current);
-        transitionTimerRef.current = null;
-      }
-    };
-  }, [items.length, reducedMotion]);
-
-  const current = items[index] ?? items[0];
-  const selectedProduct = products.find((product) => product.id === current?.id);
-  const offerNow = useOfferClock(selectedProduct);
-  const displayPrice = selectedProduct ? getProductOfferPrice(selectedProduct, offerNow) : current?.price ?? 0;
+    if (layout === "static" || reduced || paused || hovered || focused || !inView || !pageVisible || items.length < 2) return;
+    const rotation = window.setInterval(() => select(((index < items.length ? index : 0) + 1) % items.length), 5000);
+    return () => window.clearInterval(rotation);
+  }, [index, items.length, layout, reduced, paused, hovered, focused, inView, pageVisible]);
+  useEffect(() => { if (layout === "static") { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); setIndex(0); setVisible(true); } }, [layout]);
+  useEffect(() => { if (items.length > 1) { const next = new Image(); next.src = getProductPrimaryImage(items[(activeIndex + 1) % items.length]); } }, [items, activeIndex]);
+  useEffect(() => () => { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); }, []);
   if (!current) return null;
 
-
-  return (
-    <section
-      className="relative overflow-hidden bg-[#f7f5ef] text-[#111]"
-      data-motion-owned
-      aria-label="Featured products"
-    >
-      <div className="mx-auto grid min-h-[68svh] w-full max-w-[1440px] grid-cols-1 lg:min-h-[74dvh] lg:grid-cols-2">
-        <div className="order-2 flex items-center px-5 py-12 sm:px-8 sm:py-16 lg:order-1 lg:px-14 lg:py-20 xl:px-20">
-          <div
-            key={"copy-" + current.id + "-" + index}
-            className={"featured-motion-copy max-w-[560px] " + (visible ? "is-visible" : "is-hidden")}
-          >
-            <h2 className="m-0 max-w-[520px] text-[clamp(38px,5.6vw,78px)] font-semibold leading-[.9] tracking-[-.06em]">
-              {current.name}
-            </h2>
-
-            <p className="mt-6 max-w-[460px] text-[13px] leading-6 text-black/55 sm:text-[14px] sm:leading-7">
-              {current.description}
-            </p>
-
-            {selectedProduct && getProductOfferCountdown(selectedProduct, offerNow) ? <p className="mt-4 text-xs tabular-nums">Offer ends in {getProductOfferCountdown(selectedProduct, offerNow)}</p> : null}
-
-            <div className="mt-7 flex flex-wrap items-center gap-4">
-              <strong className="text-[17px] font-semibold tracking-[-.02em]">
-                {money(displayPrice)}
-              </strong>
-
-              <Link
-                href={current.href}
-                className="inline-flex min-h-10 items-center justify-center border border-black/15 bg-white/60 px-5 text-[9px] font-semibold uppercase tracking-[.08em] text-[#111] transition hover:bg-white"
-              >
-                View product
-              </Link>
-            </div>
-
-          </div>
-        </div>
-
-        <div className="order-1 flex min-h-[46svh] items-center justify-center overflow-hidden px-5 py-8 sm:min-h-[52svh] sm:px-8 lg:order-2 lg:min-h-0 lg:px-10 lg:py-12">
-          <div
-            key={"image-" + current.id + "-" + index}
-            className={"featured-motion-image relative flex h-full min-h-[42svh] w-full items-center justify-center lg:min-h-[62vh] " + (visible ? "is-visible" : "is-hidden")}
-          >
-            <div className="absolute inset-[8%] rounded-full bg-black/[.025] blur-3xl" />
-            <img
-              src={current.image}
-              alt={current.name}
-              draggable={false}
-              className="relative z-10 max-h-[58svh] w-auto max-w-[92%] select-none object-contain drop-shadow-[0_28px_42px_rgba(0,0,0,.12)] lg:max-h-[68vh]"
-            />
-          </div>
-        </div>
+  return <section ref={root} id="featured-products" className={styles.section} data-motion-owned aria-label="Featured products" onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setFocused(false); }}>
+    <div className={styles.layout}>
+      <div className={styles.info} data-visible={visible}>
+        <p className={styles.eyebrow}>Featured</p>
+        <h2>{current.name}</h2>
+        {current.description ? <p className={styles.description}>{current.description}</p> : null}
+        <strong className={styles.price}>{formatPrice(getProductOfferPrice(current, now))}</strong>
+        <OfferCountdown product={current} now={now} />
+        <Link href={"/products/" + current.slug} className={styles.button}>View product <span aria-hidden="true">↗</span></Link>
       </div>
-
-      <style jsx>{`
-        .featured-motion-copy,
-        .featured-motion-image {
-          will-change: opacity, transform;
-        }
-
-        .featured-motion-copy {
-          transition:
-            opacity 380ms ease,
-            transform 720ms cubic-bezier(.16,1,.3,1),
-            filter 420ms ease;
-        }
-
-        .featured-motion-image {
-          transition:
-            opacity 420ms ease,
-            transform 900ms cubic-bezier(.16,1,.3,1),
-            filter 460ms ease;
-        }
-
-        .featured-motion-copy.is-visible,
-        .featured-motion-image.is-visible {
-          opacity: 1;
-          transform: translate3d(0, 0, 0) scale(1);
-          filter: blur(0);
-        }
-
-        .featured-motion-copy.is-hidden {
-          opacity: 0;
-          transform: translate3d(-28px, 0, 0);
-          filter: blur(2px);
-        }
-
-        .featured-motion-image.is-hidden {
-          opacity: 0;
-          transform: translate3d(42px, 0, 0) scale(.985);
-          filter: blur(1.5px);
-        }
-
-        @media (max-width: 1023px) {
-          .featured-motion-copy.is-hidden {
-            transform: translate3d(-18px, 0, 0);
-          }
-
-          .featured-motion-image.is-hidden {
-            transform: translate3d(28px, 0, 0) scale(.99);
-          }
-        }
-
-
-      `}</style>
-    </section>
-  );
+      <Link href={"/products/" + current.slug} className={styles.media} data-visible={visible} aria-label={"View " + current.name}>
+        <img src={getProductPrimaryImage(current)} alt={current.name} loading="lazy" decoding="async" draggable={false} />
+      </Link>
+    </div>
+    {items.length > 1 && layout !== "static" ? <div className={styles.controls} role="group" aria-label="Choose featured product">
+      <button type="button" onClick={() => select((activeIndex + items.length - 1) % items.length)} aria-label="Previous featured product">←</button>
+      <span className={styles.position} aria-live="off">{activeIndex + 1} / {items.length}</span>
+      <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} aria-label={paused ? "Play featured slideshow" : "Pause featured slideshow"}>{paused ? "Play" : "Pause"}</button>
+      <button type="button" onClick={() => select((activeIndex + 1) % items.length)} aria-label="Next featured product">→</button>
+    </div> : null}
+  </section>;
 }
