@@ -65,7 +65,7 @@ export function ProductDetailClient({
 
   return (
     <>
-      <div className={"product-detail-visual " + galleryStyles.gallery}
+      <div className={galleryStyles.gallery}
         data-product-image-target
         onPointerEnter={(event) => { if (event.pointerType === "mouse") setGalleryPaused(true); }}
         onPointerLeave={() => setGalleryPaused(false)}
@@ -87,14 +87,14 @@ export function ProductDetailClient({
             alt={`${product.name} — ${selectedColor}`}
             fill
             preload={activeImageIndex === 0}
-            sizes="(max-width: 980px) 100vw, 58vw"
-            className={"product-detail-image " + galleryStyles.image}
+            sizes="(max-width: 800px) 100vw, 58vw"
+            className={galleryStyles.image}
           />
         ) : (
-          <span className="product-detail-empty">No product image</span>
+          <span className={galleryStyles.empty}>No product image</span>
         )}
 
-        <div className="product-detail-floating-tag">
+        <div className={galleryStyles.tag}>
           {soldOut ? "Sold out" : selectedColor}
         </div>
 
@@ -105,17 +105,14 @@ export function ProductDetailClient({
             <span>{activeImageIndex + 1} / {variantImages.length}</span>
             <button type="button" onClick={() => moveImage(1)} aria-label="Next product image">→</button>
           </div>
-          <div className="absolute bottom-4 left-4 right-4 z-[3] flex gap-2 overflow-x-auto rounded-2xl bg-white/85 p-2 backdrop-blur-md">
+          <div className={galleryStyles.thumbnails}>
             {variantImages.map((url, index) => (
               <button
                 key={url + index}
                 type="button"
                 onClick={() => setActiveImageIndex(index)}
                 className={
-                  "relative h-16 w-14 shrink-0 overflow-hidden rounded-xl border bg-white transition " +
-                  (index === activeImageIndex
-                    ? "border-[#001cac] ring-2 ring-[#001cac]/15"
-                    : "border-black/10")
+                  galleryStyles.thumbnail + " " + (index === activeImageIndex ? galleryStyles.selected : "")
                 }
                 aria-label={"Show image " + (index + 1)}
                 aria-pressed={index === activeImageIndex}
@@ -125,7 +122,7 @@ export function ProductDetailClient({
                   alt={product.name + " image " + (index + 1)}
                   fill
                   sizes="56px"
-                  className="object-cover"
+                  className={galleryStyles.thumbnailImage}
                 />
               </button>
             ))}
@@ -134,17 +131,17 @@ export function ProductDetailClient({
         ) : null}
       </div>
 
-      <div className={"product-info " + galleryStyles.info}>
-        <div className="product-info-inner">
-          <div className="product-detail-heading">
+      <div className={galleryStyles.info}>
+        <div className={galleryStyles.inner}>
+          <div className={galleryStyles.heading}>
             <div>
-              <p className="eyebrow">
+              <p className={galleryStyles.eyebrow}>
                 {product.category} / {product.sku}
               </p>
               <h1>{product.name}</h1>
             </div>
 
-            <div className="product-detail-price">
+            <div className={galleryStyles.price}>
               <strong>{formatPrice(displayPrice)}</strong>
               {offerActive ? (
                 <del>{formatPrice(product.price)}</del>
@@ -154,7 +151,7 @@ export function ProductDetailClient({
 
           {offerActive ? (
             <div className="mb-4 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-[#111111] px-3 py-1.5 text-[9px] font-bold text-white">
+              <span className={galleryStyles.offerBadge}>
                 {product.offerBadge || product.offerLabel || "Offer"}
               </span>
 
@@ -163,47 +160,49 @@ export function ProductDetailClient({
 
           {offerActive ? <OfferCountdown product={product} now={now} /> : null}
 
-          <p className="product-description">{product.description}</p>
+          {product.description ? <p className={galleryStyles.description}>{product.description}</p> : null}
 
-          <div className="product-detail-option-block">
-            <div className="product-detail-option-head">
+          <div className={galleryStyles.optionBlock}>
+            <div className={galleryStyles.optionHead}>
               <span>Colour</span>
               <strong>{selectedColor}</strong>
             </div>
 
             {variants.length > 1 ? (
-              <div className="product-detail-colour-swatches">
+              <div className={galleryStyles.swatches}>
                 {variants.map((variant) => (
                   <button
                     key={variant.name}
                     type="button"
                     className={
-                      "product-detail-colour-swatch " +
-                      (selectedColor === variant.name ? "active" : "")
+                      galleryStyles.swatch + " " + (selectedColor === variant.name ? galleryStyles.selected : "")
                     }
+                    aria-label={variant.name}
+                    title={variant.name}
+                    aria-pressed={selectedColor === variant.name}
                     onClick={() => setSelectedColor(variant.name)}
                   >
-                    <span style={{ background: variant.value }} />
-                    <small>{variant.name}</small>
+                    <span style={{ background: variant.value }} aria-hidden="true" />
                   </button>
                 ))}
               </div>
             ) : (
-              <strong className="product-single-colour">{selectedColor}</strong>
+              <strong className={galleryStyles.singleColor}>{selectedColor}</strong>
             )}
           </div>
 
-          <div className="product-detail-option-block">
-            <div className="product-detail-option-head">
+          <div className={galleryStyles.optionBlock}>
+            <div className={galleryStyles.optionHead}>
               <span>Size</span>
               <strong>{size}</strong>
             </div>
-            <div className="size-picker" aria-label="Select size">
+            <div className={galleryStyles.sizes} aria-label="Select size">
               {product.sizes.map((option) => (
                 <button
                   type="button"
                   key={option}
-                  className={size === option ? "active" : ""}
+                  className={size === option ? galleryStyles.selected : ""}
+                  aria-pressed={size === option}
                   onClick={() => setSize(option)}
                 >
                   {option}
@@ -212,7 +211,7 @@ export function ProductDetailClient({
             </div>
           </div>
 
-          <div className="product-attribute-grid">
+          <div className={galleryStyles.attributes}>
             <div>
               <span>Availability</span>
               <strong>{soldOut ? "Sold out" : `${stock} in stock`}</strong>
@@ -223,18 +222,18 @@ export function ProductDetailClient({
             </div>
           </div>
 
-          <div className="product-action-buttons product-detail-actions product-detail-whatsapp-actions">
+          <div className={galleryStyles.actions}>
             {product.featuredImage ? (
               <Link
                 href={"/try-on/" + product.slug}
-                className="button border border-black/10 bg-white !text-[#111111]"
+                className={galleryStyles.secondaryButton}
               >
                 Try-On Anywhere
               </Link>
             ) : null}
             {whatsappUrl !== "#" && !soldOut ? (
               <a
-                className="button button-primary product-detail-whatsapp-primary"
+                className={galleryStyles.primaryButton}
                 href={whatsappUrl}
                 target="_blank"
                 rel="noreferrer"
@@ -244,7 +243,7 @@ export function ProductDetailClient({
             ) : (
               <button
                 type="button"
-                className="button button-primary product-detail-whatsapp-primary"
+                className={galleryStyles.primaryButton}
                 disabled
               >
                 {soldOut ? "Sold out" : "WhatsApp unavailable"}
@@ -252,7 +251,7 @@ export function ProductDetailClient({
             )}
           </div>
 
-          <div className="product-notes">
+          <div className={galleryStyles.notes}>
             {product.featuredImage ? (
               <span>Live camera try-on available</span>
             ) : null}
