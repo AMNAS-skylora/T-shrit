@@ -16,6 +16,8 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   const [now, setNow] = useState(initialNow);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const mouseStart = useRef<SwipePoint | null>(null);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -53,7 +55,7 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
     document.addEventListener("visibilitychange", updateVisibility); updateVisibility();
     return () => { window.clearInterval(timer); observer.disconnect(); media.removeEventListener("change", updateMotion); document.removeEventListener("visibilitychange", updateVisibility); };
   }, []);
-  const automatic = active.length > 1 && !paused && !hovered && !focused && visible && !reducedMotion;
+  const automatic = active.length > 1 && !paused && !dragging && !hovered && !focused && visible && !reducedMotion;
   useEffect(() => {
     if (!automatic) return;
     const timer = window.setTimeout(() => setSelectedId(active[(selected + 1) % active.length].id), 5000);
@@ -62,7 +64,12 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   function move(direction: number) {
     if (active.length > 1) setSelectedId(active[(selected + direction + active.length) % active.length].id);
   }
-  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "primary" && active.length && !preview ? styles.fullViewport : ""} ${active.length > 1 ? styles.hasControls : ""} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : section === "tertiary" && (active.length || preview) ? styles.backgroundSlider : ""}`} role="region" aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : section === "tertiary" ? "Background collections" : "Featured collections"}
+  return <div ref={root} data-motion-owned className={`${styles.slider} ${section === "primary" && active.length && !preview ? styles.fullViewport : ""} ${active.length > 1 ? styles.draggable : ""} ${section === "secondary" && (active.length || preview) ? styles.secondarySlider : section === "tertiary" && (active.length || preview) ? styles.backgroundSlider : ""}`} role="region" tabIndex={active.length > 1 ? 0 : undefined} aria-roledescription="carousel" aria-label={section === "secondary" ? "Campaigns" : section === "tertiary" ? "Background collections" : "Featured collections"}
+    onKeyDown={(event) => { if (event.target !== event.currentTarget || active.length < 2) return; if (event.key === "ArrowLeft" || event.key === "ArrowRight") { event.preventDefault(); move(event.key === "ArrowLeft" ? -1 : 1); } else if (event.key === " ") { event.preventDefault(); setPaused(value => !value); } }}
+    onPointerDown={(event) => { if (event.pointerType !== "mouse" || event.button !== 0 || active.length < 2 || (event.target as Element).closest("a, button, select, input, textarea")) return; mouseStart.current = { x: event.clientX, y: event.clientY }; setDragging(true); event.currentTarget.setPointerCapture(event.pointerId); }}
+    onPointerUp={(event) => { if (event.pointerType !== "mouse" || !mouseStart.current) return; const direction = getHeroSwipeDirection(mouseStart.current, { x: event.clientX, y: event.clientY }); mouseStart.current = null; setDragging(false); if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); if (direction) move(direction); }}
+    onPointerCancel={() => { mouseStart.current = null; setDragging(false); }}
+    onDragStart={(event) => { if (mouseStart.current) event.preventDefault(); }}
     onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
     onFocusCapture={() => setFocused(true)} onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false); }}
     onTouchStart={(event) => { touchStart.current = (event.target as Element).closest("button, select, input, textarea") ? null : { x: event.touches[0].clientX, y: event.touches[0].clientY }; }}
@@ -73,11 +80,6 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
         {section === "tertiary" ? <BackgroundHero slide={slide} preview={preview} /> : section === "secondary" ? <SecondaryHero slide={slide} preview={preview} /> : <ComfortHero showProductCard={slide.showProductCard} imageOpacity={slide.imageOpacity} settings={{ ...settings, homeDefaultHeroTitle: slide.title, homeDefaultHeroImageUrl: slide.imageUrl, homeDefaultHeroImagePosition: slide.imagePosition, homeDefaultHeroImagePlacement: slide.imagePlacement, homeDefaultHeroButtonLabel: slide.button, homeDefaultHeroButtonHref: slide.href }} products={slide.product ? [slide.product] : []} preview={preview} heading={index === 0} />}
       </div>)}
     </div> : preview ? <p className={styles.noSlides}>Add and enable a slide to preview the slider.</p> : null}
-    {active.length > 1 ? <div className={styles.controls}>
-      <button type="button" aria-label="Previous slide" onClick={() => move(-1)}>←</button>
-      {active.length > 3 ? <select aria-label="Select hero slide" value={active[selected].id} onChange={(event) => setSelectedId(event.target.value)}>{active.map((slide, index) => <option key={slide.id} value={slide.id}>{index + 1} / {active.length}</option>)}</select> : <div className={styles.dots}>{active.map((slide, index) => <button type="button" key={slide.id} aria-label={`Show slide ${index + 1}`} aria-current={index === selected ? "true" : undefined} onClick={() => setSelectedId(slide.id)}><span /></button>)}</div>}
-      <button type="button" aria-label="Next slide" onClick={() => move(1)}>→</button>
-      <button type="button" aria-label={paused ? "Start automatic slides" : "Pause automatic slides"} aria-pressed={paused} onClick={() => setPaused(!paused)}>{paused ? "Play" : "Pause"}</button>
-    </div> : null}
+
   </div>;
 }
