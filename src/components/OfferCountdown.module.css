@@ -1,18 +1,20 @@
-.timer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-bottom: 12px; padding: 14px 16px; border: 1px solid #d9efff; border-radius: 12px; background: #eaf7ff; color: #202a35; }
+.timer { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; padding: 0; color: #202a35; }
 .heading { font-size: 13px; font-weight: 600; }
 .units { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
 .unit { display: flex; min-width: 0; align-items: center; gap: 5px; }
 .unit strong { display: flex; align-items: center; justify-content: center; min-width: 32px; min-height: 32px; padding: 4px; border-radius: 6px; background: #005bea; color: #fff; font-size: 14px; line-height: 1.2; font-weight: 600; font-variant-numeric: tabular-nums; }
 .unit small { font-size: 11px; font-weight: 600; }
-.timer[data-compact="true"] { gap: 6px; padding: 9px 6px; border-radius: 8px; }
+.timer[data-compact="true"] { gap: 6px; padding: 0; }
 .timer[data-compact="true"] .heading { width: 100%; text-align: center; font-size: 9px; }
 .timer[data-compact="true"] .units { display: grid; width: 100%; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 4px; }
 .timer[data-compact="true"] .unit { flex-direction: column; gap: 4px; }
 .timer[data-compact="true"] .unit strong { width: 100%; min-width: 0; min-height: 28px; font-size: 13px; }
 .timer[data-compact="true"] .unit small { font-size: 8px; }
 @media (max-width: 380px) {
-  .timer { gap: 8px; padding: 12px 8px; }
+  .timer { gap: 8px; padding: 0; }
   .heading { font-size: 11px; }
   .units { gap: 6px; }
   .unit small { font-size: 9px; }
 }
+
+.timer[data-theme="dark"] { color: #fff; }

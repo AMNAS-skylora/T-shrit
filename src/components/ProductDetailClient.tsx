@@ -65,7 +65,6 @@ export function ProductDetailClient({
 
   return (
     <>
-      {offerActive ? <div className={galleryStyles.offerStrip}><OfferCountdown product={product} now={now} /></div> : null}
       <div className={"product-detail-visual " + galleryStyles.gallery}
         data-product-image-target
         onPointerEnter={(event) => { if (event.pointerType === "mouse") setGalleryPaused(true); }}
@@ -161,6 +160,8 @@ export function ProductDetailClient({
 
             </div>
           ) : null}
+
+          {offerActive ? <OfferCountdown product={product} now={now} /> : null}
 
           <p className="product-description">{product.description}</p>
 
