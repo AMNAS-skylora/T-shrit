@@ -7,28 +7,8 @@ import { useMemo, useState } from "react";
 import type { Product } from "@/types/product";
 import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
 import { useStoreSettings } from "@/components/StoreSettingsContext";
-import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
+import { getProductOfferCountdown, getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { getProductImageForColor } from "@/lib/product-images";
-
-function getOfferTimer(endAt: string | undefined, now: number) {
-  if (!endAt) return null;
-
-  const end = new Date(endAt);
-  const remaining = Math.max(0, end.getTime() - now);
-  if (remaining <= 0) return null;
-
-  const totalMinutes = Math.floor(remaining / 60000);
-  const days = Math.floor(totalMinutes / 1440);
-  const hours = Math.floor((totalMinutes % 1440) / 60);
-  const minutes = totalMinutes % 60;
-
-  return {
-    countdown: `${String(days).padStart(2, "0")}D : ${String(hours).padStart(2, "0")}H : ${String(minutes).padStart(2, "0")}M`,
-    date: end
-      .toLocaleDateString("en-GB", { day: "2-digit", month: "short" })
-      .toUpperCase(),
-  };
-}
 
 export function ProductCard({ product }: { product: Product }) {
   const settings = useStoreSettings();
@@ -47,26 +27,17 @@ export function ProductCard({ product }: { product: Product }) {
   const limitedStock = !soldOut && currentStock <= 7;
   const activeProductOffer = isProductOfferActive(product, now);
   const offerPrice = getProductOfferPrice(product, now);
-  const legacyOffer =
-    !activeProductOffer &&
-    Boolean(product.compareAtPrice) &&
-    Number(product.compareAtPrice) > product.price;
-  const hasOffer = activeProductOffer || legacyOffer;
-  const displayPrice = activeProductOffer ? offerPrice : product.price;
-  const originalPrice = activeProductOffer
-    ? product.price
-    : product.compareAtPrice;
+  const hasOffer = activeProductOffer;
+  const displayPrice = offerPrice;
+  const originalPrice = activeProductOffer ? product.price : undefined;
 
   const discount =
     hasOffer && originalPrice && originalPrice > displayPrice
       ? Math.round(((originalPrice - displayPrice) / originalPrice) * 100)
       : 0;
 
-  const offerEndAt =
-    activeProductOffer && product.offerCountdown
-      ? product.offerEndsAt
-      : product.saleEndsAt;
-  const offerTimer = getOfferTimer(offerEndAt, now);
+  const remaining = getProductOfferCountdown(product, now);
+  const offerTimer = remaining ? { countdown: remaining, date: new Date(product.offerEndsAt!).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase() } : null;
 
   const badge = useMemo(
     () =>

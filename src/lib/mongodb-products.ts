@@ -176,12 +176,7 @@ function productFields(
         : input.costPrice !== undefined
           ? Math.max(0, number(input.costPrice))
           : current?.costPrice,
-    compareAtPrice:
-      input.compareAtPrice === null
-        ? undefined
-        : input.compareAtPrice !== undefined
-          ? Math.max(0, number(input.compareAtPrice))
-          : current?.compareAtPrice,
+    compareAtPrice: undefined,
     offerEnabled:
       typeof input.offerEnabled === "boolean"
         ? input.offerEnabled
@@ -308,7 +303,7 @@ export async function getWholesaleProductBySlug(slug: string) {
 export async function createProduct(input: Record<string, unknown>) {
   const db = await getDb();
   const now = new Date();
-  const product = productFields(input);
+  const product = productFields({ ...input, offerEnabled: false, offerValue: null, offerStartsAt: "", offerEndsAt: "", offerCountdown: false });
   const offerError = validateProductOffer(product);
   if (offerError) throw new Error(offerError);
   const result = await db.collection("products").insertOne({

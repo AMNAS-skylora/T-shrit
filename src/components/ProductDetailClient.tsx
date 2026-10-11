@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
-import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
+import { getProductOfferCountdown, getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { getProductGalleryForColor } from "@/lib/product-images";
 import galleryStyles from "@/components/ProductGallery.module.css";
 
@@ -147,8 +147,6 @@ export function ProductDetailClient({
               <strong>{formatPrice(displayPrice)}</strong>
               {offerActive ? (
                 <del>{formatPrice(product.price)}</del>
-              ) : product.compareAtPrice ? (
-                <del>{formatPrice(product.compareAtPrice)}</del>
               ) : null}
             </div>
           </div>
@@ -160,9 +158,7 @@ export function ProductDetailClient({
               </span>
               {product.offerEndsAt ? (
                 <span className="text-[9px] font-medium text-black/50">
-                  {product.offerCountdown
-                    ? `Ends in ${Math.floor(Math.max(0, Date.parse(product.offerEndsAt) - now) / 3600000)}h ${Math.floor(Math.max(0, Date.parse(product.offerEndsAt) - now) / 60000) % 60}m ${Math.floor(Math.max(0, Date.parse(product.offerEndsAt) - now) / 1000) % 60}s`
-                    : `Ends ${new Date(product.offerEndsAt).toLocaleString("en-IN")}`}
+                  {`Ends in ${getProductOfferCountdown(product, now)}`}
                 </span>
               ) : null}
             </div>

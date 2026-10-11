@@ -8,18 +8,18 @@ export function useOfferClock(product?: Partial<Product>, tickCountdown = true) 
   const [now, setNow] = useState(() => Date.now());
   const start = product?.offerEnabled ? product.offerStartsAt : undefined;
   const end = product?.offerEnabled ? product.offerEndsAt : undefined;
-  const countdown = tickCountdown && Boolean(product?.offerCountdown);
-  const saleEnd = product?.saleEndsAt;
+  const countdown = tickCountdown && Boolean(end);
   useEffect(() => {
-    if (!start && !end && !saleEnd) return;
+    if (!start && !end) return;
     let timer = 0;
     const sync = () => {
       window.clearTimeout(timer);
       const current = Date.now();
       setNow(current);
       if (document.hidden) return;
-      const future = [start, end, saleEnd].map((date) => date ? Date.parse(date) : NaN).filter((time) => Number.isFinite(time) && time > current);
-      const next = Math.min(current + (tickCountdown && (countdown || saleEnd) ? 1000 : 60000), ...future);
+      const future = [start, end].map((date) => date ? Date.parse(date) : NaN).filter((time) => Number.isFinite(time) && time > current);
+      if (!future.length) return;
+      const next = Math.min(current + (tickCountdown && countdown ? 1000 : 60000), ...future);
       timer = window.setTimeout(sync, Math.max(16, next - current));
     };
     sync();
@@ -30,6 +30,6 @@ export function useOfferClock(product?: Partial<Product>, tickCountdown = true) 
       document.removeEventListener("visibilitychange", sync);
       window.removeEventListener("focus", sync);
     };
-  }, [start, end, saleEnd, countdown, tickCountdown]);
+  }, [start, end, countdown, tickCountdown]);
   return now;
 }

@@ -2,7 +2,7 @@
 
 import type { Product } from "@/types/product";
 import { getProductPrimaryImage } from "@/lib/product-images";
-import { getProductOfferPrice } from "@/lib/product-offers";
+import { getProductOfferCountdown, getProductOfferPrice } from "@/lib/product-offers";
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -95,6 +95,8 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
             <p className="mt-6 max-w-[460px] text-[13px] leading-6 text-black/55 sm:text-[14px] sm:leading-7">
               {current.description}
             </p>
+
+            {selectedProduct && getProductOfferCountdown(selectedProduct, offerNow) ? <p className="mt-4 text-xs tabular-nums">Offer ends in {getProductOfferCountdown(selectedProduct, offerNow)}</p> : null}
 
             <div className="mt-7 flex flex-wrap items-center gap-4">
               <strong className="text-[17px] font-semibold tracking-[-.02em]">
