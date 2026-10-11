@@ -74,14 +74,15 @@ export function getWholesaleProductWhatsappUrl(
 ) {
   if (!whatsappNumber) return "#";
 
-  const minOrder = product.wholesaleMinOrder ?? 12;
+  const minOrder = product.wholesaleMinOrder ?? 1;
   const lines = [
     "Hi KLEID.IN, I’m interested in a dealer order for:",
     "",
     product.name,
     `Minimum order: ${minOrder} pcs`,
+    product.wholesalePrice ? `Dealer price: ${formatPrice(product.wholesalePrice)} per piece` : "",
     `Colours: ${product.colors.join(" / ")}`,
-    `Dealer product: /wholesale/${product.wholesaleSlug ?? `${product.slug}-dealer`}`,
+    `Dealer product: /wholesale/${product.wholesaleSlug ?? product.slug}`,
     "",
     "Please share dealer pricing, current availability and delivery details.",
   ];

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { getWholesaleProductBySlug } from "@/lib/catalog";
 import { getStoreSettings } from "@/lib/site-settings";
-import { getWholesaleProductWhatsappUrl } from "@/lib/format";
+import { formatPrice, getWholesaleProductWhatsappUrl } from "@/lib/format";
 import { getProductPrimaryImage } from "@/lib/product-images";
 
 export const dynamic = "force-dynamic";
@@ -36,9 +36,9 @@ export default async function WholesaleProductPage({
     getStoreSettings(),
   ]);
 
-  if (!product) notFound();
+  if (!product || product.status === "draft" || !product.wholesaleEnabled) notFound();
 
-  const minimum = product.wholesaleMinOrder ?? 12;
+  const minimum = product.wholesaleMinOrder ?? 1;
   const whatsappHref = getWholesaleProductWhatsappUrl(
     product,
     settings.whatsappNumber,
@@ -75,6 +75,7 @@ export default async function WholesaleProductPage({
           <div className="dealer-detail-info">
             <p className="dealer-detail-eyebrow">DEALER PRODUCT</p>
             <h1>{product.name}</h1>
+            {product.wholesalePrice !== undefined ? <p className="mt-4 text-xl font-semibold">{formatPrice(product.wholesalePrice)} <span className="text-sm font-normal">per piece</span></p> : null}
 
             <div className="dealer-detail-facts">
               <div>

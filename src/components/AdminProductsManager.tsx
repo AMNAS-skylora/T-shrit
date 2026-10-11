@@ -1,5 +1,8 @@
 "use client";
 
+import { AdminActionFeedback } from "@/components/AdminActionFeedback";
+import { validateDealerProduct } from "@/lib/dealer-products";
+
 import Image from "next/image";
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useDeferredValue, useEffect, useMemo, useState, type ReactNode } from "react";
@@ -161,6 +164,7 @@ export function AdminProductsManager() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [message, setMessage] = useState("");
+  const [messageError, setMessageError] = useState(false);
   const offerInput = { price: Number(draft.price), offerEnabled: draft.offerEnabled, offerType: draft.offerType, offerValue: Number(draft.offerValue), offerStartsAt: draft.offerStartsAt, offerEndsAt: draft.offerEndsAt };
   const offerErrors = getProductOfferErrors(offerInput);
   const [busy, setBusy] = useState(false);
@@ -196,7 +200,7 @@ export function AdminProductsManager() {
       setEditingId(null);
       setDraft(emptyDraft);
       setUploading("");
-      setMessage("");
+      setMessageError(false); setMessage("");
       setDrawerOpen(true);
 
       const cleanUrl = window.location.pathname;
@@ -241,7 +245,7 @@ export function AdminProductsManager() {
 
   function openCreate() {
     clearDraft();
-    setMessage("");
+    setMessageError(false); setMessage("");
     setDrawerOpen(true);
   }
 
@@ -301,7 +305,7 @@ export function AdminProductsManager() {
           : "",
       wholesaleMinOrder: String(product.wholesaleMinOrder || 12),
     });
-    setMessage("");
+    setMessageError(false); setMessage("");
     setDrawerOpen(true);
   }
 
@@ -310,7 +314,7 @@ export function AdminProductsManager() {
     field: "image" | "featuredImage",
   ) {
     setUploading(field);
-    setMessage("");
+    setMessageError(false); setMessage("");
 
     const previous = draft[field];
     const previewUrl = URL.createObjectURL(file);
@@ -329,6 +333,7 @@ export function AdminProductsManager() {
       }));
       setMessage("Image uploaded to Cloudinary. Save the product to publish it.");
     } catch (error) {
+      setMessageError(true);
       setDraft((current) => ({
         ...current,
         [field]: previous,
@@ -345,10 +350,10 @@ export function AdminProductsManager() {
   async function submit(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
-    setMessage("");
+    setMessageError(false); setMessage("");
 
     try {
-      const offerError = validateProductOffer(offerInput);
+      const offerError = validateProductOffer(offerInput) || validateDealerProduct({wholesaleEnabled:draft.wholesaleEnabled,wholesalePrice:Number(draft.wholesalePrice),wholesaleMinOrder:Number(draft.wholesaleMinOrder)});
       if (offerError) {
         document.querySelector<HTMLElement>('#admin-product-form [aria-invalid="true"]')?.focus();
         throw new Error(offerError);
@@ -423,6 +428,7 @@ export function AdminProductsManager() {
       clearDraft();
       setMessage(wasEditing ? "Product updated." : "Product created.");
     } catch (error) {
+      setMessageError(true);
       setMessage(
         error instanceof Error ? error.message : "Could not save product.",
       );
@@ -433,14 +439,15 @@ export function AdminProductsManager() {
 
   async function remove(id: string) {
     if (deletingId || !window.confirm("Delete this product?")) return;
-    setDeletingId(id); setMessage("");
+    setDeletingId(id); setMessageError(false); setMessage("");
     try {
       const response = await fetch("/api/admin/products/" + id, { method: "DELETE" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not delete product.");
       setProducts((current) => current.filter((product) => product.id !== id));
       setMessage("Product deleted.");
-    } catch (error) { setMessage(error instanceof Error ? error.message : "Could not delete product."); }
+    } catch (error) {
+      setMessageError(true); setMessage(error instanceof Error ? error.message : "Could not delete product."); }
     finally { setDeletingId(""); }
   }
 
@@ -567,11 +574,7 @@ export function AdminProductsManager() {
         ))}
       </div>
 
-      {message ? (
-        <div role="status" className="mt-4 rounded-xl border border-black/5 bg-white px-4 py-3 text-xs font-medium text-black/60">
-          {message}
-        </div>
-      ) : null}
+      {!drawerOpen ? <AdminActionFeedback message={message} error={messageError} /> : null}
 
       {!loading && !loadError && products.length ? <details className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-black/5"><summary className="min-h-11 cursor-pointer text-sm font-semibold leading-[44px]">Homepage placements</summary><p className="text-xs leading-5 text-black/45">Arrange featured products, animations and spotlight.</p><AdminProductPlacementManager products={products} onChanged={load} /></details> : null}
 
@@ -1136,14 +1139,14 @@ export function AdminProductsManager() {
                   wholesaleEnabled: checked,
                 }))
               }
-              title="Dealer / wholesale"
-              description="Enable wholesale pricing and minimum order quantity for this product."
+              title="Dealer sales"
+              description="Show this product in the homepage Dealers section and dealer catalog."
             />
 
             {draft.wholesaleEnabled ? (
               <div className="grid gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/5 md:grid-cols-2">
                 {field(
-                  "Wholesale price",
+                  "Dealer price per piece",
                   <input
                     type="number"
                     min="0"
@@ -1176,11 +1179,7 @@ export function AdminProductsManager() {
             ) : null}
           </section>
 
-          {message ? (
-            <p className="rounded-xl bg-white px-4 py-3 text-xs font-medium text-black/60 ring-1 ring-black/5">
-              {message}
-            </p>
-          ) : null}
+          <AdminActionFeedback message={message} error={messageError} />
         </form>
       </AdminDrawer>
     </div>
