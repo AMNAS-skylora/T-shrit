@@ -1,0 +1,26 @@
+.section { padding: 56px 5%; background: #fafafa; color: #111; scroll-margin-top: 80px; }
+.layout { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: clamp(28px, 5vw, 72px); max-width: 1200px; margin: 0 auto; }
+.media { display: flex; position: relative; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; background: #f0f0f0; }
+.image { object-fit: contain; object-position: center; }
+.noImage { color: #777; font-size: 13px; }
+.info { min-width: 0; }
+.eyebrow { margin: 0 0 16px; font-size: 11px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: #666; }
+.title { margin: 0; font-size: clamp(28px, 3vw, 40px); font-weight: 600; line-height: 1.15; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px; margin-top: 20px; }
+.price strong { font-size: 22px; font-weight: 600; }
+.price del { color: #777; font-size: 14px; }
+.description { margin: 24px 0; color: #666; font-size: 14px; line-height: 1.75; white-space: pre-line; overflow-wrap: anywhere; }
+.meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding: 20px 0; margin: 24px 0; border-block: 1px solid #e5e5e5; }
+.meta dt { font-size: 11px; color: #777; margin-bottom: 6px; }
+.meta dd { margin: 0; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.info :global(.size-picker) { flex-wrap: wrap; }
+.info :global(.product-action-buttons) { display: flex; flex-wrap: wrap; }
+.info :global(.whatsapp-order-button) { max-width: 100%; white-space: normal; }
+.view { display: inline-flex; align-items: center; gap: 18px; min-height: 44px; margin-top: 16px; font-size: 13px; font-weight: 600; }
+.media:focus-visible, .view:focus-visible { outline: 2px solid #005bea; outline-offset: 4px; }
+@media (max-width: 800px) {
+  .section { padding: 36px 24px; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .media { max-width: 560px; margin: 0 auto; }
+}
+@media (max-width: 380px) { .section { padding: 32px 20px; } }

@@ -1,5 +1,6 @@
 import { getActiveHeroSlides } from "@/lib/hero";
 import { HomeDealersSection } from "@/components/HomeDealersSection";
+import { HomeSpotlightSection } from "@/components/HomeSpotlightSection";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHeroSlider } from "@/components/HomeHeroSlider";
 import { HomeAllProductsSection } from "@/components/HomeAllProductsSection";
@@ -19,5 +20,6 @@ export default async function Home() {
     <HomeAboutSection />
     {settings.homeCatalogEnabled ? <HomeAllProductsSection theme="light" layout={settings.homeCatalogLayout} products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
     <HomeDealersSection products={products} whatsappNumber={settings.whatsappNumber} />
+    <HomeSpotlightSection product={activeProducts.find((product) => product.spotlight)} badge="Single product spotlight" />
   </div>;
 }
