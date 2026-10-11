@@ -18,8 +18,8 @@ export default async function Home() {
     <HomeHeroSlider settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="secondary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="tertiary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
-    <HomeAboutSection />
     <FeaturedProductMotion products={activeProducts} layout={settings.homeFeaturedLayout} />
+    <HomeAboutSection />
     {settings.homeCatalogEnabled ? <HomeAllProductsSection theme="light" layout={settings.homeCatalogLayout} products={activeProducts} title={settings.homeCatalogTitle} eyebrow={settings.homeCatalogEyebrow} whatsappNumber={settings.whatsappNumber} /> : null}
     <HomeDealersSection products={products} whatsappNumber={settings.whatsappNumber} />
     <HomeSpotlightSection product={activeProducts.find((product) => product.spotlight)} badge="Single product spotlight" />
