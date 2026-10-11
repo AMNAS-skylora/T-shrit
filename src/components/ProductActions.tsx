@@ -45,13 +45,12 @@ export function ProductActions({
       className={"product-actions " + (compact ? "product-actions-compact" : "")}
     >
       {showColorOptions && colors.length ? <div className="product-color-options">
-        <p className="product-option-label">Colour <span>{selectedColor}</span></p>
+        <p className="product-option-label">Colour</p>
         <div className="product-color-picker" role="group" aria-label="Select colour">
           {colors.map(option => {
             const value = product.colorVariants?.find(item => item.name === option)?.value;
-            return <button type="button" key={option} aria-pressed={selectedColor === option} className={selectedColor === option ? "active" : ""} onClick={() => { setColor(option); onColorChange?.(option); }}>
-              {value ? <span className="product-color-dot" style={{ backgroundColor: value }} aria-hidden="true" /> : null}
-              <span>{option}</span>
+            return <button type="button" key={option} aria-label={option} title={option} aria-pressed={selectedColor === option} className={selectedColor === option ? "active" : ""} onClick={() => { setColor(option); onColorChange?.(option); }}>
+              <span className="product-color-dot" style={value ? { backgroundColor: value } : undefined} aria-hidden="true" />
             </button>;
           })}
         </div>
