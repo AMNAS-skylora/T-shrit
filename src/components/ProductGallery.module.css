@@ -12,3 +12,5 @@
 .info :global(.product-info-inner) { background: #fafafa !important; border-radius: 0 !important; }
 .info :global(.product-detail-heading h1) { font-size: clamp(26px,3vw,40px) !important; line-height: 1.1 !important; }
 @media (max-width:600px) { .gallery { aspect-ratio: 4/5; min-height: 0 !important; } }
+
+.offerStrip { grid-column: 1 / -1; min-width: 0; }

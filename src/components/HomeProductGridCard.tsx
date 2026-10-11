@@ -34,6 +34,8 @@ export function HomeProductGridCard({
         aria-label={"View " + product.name}
       />
 
+      <OfferCountdown product={product} now={now} theme={theme} compact />
+
       <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f1ef]">
         {image ? <Image
           src={image}
@@ -53,8 +55,6 @@ export function HomeProductGridCard({
           {formatPrice(price)}
           {offerActive ? <del className={"ml-2 " + (theme === "dark" ? "text-white/45" : "text-black/35")}>{formatPrice(product.price)}</del> : null}
         </p>
-
-        <OfferCountdown product={product} now={now} theme={theme} />
 
         <a
           href={whatsappHref}
