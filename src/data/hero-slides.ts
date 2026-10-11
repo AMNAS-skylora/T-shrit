@@ -10,6 +10,7 @@ export type HeroSlideConfig = {
   section?: HeroSection;
   tickerText?: string;
   imageOpacity?: number;
+  showProductCard?: boolean;
   secondaryButton?: string;
   secondaryHref?: string;
   kind: HeroSlideKind;

@@ -54,3 +54,9 @@ test('third section is independent and preserves custom opacity and both button 
   assert.equal(result[0].secondaryButton, 'Contact'); assert.equal(result[0].secondaryHref, 'mailto:contact@example.test');
   assert.equal(getComfortSlides([slide('defaults', { section: 'tertiary' })], [], now, 'tertiary')[0].imageOpacity, 40);
 });
+test('hero product cards are opt-in and preserved for linked live products', () => {
+  const output = getComfortSlides([slide('plain', { productId: 'p1' }), slide('card', { productId: 'p1', showProductCard: true })], [product], now);
+  assert.equal(output[0].showProductCard, false);
+  assert.equal(output[1].showProductCard, true);
+  assert.equal(output[1].product.id, 'p1');
+});

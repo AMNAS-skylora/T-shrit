@@ -27,6 +27,7 @@ type Draft = {
   section: HeroSection;
   tickerText: string;
   imageOpacity: number;
+  showProductCard: boolean;
   secondaryButton: string;
   secondaryHref: string;
   title: string;
@@ -52,6 +53,7 @@ const emptyDraft: Draft = {
   section: "primary",
   tickerText: "",
   imageOpacity: 40,
+  showProductCard: false,
   secondaryButton: "",
   secondaryHref: "",
   title: "",
@@ -201,6 +203,7 @@ export function AdminHeroManager() {
       section: slide.section || "primary",
       tickerText: slide.tickerText || "",
       imageOpacity: normalizeHeroImageOpacity(slide.imageOpacity),
+      showProductCard: slide.showProductCard === true,
       secondaryButton: slide.secondaryButton || "",
       secondaryHref: slide.secondaryHref || "",
       title: slide.title,
@@ -306,8 +309,8 @@ export function AdminHeroManager() {
     setMessage("");
 
     try {
-      if (draft.kind === "product" && !draft.productId) {
-        throw new Error("Choose a product for a product hero.");
+      if ((draft.kind === "product" || (draft.section === "primary" && draft.showProductCard)) && !draft.productId) {
+        throw new Error("Choose a product for this hero or its product card.");
       }
 
       if (
@@ -518,7 +521,9 @@ export function AdminHeroManager() {
             </div>
           </section>
 
-          {(draft.kind === "product" || draft.kind === "offer") ? (
+          {draft.section === "primary" ? <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5"><label className="flex min-h-11 items-center gap-3 text-sm font-semibold"><input type="checkbox" checked={draft.showProductCard} onChange={event => setDraft(current => ({ ...current, showProductCard: event.target.checked }))} />Show product card</label><p className="mt-2 text-xs leading-5 text-black/50">Optional card over the background image. Choose the product below when enabled.</p></section> : null}
+
+          {(draft.kind === "product" || draft.kind === "offer" || (draft.section === "primary" && draft.showProductCard)) ? (
             <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
               <label>
                 <span className={labelClass}>
@@ -529,7 +534,7 @@ export function AdminHeroManager() {
                 <select
                   value={draft.productId}
                   onChange={(event) => selectProduct(event.target.value)}
-                  required={draft.kind === "product"}
+                  required={draft.kind === "product" || (draft.section === "primary" && draft.showProductCard)}
                   className={inputClass}
                 >
                   <option value="">
@@ -665,6 +670,7 @@ export function AdminHeroManager() {
             {storeSettings ? <AdminHeroImageControls
               section={draft.section}
               imageOpacity={draft.imageOpacity}
+              showProductCard={draft.showProductCard}
               onOpacityChange={(imageOpacity) => setDraft((current) => ({ ...current, imageOpacity }))}
               secondaryButton={draft.secondaryButton}
               secondaryHref={draft.secondaryHref}
