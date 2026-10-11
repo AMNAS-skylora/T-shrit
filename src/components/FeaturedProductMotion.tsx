@@ -63,7 +63,6 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
   return <section ref={root} id="featured-products" className={styles.section} data-motion-owned aria-label="Featured products" onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setFocused(false); }}>
     <div className={styles.layout}>
       <div className={styles.info} data-visible={visible}>
-        <p className={styles.eyebrow}>Featured</p>
         <h2>{current.name}</h2>
         {current.description ? <p className={styles.description}>{current.description}</p> : null}
         <strong className={styles.price}>{formatPrice(getProductOfferPrice(current, now))}</strong>
