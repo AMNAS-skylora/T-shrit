@@ -11,8 +11,13 @@ function load(path, dependencies = {}) {
   return result.exports;
 }
 const offers = load('src/lib/product-offers.ts');
+const countdown = load('src/components/OfferCountdown.tsx', {
+  '@/lib/product-offers': offers,
+  './OfferCountdown.module.css': {default:{}},
+});
 const now = Date.parse('2026-10-11T00:00:00Z');
 const dependencies = {
+  '@/components/OfferCountdown': countdown,
   '@/lib/product-offers': offers,
   '@/hooks/useOfferClock': { useOfferClock: () => now },
   '@/lib/format': {formatPrice: price => `INR${price}`, getProductWhatsappUrl: () => '#'},

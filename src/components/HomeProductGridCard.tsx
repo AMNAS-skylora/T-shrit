@@ -1,7 +1,8 @@
 "use client";
 
 import { useOfferClock } from "@/hooks/useOfferClock";
-import { getProductOfferCountdown, getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
+import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
+import { OfferCountdown } from "@/components/OfferCountdown";
 import Image from "next/image";
 import Link from "next/link";
 import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
@@ -53,7 +54,7 @@ export function HomeProductGridCard({
           {offerActive ? <del className={"ml-2 " + (theme === "dark" ? "text-white/45" : "text-black/35")}>{formatPrice(product.price)}</del> : null}
         </p>
 
-        {offerActive ? <p className="mt-2 text-[10px] font-semibold tabular-nums">Offer ends in {getProductOfferCountdown(product, now)}</p> : null}
+        <OfferCountdown product={product} now={now} theme={theme} />
 
         <a
           href={whatsappHref}
