@@ -1,0 +1,6 @@
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; }
+.grid > * { min-width: 0; }
+@media (max-width: 640px) {
+  .grid { gap: 24px 8px; }
+  .grid :global(.home-product-whatsapp-button) { padding-inline: 4px; letter-spacing: 0; }
+}
