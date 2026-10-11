@@ -9,8 +9,8 @@ import type { StoreSettings } from "@/types/commerce";
 
 const nav = [
   { href: "/", label: "Home" },
-  { href: "/#all-products", label: "Shop" },
   { href: "/#about", label: "About" },
+  { href: "/#all-products", label: "Shop" },
   { href: "/wholesale", label: "Dealers" },
 ];
 
