@@ -6,6 +6,7 @@ import Link from "next/link";
 import { HomeShoppingMotion } from "@/components/HomeShoppingMotion";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { ShopPageTransition } from "@/components/ShopPageTransition";
 import { ProductImageTransition } from "@/components/ProductImageTransition";
 import { StoreSettingsProvider } from "@/components/StoreSettingsContext";
 import type { Product } from "@/types/product";
@@ -113,6 +114,7 @@ export function SiteChrome({
       ) : null}
       <HomeShoppingMotion />
       <ProductImageTransition />
+      <ShopPageTransition />
       {!tryOnChromeHidden ? (
         <Header
           products={products}
