@@ -36,7 +36,10 @@ export function HomeSpotlightSection({ product, badge }: { product?: Product; ba
           {product.colors.length ? <div><dt>Colours</dt><dd>{product.colors.join(" / ")}</dd></div> : null}
           {product.sizes.length ? <div><dt>Sizes</dt><dd>{product.sizes.join(" · ")}</dd></div> : null}
         </dl> : null}
-        <ProductActions key={product.id} product={product} compact />
+        <div className={styles.options}>
+          {product.sizes.length ? <p className={styles.optionLabel}>Select size</p> : null}
+          <ProductActions key={product.id} product={product} compact />
+        </div>
         <Link href={productHref} className={styles.view}>View full product <span aria-hidden="true">↗</span></Link>
       </div>
     </div>
