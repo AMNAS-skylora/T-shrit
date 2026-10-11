@@ -3,6 +3,7 @@ import "./globals.css";
 import "./mobile-ui.css";
 import "./admin-forms.css";
 import { SiteChrome } from "@/components/SiteChrome";
+import { OfferClockProvider } from "@/components/OfferClockProvider";
 import { getCatalogProducts } from "@/lib/catalog";
 import { getStoreSettings } from "@/lib/site-settings";
 import { store } from "@/config/store";
@@ -32,9 +33,11 @@ export default async function RootLayout({
       <body
         className="min-h-screen bg-[#fafafa] text-kleid-ink antialiased"
       >
-        <SiteChrome products={products} settings={settings}>
-          {children}
-        </SiteChrome>
+        <OfferClockProvider initialNow={Date.now()}>
+          <SiteChrome products={products} settings={settings}>
+            {children}
+          </SiteChrome>
+        </OfferClockProvider>
       </body>
     </html>
   );

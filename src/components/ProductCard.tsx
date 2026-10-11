@@ -37,7 +37,7 @@ export function ProductCard({ product }: { product: Product }) {
       : 0;
 
   const remaining = getProductOfferCountdown(product, now);
-  const offerTimer = remaining ? { countdown: remaining, date: new Date(product.offerEndsAt!).toLocaleDateString("en-GB", { day: "2-digit", month: "short" }).toUpperCase() } : null;
+  const offerTimer = remaining ? { countdown: remaining, date: new Date(product.offerEndsAt!).toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "Asia/Kolkata" }).toUpperCase() } : null;
 
   const badge = useMemo(
     () =>
