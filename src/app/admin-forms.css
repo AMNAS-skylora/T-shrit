@@ -114,3 +114,5 @@
 @media (max-width: 640px) {
   [data-admin-drawer] { top: 0; bottom: auto; height: 100dvh; max-height: 100dvh; padding-top: env(safe-area-inset-top); }
 }
+
+[data-admin-ui] .admin-field-error { display: block; margin-top: 8px; color: #b91c1c !important; font-size: 12px; font-weight: 500; line-height: 1.5; }

@@ -5,7 +5,7 @@ const ts = require('typescript');
 const code = ts.transpileModule(fs.readFileSync('src/lib/product-offers.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 const result = { exports: {} };
 new Function('module', 'exports', code)(result, result.exports);
-const { getProductOfferCountdown, validateProductOffer, isProductOfferActive, getProductOfferPrice, getProductOfferStatus } = result.exports;
+const { getProductOfferErrors, getProductOfferCountdown, validateProductOffer, isProductOfferActive, getProductOfferPrice, getProductOfferStatus } = result.exports;
 const start = Date.parse('2026-10-08T10:00:00Z');
 const end = start + 3600000;
 const product = { price: 1000, offerEnabled: true, offerType: 'percentage', offerValue: 20, offerStartsAt: new Date(start).toISOString(), offerEndsAt: new Date(end).toISOString() };
@@ -22,7 +22,7 @@ test('all discount types calculate expected prices', () => {
   assert.equal(getProductOfferPrice({...product, offerType:'sale-price', offerValue:650}, start),650);
 });
 test('reject malformed dates, backwards ranges and invalid values', () => {
-  for (const patch of [{offerValue:0},{offerValue:-2},{offerValue:101},{offerStartsAt:'invalid'},{offerEndsAt:product.offerStartsAt},{offerType:'fixed',offerValue:1100},{offerCountdown:true,offerEndsAt:undefined}]) {
+  for (const patch of [{offerValue:0},{offerValue:-2},{offerValue:101},{offerStartsAt:'invalid'},{offerEndsAt:product.offerStartsAt},{offerType:'fixed',offerValue:1100}]) {
     const invalid = {...product,...patch};
     assert.ok(validateProductOffer(invalid));
     assert.equal(isProductOfferActive(invalid,start),false);
@@ -45,7 +45,7 @@ test('timed offers count down days and seconds and disappear at expiry', () => {
   assert.equal(getProductOfferCountdown(timed,start+1000),'1d 23h 59m 59s');
   assert.equal(getProductOfferCountdown(timed,start+2*86400000),null);
   assert.equal(getProductOfferCountdown(timed,start-1),null);
-  assert.ok(validateProductOffer({...timed,offerEndsAt:undefined}));
+  assert.equal(validateProductOffer({...timed,offerEndsAt:undefined}),null);
 });
 
 test('offer must reduce the price, including after percentage rounding', () => {
@@ -53,4 +53,21 @@ test('offer must reduce the price, including after percentage rounding', () => {
     assert.ok(validateProductOffer({...product,...patch}));
     assert.equal(getProductOfferPrice({...product,...patch},start),1000);
   }
+});
+
+test('undated offers stay active until disabled, with no countdown', () => {
+  const undated = {...product,offerStartsAt:undefined,offerEndsAt:undefined,offerCountdown:true};
+  assert.equal(validateProductOffer(undated),null);
+  assert.equal(getProductOfferPrice(undated,start),800);
+  assert.equal(getProductOfferPrice(undated,start+365*86400000),800);
+  assert.equal(getProductOfferCountdown(undated,start),null);
+  assert.equal(getProductOfferPrice({...undated,offerEnabled:false},start),1000);
+});
+test('field errors identify invalid discount and date inputs independently', () => {
+  const errors = getProductOfferErrors({...product,offerValue:101,offerStartsAt:'bad',offerEndsAt:'also bad'});
+  assert.match(errors.offerValue,/100%/);
+  assert.match(errors.offerStartsAt,/start time/);
+  assert.match(errors.offerEndsAt,/end time/);
+  assert.deepEqual(getProductOfferErrors({...product,offerEnabled:false,offerValue:101}),{});
+  assert.deepEqual(getProductOfferErrors({...product,offerStartsAt:undefined,offerEndsAt:undefined}),{});
 });
