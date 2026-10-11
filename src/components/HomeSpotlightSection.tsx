@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useOfferClock } from "@/hooks/useOfferClock";
@@ -7,15 +8,16 @@ import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers
 import { OfferCountdown } from "@/components/OfferCountdown";
 import { ProductActions } from "@/components/ProductActions";
 import { formatPrice } from "@/lib/format";
-import { getProductPrimaryImage } from "@/lib/product-images";
+import { getProductImageForColor } from "@/lib/product-images";
 import type { Product } from "@/types/product";
 import styles from "./HomeSpotlightSection.module.css";
 
 export function HomeSpotlightSection({ product, badge }: { product?: Product; badge: string }) {
   const now = useOfferClock(product);
+  const [selectedColor, setSelectedColor] = useState(product?.colorVariants?.[0]?.name ?? product?.colors[0] ?? "Default");
   if (!product || product.status !== "active" || !product.spotlight) return null;
   const offerActive = isProductOfferActive(product, now);
-  const image = getProductPrimaryImage(product);
+  const image = getProductImageForColor(product, selectedColor);
   const productHref = "/products/" + product.slug;
 
   return <section id="product-spotlight" className={styles.section} aria-labelledby="spotlight-title">
@@ -32,13 +34,8 @@ export function HomeSpotlightSection({ product, badge }: { product?: Product; ba
         </div>
         {offerActive ? <OfferCountdown product={product} now={now} /> : null}
         {product.description ? <p className={styles.description}>{product.description}</p> : null}
-        {product.colors.length || product.sizes.length ? <dl className={styles.meta}>
-          {product.colors.length ? <div><dt>Colours</dt><dd>{product.colors.join(" / ")}</dd></div> : null}
-          {product.sizes.length ? <div><dt>Sizes</dt><dd>{product.sizes.join(" · ")}</dd></div> : null}
-        </dl> : null}
         <div className={styles.options}>
-          {product.sizes.length ? <p className={styles.optionLabel}>Select size</p> : null}
-          <ProductActions key={product.id} product={product} compact />
+          <ProductActions key={product.id} product={product} compact showColorOptions onColorChange={setSelectedColor} />
         </div>
         <Link href={productHref} className={styles.view}>View full product <span aria-hidden="true">↗</span></Link>
       </div>
