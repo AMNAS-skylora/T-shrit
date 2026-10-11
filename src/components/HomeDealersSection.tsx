@@ -5,7 +5,21 @@ import type { Product } from "@/types/product";
 import styles from "./HomeDealersSection.module.css";
 
 export function HomeDealersSection({ products, whatsappNumber, enabled }: { products: Product[]; whatsappNumber: string; enabled: boolean }) {
-  if (!enabled || !getDealerProducts(products).length) return null;
+  if (!enabled) return <section id="everyday-style" aria-labelledby="everyday-style-title" className={styles.section}>
+    <div className={styles.layout}>
+      <div>
+        <p className={styles.eyebrow}>KLEID.IN / EVERYDAY</p>
+        <h2 id="everyday-style-title" className={styles.title}>Simple pieces.<br />Your own style.</h2>
+        <p className={styles.body}>A wardrobe starts with the pieces you love wearing. Find your colours, choose your fit and make every outfit feel like you.</p>
+      </div>
+      <div className={styles.details}>
+        <div><h3>Wear it your way</h3><p>Keep it simple or layer it up. Let your everyday look reflect your own style.</p></div>
+        <div><h3>Find your colour</h3><p>Start with familiar shades or try something different. Build combinations that feel right for you.</p></div>
+        <div><h3>Choose your fit</h3><p>Explore the size and product details to find the piece that belongs in your wardrobe.</p></div>
+      </div>
+    </div>
+  </section>;
+  if (!getDealerProducts(products).length) return null;
   const whatsappHref = getWholesaleWhatsappUrl(whatsappNumber);
   return <section id="dealers" aria-labelledby="home-dealers-title" className={styles.section}>
     <div className={styles.layout}>
