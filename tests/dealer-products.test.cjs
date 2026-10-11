@@ -24,13 +24,14 @@ const React=require('react');
 const {renderToStaticMarkup}=require('react-dom/server');
 const {HomeDealersSection}=load('src/components/HomeDealersSection.tsx',{
  '@/lib/dealer-products':dealer,
- '@/components/DealerProductCatalog':{DealerProductCatalog:({products})=>React.createElement('div',null,products.map(p=>p.name).join(','))},
+ '@/lib/format':{getWholesaleWhatsappUrl:number=>number ? 'https://wa.me/'+number : '#'},
+ './HomeDealersSection.module.css':{default:{}},
  'next/link':{default:props=>React.createElement('a',props,props.children)},
 });
-test('homepage Dealers section renders live dealer products and hides when all are off',()=>{
+test('homepage Dealers section shows information instead of product cards and hides when all are off',()=>{
  const products=[{name:'Enabled tee',wholesaleEnabled:true,status:'active'},{name:'Hidden tee',wholesaleEnabled:false,status:'active'}];
  const html=renderToStaticMarkup(React.createElement(HomeDealersSection,{products,whatsappNumber:''}));
- assert.match(html,/id="dealers"/);assert.match(html,/Enabled tee/);assert.doesNotMatch(html,/Hidden tee/);
+ assert.match(html,/id="dealers"/);assert.match(html,/href="\/wholesale"/);assert.match(html,/Plan your quantity/);assert.doesNotMatch(html,/Enabled tee|Hidden tee|<select|<article|wa.me/);
  assert.equal(renderToStaticMarkup(React.createElement(HomeDealersSection,{products:[],whatsappNumber:''})), '');
 });
 test('admin action failures scroll to and focus their alert; success feedback does not',()=>{
