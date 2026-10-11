@@ -1,3 +1,4 @@
+import styles from "./page.module.css";
 import { getDealerProducts } from "@/lib/dealer-products";
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -30,8 +31,8 @@ export default async function WholesalePage() {
         : "/";
 
   return (
-    <main className="dealer-page dealer-page-clean">
-      <div className="dealer-shell">
+    <main className={styles.page}>
+      <div className={styles.shell}>
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
@@ -39,13 +40,13 @@ export default async function WholesalePage() {
           ]}
         />
 
-        <section className="dealer-intro-clean dealer-intro-dark">
-          <div className="dealer-intro-heading">
+        <section className={styles.intro}>
+          <div className={styles.heading}>
             <p>DEALERS</p>
             <h1>Stock KLEID.IN.</h1>
           </div>
 
-          <div className="dealer-intro-content">
+          <div className={styles.content}>
             <span>
               For retailers, resellers and independent stores looking for current
               availability, minimum quantities and dealer ordering.
@@ -55,15 +56,15 @@ export default async function WholesalePage() {
               target={whatsappHref !== "#" ? "_blank" : undefined}
               rel={whatsappHref !== "#" ? "noreferrer" : undefined}
             >
-              Enquire on WhatsApp
+              {whatsappHref !== "#" ? "Enquire on WhatsApp" : settings.supportEmail ? "Enquire by email" : "Back to home"}
             </a>
           </div>
         </section>
 
-        <section className="dealer-catalog-head dealer-catalog-head-clean">
+        <section className={styles.catalogHeading}>
           <div>
             <span>DEALER CATALOG</span>
-            <strong>Available products</strong>
+            <h2>Available products</h2>
           </div>
           <p>{activeProducts.length} styles</p>
         </section>
