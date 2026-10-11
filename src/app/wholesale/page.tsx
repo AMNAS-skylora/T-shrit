@@ -1,3 +1,4 @@
+import { getDealerProducts } from "@/lib/dealer-products";
 import type { Metadata } from "next";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { DealerProductCatalog } from "@/components/DealerProductCatalog";
@@ -19,7 +20,7 @@ export default async function WholesalePage() {
     getStoreSettings(),
   ]);
 
-  const activeProducts = products.filter((product) => product.status !== "draft");
+  const activeProducts = getDealerProducts(products);
   const whatsappHref = getWholesaleWhatsappUrl(settings.whatsappNumber);
   const contactHref =
     whatsappHref !== "#"

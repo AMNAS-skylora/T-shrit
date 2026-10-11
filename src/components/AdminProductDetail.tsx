@@ -1,5 +1,7 @@
 "use client";
 
+import { AdminActionFeedback } from "@/components/AdminActionFeedback";
+import { validateDealerProduct } from "@/lib/dealer-products";
 import { AdminCategorySelect } from "@/components/AdminCategorySelect";
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Link from "next/link";
@@ -118,6 +120,7 @@ function Toggle({
 export function AdminProductDetail({ productId }: { productId: string }) {
   const [draft, setDraft] = useState<Product | null>(null);
   const [message, setMessage] = useState("");
+  const [messageError, setMessageError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState("");
   const [customSize, setCustomSize] = useState("");
@@ -129,7 +132,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setDraft(null); setSavedProduct(null); setLoading(true); setLoadError(""); setMessage(""); setNotFound(false); setCustomSize("");
+    setDraft(null); setSavedProduct(null); setLoading(true); setLoadError(""); setMessageError(false); setMessage(""); setNotFound(false); setCustomSize("");
     async function load() {
       try {
         const response = await fetch("/api/admin/products/" + encodeURIComponent(productId), { cache: "no-store", signal: controller.signal });
@@ -137,7 +140,8 @@ export function AdminProductDetail({ productId }: { productId: string }) {
         if (!response.ok) { setNotFound(response.status === 404); throw new Error(data.error || "Could not load product."); }
         if (controller.signal.aborted) return;
         setDraft(cloneProduct(data.product)); setSavedProduct(cloneProduct(data.product));
-      } catch (error) { if (!controller.signal.aborted) setLoadError(error instanceof Error ? error.message : "Could not load product."); }
+      } catch (error) {
+      setMessageError(true); if (!controller.signal.aborted) setLoadError(error instanceof Error ? error.message : "Could not load product."); }
       finally { if (!controller.signal.aborted) setLoading(false); }
     }
     void load();
@@ -315,7 +319,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
   async function uploadFile(file: File, key: string) {
     setUploading(key);
-    setMessage("");
+    setMessageError(false); setMessage("");
 
     try {
       const uploaded = await uploadAdminImage(file, "kleidin/products");
@@ -339,6 +343,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
       patch({ image: url });
       setMessage("Main image uploaded. Save product to publish the change.");
     } catch (error) {
+      setMessageError(true);
       patch({ image: previous });
       setMessage(error instanceof Error ? error.message : "Image upload failed.");
     } finally {
@@ -360,6 +365,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
       patch({ featuredImage: url });
       setMessage("Animation image uploaded. Save product to publish the change.");
     } catch (error) {
+      setMessageError(true);
       patch({ featuredImage: previous });
       setMessage(error instanceof Error ? error.message : "Image upload failed.");
     } finally {
@@ -385,6 +391,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
         "Selector background uploaded. Save product to publish the change.",
       );
     } catch (error) {
+      setMessageError(true);
       patch({ showcaseBackgroundImage: previous });
       setMessage(
         error instanceof Error ? error.message : "Image upload failed.",
@@ -433,6 +440,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
       });
       setMessage("Colour image uploaded. Save product to publish the change.");
     } catch (error) {
+      setMessageError(true);
       updateVariant(index, (variant) => {
         const images = (variant.images ?? []).filter(
           (url) => !previewUrls.includes(url),
@@ -452,14 +460,15 @@ export function AdminProductDetail({ productId }: { productId: string }) {
   async function save() {
     if (saving || uploading) return;
     if (!draft) return;
-    const offerError = validateProductOffer(draft);
+    const offerError = validateProductOffer(draft) || validateDealerProduct(draft);
     if (offerError) {
+      setMessageError(true);
       setMessage(offerError);
       window.requestAnimationFrame(() => { const field = document.querySelector<HTMLElement>('[data-admin-ui] [aria-invalid="true"]'); field?.focus(); field?.scrollIntoView({ behavior: "smooth", block: "center" }); });
       return;
     }
     setSaving(true);
-    setMessage("");
+    setMessageError(false); setMessage("");
 
     try {
       const normalizedVariants = (draft.colorVariants ?? []).map((variant) => ({
@@ -512,6 +521,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
       setSavedProduct(cloneProduct(data.product));
       setMessage("Product saved.");
     } catch (error) {
+      setMessageError(true);
       setMessage(
         error instanceof Error ? error.message : "Could not save product.",
       );
@@ -521,7 +531,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
   }
 
   const dirty = Boolean(draft && savedProduct && JSON.stringify(draft) !== JSON.stringify(savedProduct));
-  function reset() { if (savedProduct) { setDraft(cloneProduct(savedProduct)); setCustomSize(""); setMessage(""); } }
+  function reset() { if (savedProduct) { setDraft(cloneProduct(savedProduct)); setCustomSize(""); setMessageError(false); setMessage(""); } }
 
   if (!draft) {
     return <div className="min-w-0"><Link href="/admin/products" className="inline-flex min-h-11 items-center text-xs font-semibold !text-[#001cac]">← Back to products</Link>{loading ? <div role="status" aria-label="Loading product" className="mt-4 grid gap-4 lg:grid-cols-3"><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none lg:col-span-2" /><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none" /></div> : <div role="alert" className="mt-4 rounded-2xl bg-white p-5 ring-1 ring-black/5"><p className="text-sm text-red-600">{loadError || "Product not found."}</p>{!notFound ? <button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button> : null}</div>}</div>;
@@ -568,13 +578,9 @@ export function AdminProductDetail({ productId }: { productId: string }) {
         </div>
       </div>
 
-      {message ? (
-        <p id="product-feedback" role="status" aria-live="polite" className="mt-4 rounded-xl bg-white px-4 py-3 text-xs font-medium text-black/60 ring-1 ring-black/5">
-          {message}
-        </p>
-      ) : null}
+      <AdminActionFeedback id="product-feedback" message={message} error={messageError} />
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><nav aria-label="Product sections" className="flex flex-wrap gap-2">{[["details", "Details"], ["sizes", "Sizes"], ["colours", "Colours"], ["offer", "Offer"], ["homepage", "Homepage"], ["images", "Images"]].map(([id, label]) => <a key={id} href={"#product-" + id} className="inline-flex min-h-11 items-center rounded-xl border border-black/10 bg-white px-3 text-xs font-semibold hover:bg-[#eef2ff]">{label}</a>)}</nav><p aria-live="polite" className={"text-xs font-semibold " + (dirty ? "text-amber-700" : "text-black/45")}>{dirty ? "Unsaved changes" : "All changes saved"}</p></div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><nav aria-label="Product sections" className="flex flex-wrap gap-2">{[["details", "Details"], ["sizes", "Sizes"], ["colours", "Colours"], ["offer", "Offer"], ["dealers", "Dealers"], ["homepage", "Homepage"], ["images", "Images"]].map(([id, label]) => <a key={id} href={"#product-" + id} className="inline-flex min-h-11 items-center rounded-xl border border-black/10 bg-white px-3 text-xs font-semibold hover:bg-[#eef2ff]">{label}</a>)}</nav><p aria-live="polite" className={"text-xs font-semibold " + (dirty ? "text-amber-700" : "text-black/45")}>{dirty ? "Unsaved changes" : "All changes saved"}</p></div>
       <fieldset data-admin-form disabled={saving} className="mt-5 grid min-w-0 gap-4 border-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="order-2 min-w-0 space-y-4 xl:order-1">
           <section id="product-details" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
@@ -1062,6 +1068,15 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                 <p className="text-xs text-black/50 md:col-span-2">Leave dates empty to keep the offer active until you turn it off. Add an end time to show a countdown and return to the original price automatically.</p>
               </div>
             ) : null}
+          </section>
+
+          <section id="product-dealers" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
+            <p className={labelClass}>Dealers</p>
+            <div className="mt-3"><Toggle checked={Boolean(draft.wholesaleEnabled)} onChange={(checked) => patch({wholesaleEnabled:checked, ...(checked ? {wholesalePrice:draft.wholesalePrice ?? draft.price, wholesaleMinOrder:draft.wholesaleMinOrder ?? 1} : {})})} label="Enable dealer sales" help="Show this product in the homepage Dealers section and dealer catalog." /></div>
+            {draft.wholesaleEnabled ? <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <label><span className={labelClass}>Dealer price per piece</span><input type="number" min="0.01" step="0.01" value={draft.wholesalePrice ?? ""} onChange={event=>patch({wholesalePrice:event.target.value ? Number(event.target.value) : undefined})} className={inputClass} /></label>
+              <label><span className={labelClass}>Minimum order quantity</span><input type="number" min="1" step="1" value={draft.wholesaleMinOrder ?? ""} onChange={event=>patch({wholesaleMinOrder:event.target.value ? Number(event.target.value) : undefined})} className={inputClass} /></label>
+            </div> : null}
           </section>
 
           <section id="product-homepage" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">

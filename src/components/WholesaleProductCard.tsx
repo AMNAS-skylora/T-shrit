@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/types/product";
-import { getWholesaleProductWhatsappUrl } from "@/lib/format";
+import { formatPrice, getWholesaleProductWhatsappUrl } from "@/lib/format";
 import { getProductPrimaryImage } from "@/lib/product-images";
 
 export function WholesaleProductCard({
@@ -12,9 +12,9 @@ export function WholesaleProductCard({
   whatsappNumber: string;
 }) {
   const soldOut = product.status === "sold-out" || product.stock <= 0;
-  const minOrder = product.wholesaleMinOrder ?? 12;
+  const minOrder = product.wholesaleMinOrder ?? 1;
   const enquiryHref = getWholesaleProductWhatsappUrl(product, whatsappNumber);
-  const wholesaleSlug = product.wholesaleSlug ?? `${product.slug}-dealer`;
+  const wholesaleSlug = product.wholesaleSlug ?? product.slug;
   const productImage = getProductPrimaryImage(product);
 
   return (
@@ -49,6 +49,8 @@ export function WholesaleProductCard({
         <Link href={`/wholesale/${wholesaleSlug}`} className="product-name">
           {product.name}
         </Link>
+
+        {product.wholesalePrice !== undefined ? <p className="mt-2 text-sm font-semibold">{formatPrice(product.wholesalePrice)} <span className="text-xs font-normal text-black/50">/ piece</span></p> : null}
 
         <div className="dealer-unified-meta">
           <span>Minimum order</span>

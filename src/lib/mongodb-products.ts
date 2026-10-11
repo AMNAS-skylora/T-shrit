@@ -1,3 +1,4 @@
+import { validateDealerProduct } from "@/lib/dealer-products";
 import { getProductIdentifiers } from "@/lib/product-identifiers";
 import { validateProductOffer } from "@/lib/product-offers";
 import "server-only";
@@ -304,6 +305,8 @@ export async function createProduct(input: Record<string, unknown>) {
   const db = await getDb();
   const now = new Date();
   const product = productFields({ ...input, offerEnabled: false, offerValue: null, offerStartsAt: "", offerEndsAt: "", offerCountdown: false });
+  const dealerError = validateDealerProduct(product);
+  if (dealerError) throw new Error(dealerError);
   const offerError = validateProductOffer(product);
   if (offerError) throw new Error(offerError);
   const result = await db.collection("products").insertOne({
@@ -334,6 +337,8 @@ export async function updateProduct(
   if (!_id) return null;
   const db = await getDb();
   const product = productFields(input, current);
+  const dealerError = validateDealerProduct(product);
+  if (dealerError) throw new Error(dealerError);
   const offerError = validateProductOffer(product);
   if (offerError) throw new Error(offerError);
 
