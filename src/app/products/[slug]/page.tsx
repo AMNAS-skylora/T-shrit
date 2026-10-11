@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import styles from "@/components/ProductGallery.module.css";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ProductDetailClient } from "@/components/ProductDetailClient";
 import { getCatalogProductBySlug } from "@/lib/catalog";
@@ -36,17 +37,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <>
-      <div className="product-breadcrumb-shell">
+      <div className={styles.breadcrumbs}>
         <Breadcrumbs
           items={[
             { label: "Home", href: "/" },
-            { label: "Shop", href: "/#all-products" },
+            { label: "Shop", href: "/products" },
             { label: product.name },
           ]}
         />
       </div>
 
-      <section className="product-page product-page-premium">
+      <section className={styles.page}>
         <ProductDetailClient
           product={product}
           whatsappNumber={settings.whatsappNumber}
