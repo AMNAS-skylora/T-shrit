@@ -6,8 +6,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
-import { getProductOfferCountdown, getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
+import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { getProductGalleryForColor } from "@/lib/product-images";
+import { OfferCountdown } from "@/components/OfferCountdown";
 import galleryStyles from "@/components/ProductGallery.module.css";
 
 export function ProductDetailClient({
@@ -64,6 +65,7 @@ export function ProductDetailClient({
 
   return (
     <>
+      {offerActive ? <div className={galleryStyles.offerStrip}><OfferCountdown product={product} now={now} /></div> : null}
       <div className={"product-detail-visual " + galleryStyles.gallery}
         data-product-image-target
         onPointerEnter={(event) => { if (event.pointerType === "mouse") setGalleryPaused(true); }}
@@ -156,11 +158,7 @@ export function ProductDetailClient({
               <span className="rounded-full bg-[#111111] px-3 py-1.5 text-[9px] font-bold text-white">
                 {product.offerBadge || product.offerLabel || "Offer"}
               </span>
-              {product.offerEndsAt ? (
-                <span className="text-[9px] font-medium text-black/50">
-                  {`Ends in ${getProductOfferCountdown(product, now)}`}
-                </span>
-              ) : null}
+
             </div>
           ) : null}
 
