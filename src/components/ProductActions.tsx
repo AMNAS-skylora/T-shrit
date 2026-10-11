@@ -10,18 +10,26 @@ type Props = {
   product: Product;
   whatsappUrl?: string;
   compact?: boolean;
+  showColorOptions?: boolean;
+  onColorChange?: (color: string) => void;
 };
 
 export function ProductActions({
   product,
   whatsappUrl,
   compact = false,
+  showColorOptions = false,
+  onColorChange,
 }: Props) {
   const settings = useStoreSettings();
   useOfferClock(product);
   const [size, setSize] = useState(product.sizes[0] ?? "One size");
-  const selectedColor = product.colors[0] ?? "Default";
-  const disabled = product.status !== "active" || product.stock <= 0;
+  const colors = [...new Set([...(product.colorVariants ?? []).map(variant => variant.name), ...product.colors])];
+  const [color, setColor] = useState(colors[0] ?? "Default");
+  const selectedColor = showColorOptions ? color : product.colors[0] ?? "Default";
+  const variant = product.colorVariants?.find(item => item.name === selectedColor);
+  const stock = showColorOptions ? variant?.sizeStocks?.[size] ?? variant?.stock ?? product.stock : product.stock;
+  const disabled = product.status !== "active" || stock <= 0;
 
   const orderUrl =
     whatsappUrl ??
@@ -36,7 +44,20 @@ export function ProductActions({
     <div
       className={"product-actions " + (compact ? "product-actions-compact" : "")}
     >
-      <div className="size-picker" aria-label="Select size">
+      {showColorOptions && colors.length ? <div className="product-color-options">
+        <p className="product-option-label">Colour <span>{selectedColor}</span></p>
+        <div className="product-color-picker" role="group" aria-label="Select colour">
+          {colors.map(option => {
+            const value = product.colorVariants?.find(item => item.name === option)?.value;
+            return <button type="button" key={option} aria-pressed={selectedColor === option} className={selectedColor === option ? "active" : ""} onClick={() => { setColor(option); onColorChange?.(option); }}>
+              {value ? <span className="product-color-dot" style={{ backgroundColor: value }} aria-hidden="true" /> : null}
+              <span>{option}</span>
+            </button>;
+          })}
+        </div>
+      </div> : null}
+      {showColorOptions && product.sizes.length ? <p className="product-option-label">Size <span>{size}</span></p> : null}
+      <div className="size-picker" role="group" aria-label="Select size">
         {product.sizes.map((option) => (
           <button
             type="button"
