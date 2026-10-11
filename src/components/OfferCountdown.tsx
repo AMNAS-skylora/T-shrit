@@ -13,7 +13,6 @@ export function OfferCountdown({ product, now, theme = "light", compact = false 
   const values = remaining.split(" ").map(value => value.slice(0, -1));
 
   return <div className={styles.timer} data-theme={theme} data-compact={compact} role="timer" aria-live="off" aria-label={`Offer ends in ${remaining}`}>
-    <span className={styles.heading} aria-hidden="true">Offer ends in</span>
     <div className={styles.units} aria-hidden="true">
       {["Days", "Hours", "Min", "Sec"].map((label, index) => <span className={styles.unit} key={label}>
         <strong>{values[index].padStart(2, "0")}</strong>
