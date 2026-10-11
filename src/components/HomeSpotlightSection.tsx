@@ -12,7 +12,7 @@ import { getProductImageForColor } from "@/lib/product-images";
 import type { Product } from "@/types/product";
 import styles from "./HomeSpotlightSection.module.css";
 
-export function HomeSpotlightSection({ product, badge }: { product?: Product; badge: string }) {
+export function HomeSpotlightSection({ product }: { product?: Product; badge: string }) {
   const now = useOfferClock(product);
   const [selectedColor, setSelectedColor] = useState(product?.colorVariants?.[0]?.name ?? product?.colors[0] ?? "Default");
   if (!product || product.status !== "active" || !product.spotlight) return null;
@@ -26,7 +26,6 @@ export function HomeSpotlightSection({ product, badge }: { product?: Product; ba
         {image ? <Image src={image} alt={product.name} fill sizes="(max-width: 800px) 100vw, 50vw" className={styles.image} /> : <span className={styles.noImage}>No image available</span>}
       </Link>
       <div className={styles.info}>
-        <p className={styles.eyebrow}>{badge}</p>
         <h2 id="spotlight-title" className={styles.title}>{product.name}</h2>
         <div className={styles.price}>
           <strong>{formatPrice(getProductOfferPrice(product, now))}</strong>
