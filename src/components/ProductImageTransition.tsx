@@ -31,8 +31,9 @@ function getCenteredRect(sourceRect: DOMRect) {
     width = height * aspect;
   }
 
-  width = Math.max(width, 72);
-  height = Math.max(height, 88);
+  // Keep the card's aspect ratio, including narrow three-column mobile cards.
+  width = Math.max(width, Math.min(sourceRect.width, 56));
+  height = width / aspect;
 
   return {
     left: (viewportWidth - width) / 2,
@@ -87,6 +88,8 @@ export function ProductImageTransition() {
         return;
       }
 
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof source.animate !== "function") return;
+
       const sourceRect = source.getBoundingClientRect();
       if (!sourceRect.width || !sourceRect.height) return;
 
@@ -128,8 +131,10 @@ export function ProductImageTransition() {
         pointerEvents: "none",
         borderRadius: sourceStyle.borderRadius,
         transform: "translate3d(0,0,0)",
-        transformOrigin: "center center",
-        willChange: "left, top, width, height, opacity, filter",
+        transformOrigin: "top left",
+        willChange: "transform, opacity",
+        padding: sourceStyle.padding,
+        boxSizing: "border-box",
         maxWidth: "none",
       });
 
@@ -157,6 +162,8 @@ export function ProductImageTransition() {
       pending.current = active;
 
       const center = getCenteredRect(sourceRect);
+      router.prefetch(url.pathname + url.search);
+      const centerTransform = `translate3d(${center.left - sourceRect.left}px, ${center.top - sourceRect.top}px, 0) scale(${center.width / sourceRect.width}, ${center.height / sourceRect.height})`;
 
       backdrop.animate([{ opacity: 0 }, { opacity: 0.94 }], {
         duration: 420,
@@ -166,22 +173,8 @@ export function ProductImageTransition() {
 
       const moveToCenter = image.animate(
         [
-          {
-            left: `${sourceRect.left}px`,
-            top: `${sourceRect.top}px`,
-            width: `${sourceRect.width}px`,
-            height: `${sourceRect.height}px`,
-            opacity: 1,
-            filter: "blur(0)",
-          },
-          {
-            left: `${center.left}px`,
-            top: `${center.top}px`,
-            width: `${center.width}px`,
-            height: `${center.height}px`,
-            opacity: 1,
-            filter: "blur(.4px)",
-          },
+          { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+          { transform: centerTransform, opacity: 1 },
         ],
         {
           duration: 560,
@@ -200,7 +193,7 @@ export function ProductImageTransition() {
             top: `${center.top}px`,
             width: `${center.width}px`,
             height: `${center.height}px`,
-            filter: "blur(0)",
+            transform: "translate3d(0,0,0)",
           });
 
           moveToCenter.cancel();
@@ -267,8 +260,8 @@ export function ProductImageTransition() {
             objectPosition: targetStyle.objectPosition,
             borderRadius: targetStyle.borderRadius,
             opacity: "1",
-            transform: "none",
-            filter: "blur(0)",
+            transform: "translate3d(0,0,0)",
+            padding: targetStyle.padding,
           });
 
           active.backdrop.animate([{ opacity: 0.94 }, { opacity: 0 }], {
@@ -277,24 +270,11 @@ export function ProductImageTransition() {
             fill: "forwards",
           });
 
+          const targetTransform = `translate3d(${rect.left - currentRect.left}px, ${rect.top - currentRect.top}px, 0) scale(${rect.width / currentRect.width}, ${rect.height / currentRect.height})`;
           growAnimation = image.animate(
             [
-              {
-                left: `${currentRect.left}px`,
-                top: `${currentRect.top}px`,
-                width: `${currentRect.width}px`,
-                height: `${currentRect.height}px`,
-                opacity: 1,
-                filter: "blur(0)",
-              },
-              {
-                left: `${rect.left}px`,
-                top: `${rect.top}px`,
-                width: `${rect.width}px`,
-                height: `${rect.height}px`,
-                opacity: 1,
-                filter: "blur(0)",
-              },
+              { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+              { transform: targetTransform, opacity: 1 },
             ],
             {
               duration: window.innerWidth < 768 ? 920 : 1080,
@@ -347,6 +327,7 @@ export function ProductImageTransition() {
       window.clearTimeout(noTargetTimer);
       window.cancelAnimationFrame(frame);
       growAnimation?.cancel();
+      target?.removeEventListener("error", active.cleanup);
     };
   }, [pathname]);
 
