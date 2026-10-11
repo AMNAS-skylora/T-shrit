@@ -39,13 +39,13 @@ export function HomeProductGridCard({
           src={image}
           alt={product.name}
           fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 50vw, 25vw"
-          className="object-contain p-4 transition-transform duration-500 ease-out group-hover:scale-[1.025]"
+          sizes="(max-width: 640px) 33vw, (max-width: 1600px) 32vw, 520px"
+          className="object-contain p-1.5 sm:p-4 transition-transform duration-500 ease-out group-hover:scale-[1.025]"
         /> : <span className="flex h-full items-center justify-center text-xs text-black/50">No image</span>}
       </div>
 
       <div className="pt-3">
-        <h3 className={"m-0 min-h-[2.5em] text-[11px] font-semibold tracking-[-.01em] sm:text-[12px] " + (theme === "dark" ? "text-white" : "text-[#111]")}>
+        <h3 className={"m-0 min-h-[2.5em] break-words text-[11px] font-semibold leading-snug tracking-[-.01em] sm:text-[12px] " + (theme === "dark" ? "text-white" : "text-[#111]")}>
           {product.name}
         </h3>
 

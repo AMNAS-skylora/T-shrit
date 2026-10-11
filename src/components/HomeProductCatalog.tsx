@@ -2,17 +2,20 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ProductCard } from "@/components/ProductCard";
+import { HomeProductGridCard } from "@/components/HomeProductGridCard";
+import styles from "./HomeProductGrid.module.css";
 import type { Product } from "@/types/product";
 
 export function HomeProductCatalog({
   products,
   eyebrow,
   title,
+  whatsappNumber,
 }: {
   products: Product[];
   eyebrow: string;
   title: string;
+  whatsappNumber: string;
 }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
@@ -60,7 +63,7 @@ export function HomeProductCatalog({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search products, category, colour or size"
-            aria-label="Search homepage products"
+            aria-label="Search products"
             className="h-[48px] w-full rounded-full border border-black/15 bg-white px-5 pr-12 text-[11px] font-medium text-[#111] outline-none transition placeholder:text-black/35 focus:border-black/35"
           />
           {query ? (
@@ -86,9 +89,9 @@ export function HomeProductCatalog({
         ))}
       </div>
       {filteredProducts.length ? (
-        <div className="ref-arrival-grid mt-5">
+        <div className={"mt-5 " + styles.grid}>
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <HomeProductGridCard key={product.id} product={product} whatsappNumber={whatsappNumber} />
           ))}
         </div>
       ) : (

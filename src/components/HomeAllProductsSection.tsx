@@ -1,3 +1,5 @@
+import Link from "next/link";
+import styles from "./HomeProductGrid.module.css";
 import type { Product } from "@/types/product";
 import { HomeProductGridCard } from "@/components/HomeProductGridCard";
 
@@ -5,7 +7,6 @@ export function HomeAllProductsSection({
   theme = "light",
   whatsappNumber,
   products = [],
-  layout = "grid",
   title = "ALL PRODUCTS",
   eyebrow = "",
 }: {
@@ -24,14 +25,14 @@ export function HomeAllProductsSection({
     >
       <div className="mx-auto w-full max-w-[1600px]">
         {eyebrow ? <p className={"mb-3 text-xs uppercase tracking-widest " + (theme === "dark" ? "text-white/60" : "text-black/50")}>{eyebrow}</p> : null}
-        <h2 className="m-0 text-[clamp(30px,4.6vw,56px)] font-semibold leading-none tracking-[-.05em]">
+        <h2 className="m-0 text-[clamp(28px,3vw,40px)] font-semibold leading-none tracking-[-.05em]">
           {title}
         </h2>
 
         {!products.length ? <p className={"mt-8 text-sm " + (theme === "dark" ? "text-white/60" : "text-black/50")}>The collection is coming soon.</p> : null}
-        <div className={layout === "rail" ? "mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-5" : layout === "editorial" ? "mt-8 grid grid-cols-1 gap-7 sm:grid-cols-2 sm:gap-9" : "mt-8 grid grid-cols-2 gap-x-2.5 gap-y-7 sm:gap-x-3.5 sm:gap-y-9 lg:grid-cols-4 lg:gap-x-4 lg:gap-y-11"}>
-          {products.map((product) => (
-            <div key={product.id} className={layout === "rail" ? "w-[75vw] max-w-[380px] shrink-0 snap-start sm:w-[38vw] lg:w-[24vw]" : "min-w-0"}>
+        <div className={"mt-8 " + styles.grid}>
+          {products.slice(0, 6).map((product) => (
+            <div key={product.id} className="min-w-0">
             <HomeProductGridCard
               theme={theme}
               product={product}
@@ -40,6 +41,7 @@ export function HomeAllProductsSection({
             </div>
           ))}
         </div>
+        {products.length ? <div className="mt-8 flex justify-center"><Link href="/products" className={"inline-flex min-h-11 items-center justify-center rounded-full border px-6 py-3 text-sm font-semibold " + (theme === "dark" ? "border-white/30 text-white" : "border-black/20 text-black")}>View all products <span className="ml-3" aria-hidden="true">↗</span></Link></div> : null}
       </div>
     </section>
   );

@@ -17,7 +17,7 @@ export function Footer({ settings }: { settings: StoreSettings }) {
       <div className="footer-column">
         <span>Explore</span>
         <Link href="/">Home</Link>
-        <Link href="/#all-products">Shop</Link>
+        <Link href="/products">Shop</Link>
         <Link href="/#about">About</Link>
         {whatsappHref ? (
           <a href={whatsappHref} target="_blank" rel="noreferrer">Contact</a>
