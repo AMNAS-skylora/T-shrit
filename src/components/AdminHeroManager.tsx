@@ -412,8 +412,8 @@ export function AdminHeroManager() {
         </button>
       </div>
 
-      {storeSettings ? <div className="mt-5 space-y-5">{(["primary", "secondary", "tertiary"] as const).map((section) => <section key={section} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
-        <div className="flex items-center justify-between gap-3 p-4"><h2 className="text-sm font-semibold">{section === "primary" ? "First section · Centered hero" : section === "secondary" ? "Second section · Campaign card" : "Third section · Background image"}</h2><button type="button" onClick={() => openCreate("custom", section)} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold !text-white">+ Add slide</button></div>
+      {storeSettings ? <div className="mt-5 space-y-5">{(["primary"] as const).map((section) => <section key={section} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+        <div className="flex items-center justify-between gap-3 p-4"><h2 className="text-sm font-semibold">First section · Centered hero</h2><button type="button" onClick={() => openCreate("custom", section)} className="min-h-11 rounded-xl bg-[#001cac] px-4 text-xs font-semibold !text-white">+ Add slide</button></div>
         <HomeHeroSlider section={section} settings={storeSettings} products={products} slides={slides} initialNow={Date.now()} preview />
       </section>)}</div> : null}
 
