@@ -7,11 +7,16 @@ export function validateProductOffer(product: Partial<Product>): string | null {
   const type = product.offerType ?? "percentage";
   if (type === "percentage" && value > 100) return "Percentage discount cannot exceed 100%.";
   if (type !== "percentage" && value > Number(product.price)) return "Offer value cannot exceed the product price.";
+  const price = Number(product.price);
+  if (!Number.isFinite(price) || price <= 0) return "Set a positive product price before enabling an offer.";
+  if (!["percentage", "fixed", "sale-price"].includes(type)) return "Choose a valid offer type.";
+  const discounted = type === "percentage" ? Math.round(price * (1 - value / 100)) : type === "fixed" ? price - value : value;
+  if (discounted >= price) return "The offer price must be lower than the product price.";
   const start = product.offerStartsAt ? Date.parse(product.offerStartsAt) : null;
   const end = product.offerEndsAt ? Date.parse(product.offerEndsAt) : null;
   if ((start !== null && !Number.isFinite(start)) || (end !== null && !Number.isFinite(end))) return "Enter valid offer start and end times.";
   if (start !== null && end !== null && end <= start) return "Offer end time must be after its start time.";
-  if (product.offerCountdown && end === null) return "Add an end time to show the offer countdown.";
+  if (end === null) return "Add an end time for the offer.";
   return null;
 }
 
@@ -66,4 +71,13 @@ export function getProductOfferStatus(product: Product, now = Date.now()) {
   }
 
   return "active" as const;
+}
+
+export function getProductOfferCountdown(product: Product, now = Date.now()) {
+  if (!isProductOfferActive(product, now) || !product.offerEndsAt) return null;
+  const seconds = Math.ceil((Date.parse(product.offerEndsAt) - now) / 1000);
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor(seconds % 86400 / 3600);
+  const minutes = Math.floor(seconds % 3600 / 60);
+  return `${days}d ${String(hours).padStart(2, "0")}h ${String(minutes).padStart(2, "0")}m ${String(seconds % 60).padStart(2, "0")}s`;
 }

@@ -1,3 +1,7 @@
+"use client";
+
+import { useOfferClock } from "@/hooks/useOfferClock";
+import { getProductOfferPrice, getProductOfferCountdown, isProductOfferActive } from "@/lib/product-offers";
 import Image from "next/image";
 import Link from "next/link";
 import { ProductActions } from "@/components/ProductActions";
@@ -12,7 +16,9 @@ export function HomeSpotlightSection({
   product?: Product;
   badge: string;
 }) {
+  const now = useOfferClock(product);
   if (!product) return null;
+  const offerActive = isProductOfferActive(product, now);
 
   const image = getProductPrimaryImage(product);
 
@@ -52,11 +58,12 @@ export function HomeSpotlightSection({
               <h2>{product.name}</h2>
 
               <div className="home-spotlight-price">
-                <strong>{formatPrice(product.price)}</strong>
-                {product.compareAtPrice ? (
-                  <del>{formatPrice(product.compareAtPrice)}</del>
+                <strong>{formatPrice(getProductOfferPrice(product, now))}</strong>
+                {offerActive ? (
+                  <del>{formatPrice(product.price)}</del>
                 ) : null}
               </div>
+              {offerActive ? <p className="text-xs tabular-nums">Offer ends in {getProductOfferCountdown(product, now)}</p> : null}
             </div>
 
             <p className="home-spotlight-description">

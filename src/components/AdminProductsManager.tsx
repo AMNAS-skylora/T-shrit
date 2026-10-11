@@ -354,9 +354,7 @@ export function AdminProductsManager() {
         ...draft,
         price: Number(draft.price || 0),
         costPrice: draft.costPrice ? Number(draft.costPrice) : null,
-        compareAtPrice: draft.compareAtPrice
-          ? Number(draft.compareAtPrice)
-          : null,
+        compareAtPrice: null,
         stock: Number(draft.stock || 0),
         sizes: csv(draft.sizes),
         colors: csv(draft.colors),
@@ -368,7 +366,7 @@ export function AdminProductsManager() {
           ? Number(draft.animationSortOrder)
           : null,
         spotlight: draft.spotlight,
-        offerEnabled: draft.offerEnabled,
+        offerEnabled: Boolean(editingId) && draft.offerEnabled,
         offerType: draft.offerEnabled ? draft.offerType : undefined,
         offerValue:
           draft.offerEnabled && draft.offerValue
@@ -385,7 +383,7 @@ export function AdminProductsManager() {
             ? apiDate(draft.offerEndsAt)
             : "",
         offerCountdown:
-          draft.offerEnabled && draft.offerCountdown && Boolean(draft.offerEndsAt),
+          draft.offerEnabled && Boolean(draft.offerEndsAt),
         wholesalePrice: draft.wholesalePrice
           ? Number(draft.wholesalePrice)
           : null,
@@ -859,21 +857,6 @@ export function AdminProductsManager() {
                 />,
               )}
               {field(
-                "Compare price",
-                <input
-                  type="number"
-                  min="0"
-                  value={draft.compareAtPrice}
-                  onChange={(event) =>
-                    setDraft((current) => ({
-                      ...current,
-                      compareAtPrice: event.target.value,
-                    }))
-                  }
-                  className={inputClass}
-                />,
-              )}
-              {field(
                 "Status",
                 <select
                   value={draft.status}
@@ -918,6 +901,7 @@ export function AdminProductsManager() {
             )}
           </section>
 
+          {editingId ? (
           <section className="space-y-3">
             <Toggle
               checked={draft.offerEnabled}
@@ -925,6 +909,8 @@ export function AdminProductsManager() {
                 setDraft((current) => ({
                   ...current,
                   offerEnabled: checked,
+                  offerStartsAt: checked ? current.offerStartsAt || dateTimeInput(new Date().toISOString()) : current.offerStartsAt,
+                  offerEndsAt: checked ? current.offerEndsAt || dateTimeInput(new Date(Date.now() + 86400000).toISOString()) : current.offerEndsAt,
                 }))
               }
               title="Product offer"
@@ -1018,6 +1004,7 @@ export function AdminProductsManager() {
                     <input
                       type="datetime-local"
                       value={draft.offerEndsAt}
+                      required={draft.offerEnabled}
                       onChange={(event) =>
                         setDraft((current) => ({
                           ...current,
@@ -1029,23 +1016,12 @@ export function AdminProductsManager() {
                   )}
                 </div>
 
-                <label className="mt-4 flex min-h-11 items-center gap-3 rounded-xl border border-black/10 px-3 text-xs font-semibold">
-                  <input
-                    type="checkbox"
-                    checked={draft.offerCountdown}
-                    disabled={!draft.offerEndsAt}
-                    onChange={(event) =>
-                      setDraft((current) => ({
-                        ...current,
-                        offerCountdown: event.target.checked,
-                      }))
-                    }
-                  />
-                  Show countdown on product card
-                </label>
+                <p className="mt-4 text-xs text-black/50">The countdown appears automatically until the offer ends.</p>
               </div>
             ) : null}
           </section>
+
+          ) : <p className="text-xs text-black/50">Create the product first. Manage timed offers on its detail page.</p>}
 
           <section className="space-y-3">
             <Toggle

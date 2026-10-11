@@ -5,7 +5,7 @@ const ts = require('typescript');
 const code = ts.transpileModule(fs.readFileSync('src/lib/product-offers.ts', 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText;
 const result = { exports: {} };
 new Function('module', 'exports', code)(result, result.exports);
-const { validateProductOffer, isProductOfferActive, getProductOfferPrice, getProductOfferStatus } = result.exports;
+const { getProductOfferCountdown, validateProductOffer, isProductOfferActive, getProductOfferPrice, getProductOfferStatus } = result.exports;
 const start = Date.parse('2026-10-08T10:00:00Z');
 const end = start + 3600000;
 const product = { price: 1000, offerEnabled: true, offerType: 'percentage', offerValue: 20, offerStartsAt: new Date(start).toISOString(), offerEndsAt: new Date(end).toISOString() };
@@ -31,4 +31,26 @@ test('reject malformed dates, backwards ranges and invalid values', () => {
 test('disabled offers preserve the original price', () => {
   assert.equal(validateProductOffer({...product,offerEnabled:false,offerValue:0}),null);
   assert.equal(getProductOfferPrice({...product,offerEnabled:false},start),1000);
+});
+
+test('legacy compare prices cannot activate a discount or countdown', () => {
+  const legacy = {...product, offerEnabled:false, compareAtPrice:2000, saleEndsAt:product.offerEndsAt};
+  assert.equal(isProductOfferActive(legacy,start),false);
+  assert.equal(getProductOfferPrice(legacy,start),1000);
+  assert.equal(getProductOfferCountdown(legacy,start),null);
+});
+test('timed offers count down days and seconds and disappear at expiry', () => {
+  const timed = {...product, offerCountdown:false, offerEndsAt:new Date(start + 2*86400000).toISOString()};
+  assert.equal(getProductOfferCountdown(timed,start),'2d 00h 00m 00s');
+  assert.equal(getProductOfferCountdown(timed,start+1000),'1d 23h 59m 59s');
+  assert.equal(getProductOfferCountdown(timed,start+2*86400000),null);
+  assert.equal(getProductOfferCountdown(timed,start-1),null);
+  assert.ok(validateProductOffer({...timed,offerEndsAt:undefined}));
+});
+
+test('offer must reduce the price, including after percentage rounding', () => {
+  for (const patch of [{offerType:'sale-price',offerValue:1000},{offerType:'percentage',offerValue:0.001},{offerType:'unknown',offerValue:10}]) {
+    assert.ok(validateProductOffer({...product,...patch}));
+    assert.equal(getProductOfferPrice({...product,...patch},start),1000);
+  }
 });

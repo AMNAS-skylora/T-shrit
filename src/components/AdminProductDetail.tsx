@@ -15,7 +15,7 @@ import type {
   ProductOfferType,
   ProductStatus,
 } from "@/types/product";
-import { getProductOfferPrice, getProductOfferStatus, validateProductOffer } from "@/lib/product-offers";
+import { getProductOfferCountdown, getProductOfferPrice, getProductOfferStatus, validateProductOffer } from "@/lib/product-offers";
 import { getProductPrimaryImage } from "@/lib/product-images";
 import { uploadAdminImage } from "@/lib/admin-image-upload";
 
@@ -149,7 +149,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     [draft],
   );
 
-  const offerNow = useOfferClock(draft ?? undefined, false);
+  const offerNow = useOfferClock(draft ?? undefined);
   const offerStatus = useMemo(
     () => (draft ? getProductOfferStatus(draft, offerNow) : "off"),
     [draft, offerNow],
@@ -479,7 +479,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           ...draft,
-          compareAtPrice: draft.compareAtPrice ?? null,
+          compareAtPrice: null,
           sortOrder: draft.sortOrder ?? null,
           featuredSortOrder: draft.featuredSortOrder ?? null,
           animationSortOrder: draft.animationSortOrder ?? null,
@@ -492,7 +492,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
           offerStartsAt: draft.offerEnabled ? draft.offerStartsAt ?? "" : "",
           offerEndsAt: draft.offerEnabled ? draft.offerEndsAt ?? "" : "",
           offerCountdown:
-            Boolean(draft.offerEnabled) && Boolean(draft.offerCountdown),
+            Boolean(draft.offerEnabled) && Boolean(draft.offerEndsAt),
           stock,
           colors: normalizedVariants.length
             ? normalizedVariants.map((variant) => variant.name)
@@ -622,22 +622,6 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                     })
                   }
                   placeholder="Purchase / landed cost"
-                  className={inputClass}
-                />
-              </label>
-              <label>
-                <span className={labelClass}>Compare price</span>
-                <input
-                  type="number"
-                  min="0"
-                  value={draft.compareAtPrice ?? ""}
-                  onChange={(event) =>
-                    patch({
-                      compareAtPrice: event.target.value
-                        ? Math.max(0, Number(event.target.value))
-                        : undefined,
-                    })
-                  }
                   className={inputClass}
                 />
               </label>
@@ -976,7 +960,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
             <div className="mt-3">
               <Toggle
                 checked={Boolean(draft.offerEnabled)}
-                onChange={(checked) => patch({ offerEnabled: checked })}
+                onChange={(checked) => patch({ offerEnabled: checked, offerCountdown: checked, ...(checked ? { offerStartsAt: draft.offerStartsAt || new Date().toISOString(), offerEndsAt: draft.offerEndsAt || new Date(Date.now() + 86400000).toISOString() } : {}) })}
                 label="Enable product offer"
                 help="Offer card appears on storefront only when this is enabled and active."
               />
@@ -1052,22 +1036,14 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                   <input
                     type="datetime-local"
                     value={toLocalDateTime(draft.offerEndsAt)}
+                    required={Boolean(draft.offerEnabled)}
                     onChange={(event) =>
                       patch({ offerEndsAt: toIso(event.target.value) })
                     }
                     className={inputClass}
                   />
                 </label>
-                <div className="md:col-span-2">
-                  <Toggle
-                    checked={Boolean(draft.offerCountdown)}
-                    onChange={(checked) =>
-                      patch({ offerCountdown: checked })
-                    }
-                    label="Show countdown"
-                    help="Requires an offer end time."
-                  />
-                </div>
+                <p className="text-xs text-black/50 md:col-span-2">Customers see the remaining days, hours, minutes and seconds. The original price returns automatically when the offer ends.</p>
               </div>
             ) : null}
           </section>
@@ -1263,6 +1239,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-xs text-black/50">Offer price</span>
                   <strong>₹{offerPrice.toLocaleString("en-IN")}</strong>
+                  {getProductOfferCountdown(draft, offerNow) ? <span className="text-xs tabular-nums">Ends in {getProductOfferCountdown(draft, offerNow)}</span> : null}
                 </div>
               ) : null}
             </div>
