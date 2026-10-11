@@ -1,13 +1,14 @@
 import Link from "next/link";
+import styles from "./Footer.module.css";
 import type { StoreSettings } from "@/types/commerce";
 
 export function Footer({ settings }: { settings: StoreSettings }) {
-  const whatsappHref = settings.whatsappNumber
+  const whatsappHref = settings.whatsappNumber.replace(/\D/g, "")
     ? `https://wa.me/${settings.whatsappNumber.replace(/\D/g, "")}`
     : "";
 
   return (
-    <footer className="site-footer">
+    <footer className={"site-footer " + styles.footer}>
       <div className="footer-intro">
         <Link href="/" className="footer-logo">KLEID.IN</Link>
         <p>{settings.footerTagline}</p>
@@ -23,20 +24,7 @@ export function Footer({ settings }: { settings: StoreSettings }) {
         ) : null}
       </div>
 
-      <div className="footer-column">
-        <span>Help</span>
-        {settings.supportEmail ? <a href={"mailto:" + settings.supportEmail}>Email us</a> : null}
-        {settings.phoneNumber ? <a href={"tel:" + settings.phoneNumber.replace(/[^\d+]/g, "")}>{settings.phoneNumber}</a> : null}
-        {whatsappHref ? (
-          <>
-            <a href={whatsappHref} target="_blank" rel="noreferrer">Shipping</a>
-            <a href={whatsappHref} target="_blank" rel="noreferrer">Returns</a>
-            <a href={whatsappHref} target="_blank" rel="noreferrer">Size Guide</a>
-          </>
-        ) : null}
-      </div>
-
-      <div className="footer-column footer-social-column">
+      {settings.instagramUrl || settings.facebookUrl || whatsappHref || settings.supportEmail || settings.phoneNumber ? <div className="footer-column footer-social-column">
         <span>Social</span>
 
         <div className="footer-social-links">
@@ -75,8 +63,16 @@ export function Footer({ settings }: { settings: StoreSettings }) {
               <span className="footer-social-name">WhatsApp</span>
             </a>
           ) : null}
+          {settings.supportEmail ? <a href={"mailto:" + settings.supportEmail} className="footer-social-link" aria-label="Email">
+            <span className="footer-social-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="3" stroke="currentColor" strokeWidth="1.7" /><path d="m4 7 8 6 8-6" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg></span>
+            <span className="footer-social-name">Email</span>
+          </a> : null}
+          {settings.phoneNumber ? <a href={"tel:" + settings.phoneNumber.replace(/[^\d+]/g, "")} className="footer-social-link" aria-label="Phone">
+            <span className="footer-social-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M8 3H5a2 2 0 0 0-2 2c0 8.8 7.2 16 16 16a2 2 0 0 0 2-2v-3l-5-2-2 2a12 12 0 0 1-6-6l2-2-2-5Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" /></svg></span>
+            <span className="footer-social-name">Phone</span>
+          </a> : null}
         </div>
-      </div>
+      </div> : null}
 
       <div className="footer-bottom">
         <span>© {new Date().getFullYear()} KLEID.IN</span>
