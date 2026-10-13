@@ -5,10 +5,37 @@ const fs = require("node:fs");
 const csv = fs.readFileSync("public/templates/kleidin-15-demo-products.csv", "utf8");
 const importer = fs.readFileSync("src/components/AdminProductImport.tsx", "utf8");
 const lines = csv.trim().split(/\r?\n/);
-const columns = lines[0].split(",");
-const data = lines.slice(1).map((line) => Object.fromEntries(
-  line.split(",").map((value, i) => [columns[i], value]),
-));
+
+// Respect CSV quoting, including descriptions that contain commas.
+function parseCsvLine(line) {
+  const cells = [];
+  let value = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i += 1) {
+    if (line[i] === '"') {
+      if (quoted && line[i + 1] === '"') {
+        value += '"';
+        i += 1;
+      } else {
+        quoted = !quoted;
+      }
+    } else if (line[i] === "," && !quoted) {
+      cells.push(value);
+      value = "";
+    } else {
+      value += line[i];
+    }
+  }
+  cells.push(value);
+  assert.equal(quoted, false, "Unclosed CSV quote");
+  return cells;
+}
+const columns = parseCsvLine(lines[0]);
+const data = lines.slice(1).map((line) => {
+  const cells = parseCsvLine(line);
+  assert.equal(cells.length, columns.length, "CSV variant has the wrong column count");
+  return Object.fromEntries(cells.map((value, i) => [columns[i], value]));
+});
 
 test("15 realistic example products use the existing 21-column admin CSV template", () => {
   assert.equal(columns.length, 21);
