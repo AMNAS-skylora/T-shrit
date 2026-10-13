@@ -32,7 +32,7 @@ export function HomeAllProductsSection({
         </h2>
 
         {!products.length ? <p className={"mt-8 text-sm " + (theme === "dark" ? "text-white/60" : "text-black/50")}>The collection is coming soon.</p> : null}
-        <div aria-label="Homepage products" className={"mt-7 sm:mt-8 " + styles.grid + " " + styles.homeGrid}>
+        <div aria-label="Homepage products" className={"mt-6 sm:mt-8 " + styles.grid + " " + styles.homeGrid}>
           {visibleProducts.map((product) => (
             <div key={product.id} className="h-full min-w-0">
               <HomeProductGridCard
@@ -43,7 +43,7 @@ export function HomeAllProductsSection({
             </div>
           ))}
         </div>
-        {products.length ? <div className="mt-8 flex justify-center"><Link href="/products" className={"inline-flex min-h-11 items-center justify-center rounded-full border px-6 py-3 text-sm font-semibold " + (theme === "dark" ? "border-white/30 text-white" : "border-black/20 text-black")}>View all products <span className="ml-3" aria-hidden="true">↗</span></Link></div> : null}
+        {products.length ? <div className="mt-6 flex justify-stretch sm:mt-8 sm:justify-center"><Link href="/products" className={"inline-flex min-h-12 w-full items-center justify-between rounded-full border px-5 py-3 text-[13px] font-semibold transition-colors sm:min-h-11 sm:w-auto sm:justify-center sm:px-6 " + (theme === "dark" ? "border-white/30 text-white hover:bg-white/10" : "border-black/20 text-black hover:bg-black/[.035]")}>View all products <span className="ml-3" aria-hidden="true">↗</span></Link></div> : null}
       </div>
     </section>
   );
