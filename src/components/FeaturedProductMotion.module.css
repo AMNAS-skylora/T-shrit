@@ -193,7 +193,8 @@
   }
 
   .layout {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 0;
     width: min(100%, 620px);
     border: 0;
@@ -201,7 +202,7 @@
   }
 
   .media {
-    grid-row: 1;
+    order: -1;
     height: clamp(260px, 65vw, 410px);
     border-radius: 0;
   }
