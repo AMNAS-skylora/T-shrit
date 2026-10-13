@@ -38,7 +38,7 @@ export function HomeAllProductsSection({
                 product={product}
                 whatsappNumber={whatsappNumber}
               />
-              </div>
+            </div>
           ))}
         </div>
         {products.length ? <div className="mt-8 flex justify-center"><Link href="/products" className={"inline-flex min-h-11 items-center justify-center rounded-full border px-6 py-3 text-sm font-semibold " + (theme === "dark" ? "border-white/30 text-white" : "border-black/20 text-black")}>View all products <span className="ml-3" aria-hidden="true">↗</span></Link></div> : null}
