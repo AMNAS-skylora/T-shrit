@@ -129,13 +129,14 @@
 
 .visual img {
   position: absolute;
-  inset: -64px 0 auto;
+  inset: 0;
   display: block;
   width: 100%;
-  height: calc(100% + 128px);
+  height: 100%;
   object-fit: cover;
   object-position: left top;
-  transform: translate3d(0, var(--about-scroll-y, 0px), 0);
+  /* Move the hanging rail and shirts horizontally, never vertically. */
+  transform: translate3d(var(--hanger-enter-x, 0px), 0, 0);
   will-change: transform;
 }
 
