@@ -22,3 +22,168 @@
   .details { padding: 24px 0 0; border-left: 0; border-top: 1px solid #ffffff26; gap: 20px; }
 }
 @media (max-width: 380px) { .section { padding: 32px 20px; } }
+
+
+/* Everyday editorial variant. Kept separate from the optional dealers layout. */
+.everydayBlue {
+  padding-block: clamp(64px, 7vw, 104px);
+}
+
+.everydayBlue .layout {
+  width: 100%;
+  max-width: 1120px;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(44px, 6vw, 110px);
+}
+
+.everydayIntro {
+  min-width: 0;
+}
+
+.everydayBlue .eyebrow {
+  color: rgba(255, 255, 255, .72);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.everydayBlue .title {
+  max-width: 17ch;
+  margin-top: 18px;
+  font-size: clamp(38px, 4.2vw, 62px);
+  font-weight: 750;
+  line-height: 1.07;
+  letter-spacing: -.046em;
+}
+
+.everydayBlue .body {
+  max-width: 46ch;
+  margin-top: 24px;
+  color: rgba(255, 255, 255, .88);
+  font-size: clamp(14px, 1.2vw, 16px);
+  font-weight: 400;
+  line-height: 1.8;
+}
+
+.everydayBlue .details {
+  display: grid;
+  gap: 0;
+  padding-left: 0;
+  border: 0;
+}
+
+.everydayFeature {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 18px;
+  min-width: 0;
+  padding: 24px 0;
+  border-top: 1px solid rgba(255, 255, 255, .25);
+}
+
+.everydayFeature:last-child {
+  border-bottom: 1px solid rgba(255, 255, 255, .25);
+}
+
+.featureNumber {
+  padding-top: 3px;
+  color: rgba(255, 255, 255, .6);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  letter-spacing: .03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.featureCopy {
+  min-width: 0;
+}
+
+.everydayBlue .featureCopy h3 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(16px, 1.3vw, 19px);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.02em;
+}
+
+.everydayBlue .featureCopy p {
+  max-width: 44ch;
+  margin-top: 8px;
+  color: rgba(255, 255, 255, .8);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.72;
+}
+
+@media (max-width: 800px) {
+  .everydayBlue {
+    padding: 52px clamp(22px, 6vw, 44px) 62px;
+  }
+
+  .everydayBlue .layout {
+    max-width: 600px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+  }
+
+  .everydayBlue .title {
+    max-width: 18ch;
+    margin-top: 14px;
+    font-size: clamp(30px, 5.2vw, 40px);
+    line-height: 1.1;
+  }
+
+  .everydayBlue .body {
+    max-width: 48ch;
+    margin-top: 18px;
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .everydayBlue .details {
+    padding: 0;
+    border: 0;
+  }
+
+  .everydayFeature {
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 14px;
+    padding: 21px 0;
+  }
+
+  .everydayBlue .featureCopy h3 {
+    font-size: 16px;
+  }
+
+  .everydayBlue .featureCopy p {
+    margin-top: 7px;
+    font-size: 13px;
+    line-height: 1.7;
+  }
+}
+
+@media (max-width: 380px) {
+  .everydayBlue {
+    padding: 44px 20px 54px;
+  }
+
+  .everydayBlue .layout {
+    gap: 30px;
+  }
+
+  .everydayBlue .title {
+    font-size: 28px;
+  }
+
+  .everydayFeature {
+    gap: 11px;
+    padding: 19px 0;
+  }
+
+  .everydayBlue .body {
+    font-size: 13px;
+  }
+}
