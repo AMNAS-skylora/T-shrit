@@ -4,6 +4,7 @@ import { HomeSpotlightSection } from "@/components/HomeSpotlightSection";
 import { FeaturedProductMotion } from "@/components/FeaturedProductMotion";
 import { HomeAboutSection } from "@/components/HomeAboutSection";
 import { HomeHeroSlider } from "@/components/HomeHeroSlider";
+import { StaticEditorialHero } from "@/components/StaticEditorialHero";
 import { HomeAllProductsSection } from "@/components/HomeAllProductsSection";
 import { getCatalogProducts } from "@/lib/catalog";
 import { getStoreSettings } from "@/lib/site-settings";
@@ -15,7 +16,7 @@ export default async function Home() {
   const activeProducts = products.filter((product) => product.status === "active")
     .sort((a, b) => (a.sortOrder ?? a.featuredSortOrder ?? 100) - (b.sortOrder ?? b.featuredSortOrder ?? 100));
   return <div className="reference-home">
-    <HomeHeroSlider settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
+    <StaticEditorialHero products={activeProducts} />
     <HomeHeroSlider section="secondary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="tertiary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <FeaturedProductMotion products={activeProducts} layout={settings.homeFeaturedLayout} />
