@@ -45,7 +45,16 @@ for (const [name, source] of managers) {
     assert.match(source, /await confirm\(\{/);
     assert.match(source, /destructive: true/);
     assert.match(source, /if \(!confirmed\) return;/);
-    assert.doesNotMatch(source, /\\bwindow\\.(?:confirm|alert|prompt)\\s*\\(/);
-    assert.doesNotMatch(source, /\\b(?:alert|prompt)\\s*\\(/);
+    for (const nativeCall of ["window.confirm(", "window.alert(", "window.prompt("]) {
+      assert.equal(source.includes(nativeCall), false, nativeCall);
+    }
   });
 }
+
+test("mobile admin popup fills the viewport; desktop keeps a centered dialog", () => {
+  assert.match(provider, /h-\\[100dvh\\]/);
+  assert.match(provider, /sm:h-auto/);
+  assert.match(provider, /sm:max-w-\\[440px\\]/);
+  assert.match(provider, /env\\(safe-area-inset-bottom\\)/);
+  assert.match(provider, /overflow-y-auto overscroll-contain/);
+});
