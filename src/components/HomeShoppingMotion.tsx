@@ -13,6 +13,51 @@ export function HomeShoppingMotion() {
     if (pathname.startsWith("/admin") || pathname.startsWith("/try-on/")) return;
     const root = document.querySelector("main");
     if (!root) return;
+    // Mobile Safari/Chrome: native, one-shot IntersectionObserver reveals avoid
+    // repeated ScrollTrigger refreshes while browser chrome changes viewport size.
+    // Content starts visible, so unsupported APIs never hide products or controls.
+    if (window.matchMedia("(max-width: 767px)").matches) {
+      if (!("IntersectionObserver" in window)) return;
+      const seen = new WeakSet<HTMLElement>();
+      const observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const element = entry.target as HTMLElement;
+          observer.unobserve(element);
+          if (document.hidden || typeof element.animate !== "function") continue;
+          element.animate(
+            [
+              { opacity: 0.55, transform: "translate3d(0,16px,0)" },
+              { opacity: 1, transform: "translate3d(0,0,0)" },
+            ],
+            { duration: 520, easing: "cubic-bezier(.22,1,.36,1)" },
+          );
+        }
+      }, { threshold: 0.04, rootMargin: "0px 0px -2% 0px" });
+      let frame = 0;
+      const discoverMobile = () => {
+        frame = 0;
+        if (!root.isConnected) return;
+        root.querySelectorAll<HTMLElement>("[data-shop-reveal], h1, h2, article, .product-card, .home-spotlight-media").forEach((element) => {
+          if (seen.has(element) || element.closest("[data-motion-owned]")) return;
+          if (element.parentElement?.closest("[data-shop-reveal], article, .product-card")) return;
+          seen.add(element);
+          observer.observe(element);
+        });
+      };
+      const queueScan = () => {
+        if (!frame) frame = window.requestAnimationFrame(discoverMobile);
+      };
+      discoverMobile();
+      const mutations = new MutationObserver(queueScan);
+      mutations.observe(root, { childList: true, subtree: true });
+      return () => {
+        window.cancelAnimationFrame(frame);
+        mutations.disconnect();
+        observer.disconnect();
+      };
+    }
+
     gsap.registerPlugin(ScrollTrigger);
     ScrollTrigger.config({ ignoreMobileResize: true });
 
