@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">KLEID.IN</title>
+  <rect width="64" height="64" rx="14" fill="#001CAC"/>
+  <path d="M17 13h9v18l18-18h12L37 32l20 19H44L26 33v18h-9V13Z" fill="#fff"/>
+</svg>
