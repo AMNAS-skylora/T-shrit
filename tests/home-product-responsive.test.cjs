@@ -81,7 +81,11 @@ test("active timed offer has a red lower-left image badge on mobile and desktop"
   assert.match(offerRule, /background:\s*#d92d20/);
   assert.match(offerRule, /color:\s*#fff/);
   const mobile = cardStyles.match(/@media \(max-width: 640px\)\s*\{([\s\S]*?)\n\}\n\n@media \(max-width: 360px\)/)?.[1] ?? "";
-  assert.match(mobile, /\.badgeOffer\s*\{\s*top:\s*auto;\s*bottom:\s*8px/);
+  assert.match(mobile, /\.badgeOffer\s*\{[\s\S]*?top:\s*auto;\s*bottom:\s*9px/);
+  assert.match(mobile, /\.badgeOffer\s*\{[\s\S]*?padding:\s*8px 9px/);
+  assert.match(mobile, /\.badgeOffer\s*\{[\s\S]*?font-size:\s*10px/);
+  assert.match(cardStyles, /\.badgeOffer::before\s*\{[^}]*width:\s*5px/);
+  assert.match(cardStyles, /@media \(max-width: 360px\)\s*\{[\s\S]*?\.badgeOffer\s*\{[^}]*font-size:\s*9px/);
   assert.match(card, /const limitedOffer = available && discounted && Boolean\(product\.offerEndsAt\)/);
   assert.match(card, /Limited offer/);
 });
