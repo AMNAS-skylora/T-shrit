@@ -89,3 +89,21 @@ test("active timed offer has a red lower-left image badge on mobile and desktop"
   assert.match(card, /const limitedOffer = available && discounted && Boolean\(product\.offerEndsAt\)/);
   assert.match(card, /Limited offer/);
 });
+
+test("homepage mobile collection link fills the row and follows the product grid closely", () => {
+  assert.match(section, /className=\{"mt-6 sm:mt-8 " \+ styles\.grid/);
+  assert.match(section, /mt-6 flex justify-stretch sm:mt-8 sm:justify-center/);
+  assert.match(section, /min-h-12 w-full items-center justify-between/);
+  assert.match(section, /sm:w-auto sm:justify-center/);
+});
+
+test("two-column phone cards keep product photos large and prices readable", () => {
+  const mobile = cardStyles.match(/@media \(max-width: 640px\)\s*\{([\s\S]*?)\n\}\n\n@media \(max-width: 360px\)/)?.[1] ?? "";
+  assert.match(mobile, /\.photo \{ padding: 4px; \}/);
+  assert.match(mobile, /\.content \{ padding: 13px 11px 16px; \}/);
+  assert.match(mobile, /\.prices \{ padding-top: 14px; column-gap: 7px; row-gap: 3px; \}/);
+  assert.match(mobile, /\.price \{ font-size: clamp\(14px, 3\.8vw, 16px\); \}/);
+  assert.match(cardStyles, /\.badgeOffer\s*\{[^}]*white-space: nowrap/s);
+  assert.match(grid, /grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(grid, /@media \(min-width: 1024px\)/);
+});
