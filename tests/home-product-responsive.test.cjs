@@ -34,3 +34,8 @@ test("show Limited offer only for an active discount with an end time", () => {
   assert.match(card, /Sold out/);
   assert.match(card, /useOfferClock\(product, false\)/);
 });
+
+test("a filtered collection with only one product is centered, not stuck at the left", () => {
+  assert.match(grid, /\.grid > :only-child\s*\{[^}]*grid-column: 1 \/ -1/s);
+  assert.match(grid, /justify-self: center/);
+});
