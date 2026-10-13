@@ -80,9 +80,14 @@
   color: #fff;
 }
 
+/* A timed offer sits at the lower-left of the image, separate from Sold Out. */
 .badgeOffer {
-  background: #001cac;
+  top: auto;
+  bottom: 10px;
+  left: 10px;
+  background: #d92d20;
   color: #fff;
+  box-shadow: 0 2px 8px rgba(95, 13, 13, .16);
 }
 
 .content {
@@ -203,6 +208,11 @@
     padding: 6px 7px;
     font-size: 8px;
     letter-spacing: .025em;
+  }
+
+  .badgeOffer {
+    top: auto;
+    bottom: 8px;
   }
 }
 
