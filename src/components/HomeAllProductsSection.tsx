@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import styles from "./HomeProductGrid.module.css";
 import type { Product } from "@/types/product";
 import { HomeProductGridCard } from "@/components/HomeProductGridCard";
@@ -43,7 +44,7 @@ export function HomeAllProductsSection({
             </div>
           ))}
         </div>
-        {products.length ? <div className="mt-6 flex justify-stretch sm:mt-8 sm:justify-center"><Link href="/products" className={"inline-flex min-h-12 w-full items-center justify-between rounded-full border px-5 py-3 text-[13px] font-semibold transition-colors sm:min-h-11 sm:w-auto sm:justify-center sm:px-6 " + (theme === "dark" ? "border-white/30 text-white hover:bg-white/10" : "border-black/20 text-black hover:bg-black/[.035]")}>View all products <span className="ml-3" aria-hidden="true">↗</span></Link></div> : null}
+        {products.length ? <div className="mt-6 flex justify-stretch sm:mt-8 sm:justify-center"><Link href="/products" className={"inline-flex min-h-12 w-full items-center justify-between rounded-full border px-5 py-3 text-[13px] font-semibold transition-colors sm:min-h-11 sm:w-auto sm:justify-center sm:px-6 " + (theme === "dark" ? "border-white/30 text-white hover:bg-white/10" : "border-black/20 text-black hover:bg-black/[.035]")}>View all products <ArrowUpRightIcon className="ml-3 shrink-0" width={18} height={18} /></Link></div> : null}
       </div>
     </section>
   );
