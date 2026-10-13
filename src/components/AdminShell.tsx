@@ -10,7 +10,6 @@ const nav = [
   { href: "/admin/inventory", label: "Inventory" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/customers", label: "Customers" },
-  { href: "/admin/homepage", label: "Homepage" },
   { href: "/admin/settings", label: "Settings" },
 ];
 
@@ -23,7 +22,6 @@ const mobilePrimary = [
 
 const mobileMore = [
   { href: "/admin/customers", label: "Customers", icon: "customers" },
-  { href: "/admin/homepage", label: "Homepage", icon: "homepage" },
   { href: "/admin/settings", label: "Settings", icon: "settings" },
 ] as const;
 
@@ -93,17 +91,6 @@ function NavIcon({
         <circle cx="9.5" cy="7" r="4" />
         <path d="M16 4.5a4 4 0 0 1 0 7" />
         <path d="M21 21v-2a4 4 0 0 0-3-3.9" />
-      </svg>
-    );
-  }
-
-  if (name === "homepage") {
-    return (
-      <svg {...common}>
-        <rect x="3" y="4" width="18" height="16" rx="2" />
-        <path d="M3 9h18" />
-        <path d="M8 13h8" />
-        <path d="M8 17h5" />
       </svg>
     );
   }

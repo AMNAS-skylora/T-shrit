@@ -37,12 +37,6 @@ const quickActions = [
     description: "Customer list",
   },
   {
-    href: "/admin/homepage",
-    label: "Homepage",
-    short: "H",
-    description: "Store content",
-  },
-  {
     href: "/admin/settings",
     label: "Settings",
     short: "S",
@@ -55,7 +49,7 @@ function ActionIcon({ name }: { name: string }) {
     "+": "M12 5v14M5 12h14", O: "M7 3h10v4H7zM5 5H3v16h18V5h-2M7 12h10M7 16h7",
     I: "m3 7 9-4 9 4v10l-9 4-9-4V7Zm0 0 9 4 9-4M12 11v10", "₹": "M6 4h12M6 8h12M7 4c8 0 8 8 0 8l9 8",
     C: "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 21v-2a4 4 0 0 0-3-4M16 3a4 4 0 0 1 0 8",
-    H: "m3 10 9-7 9 7M5 9v12h14V9M9 21v-8h6v8", S: "M4 7h16M4 17h16M8 4v6M16 14v6",
+    S: "M4 7h16M4 17h16M8 4v6M16 14v6",
   };
   return <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={paths[name]} /></svg>;
 }
