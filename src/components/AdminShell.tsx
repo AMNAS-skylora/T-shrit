@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { AdminDialogProvider } from "@/components/AdminDialogProvider";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
@@ -134,6 +135,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
   }
 
   return (
+    <AdminDialogProvider>
     <div data-admin-ui className="min-h-screen bg-[#f5f6f8] text-[#111]">
       <div className="mx-auto grid min-h-screen max-w-[1600px] md:grid-cols-[230px_minmax(0,1fr)]">
         <aside aria-label="Admin sidebar" className="border-b border-black/10 bg-white px-4 py-4 md:sticky md:top-0 md:h-dvh md:self-start md:overflow-y-auto md:border-b-0 md:border-r md:p-5">
@@ -292,5 +294,6 @@ export function AdminShell({ children }: { children: ReactNode }) {
         </div>
       </nav>
     </div>
+    </AdminDialogProvider>
   );
 }
