@@ -72,3 +72,16 @@ test("limited-time offer stays a compact badge, never an added product tile or c
   assert.doesNotMatch(card, /<OfferCountdown/);
   assert.match(section, /products\.slice\(0, 6\)/);
 });
+
+test("active timed offer has a red lower-left image badge on mobile and desktop", () => {
+  const offerRule = cardStyles.match(/\.badgeOffer\s*\{([^}]+)\}/)?.[1] ?? "";
+  assert.match(offerRule, /top:\s*auto/);
+  assert.match(offerRule, /bottom:\s*10px/);
+  assert.match(offerRule, /left:\s*10px/);
+  assert.match(offerRule, /background:\s*#d92d20/);
+  assert.match(offerRule, /color:\s*#fff/);
+  const mobile = cardStyles.match(/@media \(max-width: 640px\)\s*\{([\s\S]*?)\n\}\n\n@media \(max-width: 360px\)/)?.[1] ?? "";
+  assert.match(mobile, /\.badgeOffer\s*\{\s*top:\s*auto;\s*bottom:\s*8px/);
+  assert.match(card, /const limitedOffer = available && discounted && Boolean\(product\.offerEndsAt\)/);
+  assert.match(card, /Limited offer/);
+});
