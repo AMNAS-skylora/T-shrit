@@ -1,4 +1,10 @@
 .section { padding: 56px 5%; background: #111; color: #fff; scroll-margin-top: 80px; }
+/* Brand-blue background across both the editorial copy and detail columns. */
+.everydayBlue { background: #001cac; color: #fff; }
+.everydayBlue .eyebrow { color: rgba(255,255,255,.8); }
+.everydayBlue .body { color: rgba(255,255,255,.9); }
+.everydayBlue .details { border-color: rgba(255,255,255,.35); }
+.everydayBlue .details p { color: rgba(255,255,255,.83); }
 .layout { display: grid; grid-template-columns: minmax(0,1.2fr) minmax(0,1fr); gap: 64px; align-items: center; max-width: 1200px; margin: 0 auto; }
 .eyebrow { margin: 0; color: #ffffff99; font-size: 11px; font-weight: 600; line-height: 1.5; letter-spacing: .12em; }
 .title { margin: 14px 0 0; font-size: clamp(28px,3vw,40px); font-weight: 600; line-height: 1.15; letter-spacing: -.035em; }
