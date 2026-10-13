@@ -52,9 +52,9 @@ for (const [name, source] of managers) {
 }
 
 test("mobile admin popup fills the viewport; desktop keeps a centered dialog", () => {
-  assert.match(provider, /h-\\[100dvh\\]/);
-  assert.match(provider, /sm:h-auto/);
-  assert.match(provider, /sm:max-w-\\[440px\\]/);
-  assert.match(provider, /env\\(safe-area-inset-bottom\\)/);
-  assert.match(provider, /overflow-y-auto overscroll-contain/);
+  assert.equal(provider.includes("h-[100dvh]"), true);
+  assert.equal(provider.includes("sm:h-auto"), true);
+  assert.equal(provider.includes("sm:max-w-[440px]"), true);
+  assert.equal(provider.includes("env(safe-area-inset-bottom)"), true);
+  assert.equal(provider.includes("overflow-y-auto overscroll-contain"), true);
 });
