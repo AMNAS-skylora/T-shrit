@@ -169,7 +169,7 @@ export function StaticEditorialHero({ products }: { products: Product[] }) {
               <div className={styles.stack} aria-label="Featured products">
                 {cards.map((card, index) => {
                   const position = CARD_POSITIONS[
-                    (index - frontIndex + cards.length) % cards.length
+                    (index - (frontIndex % cards.length) + cards.length) % cards.length
                   ];
                   const front = position === "front";
 
