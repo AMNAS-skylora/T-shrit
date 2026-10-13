@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { getCategoryShopHref } from "@/lib/storefront-categories";
 import styles from "./HomeCategoryMarquee.module.css";
 
@@ -17,7 +18,7 @@ export function HomeCategoryMarquee({ categories }: { categories: string[] }) {
           <div className={styles.window} aria-label="Categories - select to filter the shop">
             <div
               className={styles.track}
-              style={{ "--marquee-duration": `${Math.max(18, categories.length * 5)}s` } as React.CSSProperties}
+              style={{ "--marquee-duration": `${Math.max(18, categories.length * 5)}s` } as CSSProperties}
             >
               {[0, 1].map((repeat) => (
                 <div
