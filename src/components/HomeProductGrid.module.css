@@ -9,6 +9,12 @@
   min-width: 0;
   height: 100%;
 }
+/* A filtered collection with only one product should not sit awkwardly in the first half of a phone. */
+.grid > :only-child {
+  grid-column: 1 / -1;
+  width: min(100%, 340px);
+  justify-self: center;
+}
 @media (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
