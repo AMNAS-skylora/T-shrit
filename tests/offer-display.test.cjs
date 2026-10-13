@@ -38,6 +38,29 @@ for (const Component of [ProductCard,HomeProductGridCard]) {
     }
     const html = renderToStaticMarkup(React.createElement(Component,{product:{...product,offerEnabled:true,offerType:'fixed',offerValue:100,offerEndsAt:new Date(now+86400000).toISOString()},whatsappNumber:''}));
     assert.match(html,/INR400/);
-    assert.match(html,/1d 00h 00m 00s/);
+    if (Component === ProductCard) assert.match(html, /1d 00h 00m 00s/);
+    else {
+      assert.match(html, /Limited offer/);
+      assert.doesNotMatch(html, /1d 00h 00m 00s|WhatsApp|<button/);
+    }
   });
 }
+
+test("catalog card shows no Limited offer badge for an open-ended discount", () => {
+  const html = renderToStaticMarkup(React.createElement(HomeProductGridCard, {
+    product: { ...product, offerEnabled: true, offerType: "fixed", offerValue: 100, offerEndsAt: undefined },
+    whatsappNumber: "",
+  }));
+  assert.match(html, /INR400/);
+  assert.doesNotMatch(html, /Limited offer|Offer ends|<button/);
+});
+
+test("sold-out catalog card has no limited offer badge or sold-out button", () => {
+  const html = renderToStaticMarkup(React.createElement(HomeProductGridCard, {
+    product: { ...product, stock: 0, offerEnabled: true, offerType: "fixed", offerValue: 100,
+      offerEndsAt: new Date(now + 86400000).toISOString() },
+    whatsappNumber: "",
+  }));
+  assert.match(html, /Sold out/);
+  assert.doesNotMatch(html, /Limited offer|<button/);
+});

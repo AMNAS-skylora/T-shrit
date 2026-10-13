@@ -20,7 +20,7 @@ test("featured section omits eyebrow and countdown without changing other produc
   assert.doesNotMatch(component, /KLEID\.IN \/ \{current\.category/);
   assert.doesNotMatch(component, /OfferCountdown|styles\.countdown|styles\.eyebrow/);
   assert.doesNotMatch(styles, /\.countdown\b|\.eyebrow\b/);
-  assert.match(gridCard, /<OfferCountdown/);
+  assert.doesNotMatch(gridCard, /<OfferCountdown/);
   assert.match(spotlight, /<OfferCountdown/);
 });
 
