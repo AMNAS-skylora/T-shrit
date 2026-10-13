@@ -16,18 +16,33 @@ test("featured product keeps title, description, price and product CTA", () => {
   assert.match(component, /href=\{"\/products\/" \+ current\.slug\}/);
 });
 
-test("featured section omits category eyebrow and offer countdown, other product timers remain", () => {
+test("featured section omits eyebrow and countdown without changing other product timers", () => {
   assert.doesNotMatch(component, /KLEID\.IN \/ \{current\.category/);
-  assert.doesNotMatch(component, /OfferCountdown/);
-  assert.doesNotMatch(component, /styles\.countdown|styles\.eyebrow/);
+  assert.doesNotMatch(component, /OfferCountdown|styles\.countdown|styles\.eyebrow/);
   assert.doesNotMatch(styles, /\.countdown\b|\.eyebrow\b/);
   assert.match(gridCard, /<OfferCountdown/);
   assert.match(spotlight, /<OfferCountdown/);
 });
 
-test("mobile image first and full-width CTA have adequate tap height", () => {
-  assert.match(styles, /@media \(max-width: 800px\)/);
-  assert.match(styles, /\.media\s*\{\s*order:\s*-1;/);
+test("featured desktop layout is 60vh and has no outer border, radius or outline", () => {
+  const section = styles.match(/\.section\s*\{([^}]+)\}/)?.[1] ?? "";
+  const layout = styles.match(/\.layout\s*\{([^}]+)\}/)?.[1] ?? "";
+  const media = styles.match(/\.media\s*\{([^}]+)\}/)?.[1] ?? "";
+  assert.match(section, /min-height:\s*60svh/);
+  assert.match(layout, /border:\s*0/);
+  assert.match(layout, /border-radius:\s*0/);
+  assert.match(layout, /outline:\s*0/);
+  assert.match(layout, /background:\s*transparent/);
+  assert.match(media, /border:\s*0/);
+  assert.match(media, /border-radius:\s*0/);
+  assert.match(media, /object-fit|background:\s*#f0f0ef/);
+});
+
+test("tablet and mobile use image-first single column and full-width accessible CTA", () => {
+  assert.match(styles, /@media \(max-width: 900px\)/);
+  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(styles, /grid-row:\s*1/);
   assert.match(styles, /\.button\s*\{[^}]*width:\s*100%/s);
   assert.match(styles, /\.button\s*\{[^}]*min-height:\s*50px/s);
+  assert.match(styles, /@media \(max-width: 380px\)/);
 });
