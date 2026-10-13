@@ -37,7 +37,7 @@ test('mobile About image is fully contained, with no crop or gradient mask', () 
 
 test('About mobile layout stacks content and displays feature points as readable rows', () => {
   assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\)/);
-  assert.match(styles, /\.points\s*\{[^}]*display:\s*grid/s);
+  assert.match(styles, /\.points\s*\{\s*display:\s*grid/);
   assert.match(styles, /\.points li\s*\{[^}]*min-height:\s*43px/s);
   assert.match(styles, /\.link\s*\{\s*width:\s*100%/);
   assert.match(aboutMarkup, /className=\{styles\.pointIndex\}/);
