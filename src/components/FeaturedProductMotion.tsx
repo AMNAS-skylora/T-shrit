@@ -8,7 +8,6 @@ import { getProductPrimaryImage } from "@/lib/product-images";
 import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { formatPrice } from "@/lib/format";
 import { useOfferClock } from "@/hooks/useOfferClock";
-import { OfferCountdown } from "@/components/OfferCountdown";
 import styles from "./FeaturedProductMotion.module.css";
 
 export function FeaturedProductMotion({ products = [], layout = "motion" }: { products?: Product[]; layout?: "motion" | "static" }) {
@@ -65,15 +64,11 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
   return <section ref={root} id="featured-products" className={styles.section} data-motion-owned aria-label="Featured products" onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setFocused(false); }}>
     <div className={styles.layout}>
       <div className={styles.info} data-visible={visible}>
-        <p className={styles.eyebrow}>KLEID.IN / {current.category || "FEATURED"}</p>
         <h2>{current.name}</h2>
         {current.description ? <p className={styles.description}>{current.description}</p> : null}
         <div className={styles.priceRow}>
           <strong className={styles.price}>{formatPrice(offerPrice)}</strong>
           {showOriginalPrice ? <del className={styles.originalPrice}>{formatPrice(current.price)}</del> : null}
-        </div>
-        <div className={styles.countdown}>
-          <OfferCountdown product={current} now={now} />
         </div>
         <Link href={"/products/" + current.slug} className={styles.button}>
           <span>View product</span><span aria-hidden="true">↗</span>

@@ -48,18 +48,6 @@
   transform: translate3d(16px, 0, 0);
 }
 
-.eyebrow {
-  max-width: 100%;
-  margin: 0 0 15px;
-  color: #001cac;
-  font-size: 10px;
-  line-height: 1.4;
-  font-weight: 700;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  overflow-wrap: anywhere;
-}
-
 .info h2 {
   max-width: 100%;
   margin: 0;
@@ -109,74 +97,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.countdown {
-  width: 100%;
-  min-width: 0;
-}
-
-.countdown:has([role="timer"]) {
-  margin-top: 22px;
-}
-
-.countdown :global([role="timer"]) {
-  display: block;
-  margin: 0;
-  padding: 0;
-}
-
-.countdown :global([role="timer"]) > div {
-  display: grid;
-  width: 100%;
-  max-width: 400px;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.countdown :global([role="timer"]) > div > span {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  padding: 11px 4px 10px;
-  border: 1px solid #e2e8fd;
-  border-radius: 10px;
-  background: #f2f5ff;
-}
-
-.countdown :global([role="timer"]) > div > span > strong {
-  display: block;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  border-radius: 0;
-  background: transparent;
-  color: #001cac;
-  text-align: center;
-  font-size: clamp(17px, 2vw, 23px);
-  font-weight: 750;
-  line-height: 1.2;
-  letter-spacing: -.03em;
-  font-variant-numeric: tabular-nums;
-}
-
-.countdown :global([role="timer"]) > div > span > small {
-  color: #6c7181;
-  text-align: center;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
 .button {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
   gap: 32px;
   min-height: 50px;
-  margin-top: 26px;
+  margin-top: 25px;
   padding: 12px 24px;
   border-radius: 999px;
   background: #111;
@@ -322,22 +249,7 @@
     height: clamp(225px, 75vw, 310px);
   }
 
-  .countdown :global([role="timer"]) > div {
-    gap: 6px;
-  }
 
-  .countdown :global([role="timer"]) > div > span {
-    gap: 5px;
-    padding: 9px 2px;
-  }
-
-  .countdown :global([role="timer"]) > div > span > strong {
-    font-size: 17px;
-  }
-
-  .countdown :global([role="timer"]) > div > span > small {
-    font-size: 9px;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
