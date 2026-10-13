@@ -183,7 +183,7 @@ export function AdminDialogProvider({ children }: { children: ReactNode }) {
       {children}
       {request ? createPortal(
         <div
-          className="fixed inset-0 z-[300] flex items-center justify-center overflow-y-auto bg-[#0c1020]/55 p-4 backdrop-blur-[3px] sm:p-6"
+          className="fixed inset-0 z-[300] flex items-stretch justify-center overflow-hidden bg-[#0c1020]/55 p-0 sm:items-center sm:overflow-y-auto sm:p-6 sm:backdrop-blur-[3px]"
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) {
               close(request.kind === "prompt" ? null : false);
@@ -197,10 +197,10 @@ export function AdminDialogProvider({ children }: { children: ReactNode }) {
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={descriptionId}
-            className="w-full max-w-[440px] overflow-hidden rounded-[22px] border border-black/10 bg-white text-[#171717] shadow-[0_24px_100px_rgba(5,10,30,.24)]"
+            className="flex h-[100dvh] min-h-0 w-full flex-col overflow-hidden bg-white text-[#171717] shadow-[0_24px_100px_rgba(5,10,30,.24)] sm:h-auto sm:max-h-[calc(100dvh-48px)] sm:max-w-[440px] sm:rounded-[22px] sm:border sm:border-black/10"
           >
-            <form onSubmit={submit}>
-              <div className="px-5 pb-5 pt-5 sm:px-7 sm:pb-6 sm:pt-7">
+            <form onSubmit={submit} className="flex min-h-0 flex-1 flex-col">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-8 pt-[max(24px,env(safe-area-inset-top))] sm:flex-none sm:px-7 sm:pb-6 sm:pt-7">
                 <div className="mb-5 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <span
@@ -252,7 +252,7 @@ export function AdminDialogProvider({ children }: { children: ReactNode }) {
                 ) : null}
               </div>
 
-              <div className="flex flex-col-reverse gap-2 border-t border-black/[.06] bg-[#fafbfc] px-5 py-4 sm:flex-row sm:justify-end sm:px-7">
+              <div className="flex shrink-0 flex-col-reverse gap-3 border-t border-black/[.06] bg-[#fafbfc] px-5 pb-[max(20px,env(safe-area-inset-bottom))] pt-4 sm:flex-row sm:justify-end sm:gap-2 sm:px-7 sm:py-4">
                 {request.kind !== "notice" ? (
                   <button
                     ref={cancelRef}
