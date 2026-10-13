@@ -25,6 +25,15 @@ const dependencies = {
   '@/components/StoreSettingsContext': {useStoreSettings: () => ({whatsappNumber:''})},
   'next/link': {default: ({children, ...props}) => React.createElement('a',props,children)},
   'next/image': {default: () => null},
+  './HomeProductGridCard.module.css': {
+    default: {
+      card: 'card', dark: 'dark', link: 'link', media: 'media',
+      photo: 'photo', placeholder: 'placeholder', badge: 'badge',
+      badgeSold: 'badgeSold', badgeOffer: 'badgeOffer', content: 'content',
+      category: 'category', name: 'name', prices: 'prices',
+      price: 'price', oldPrice: 'oldPrice',
+    },
+  },
 };
 const {ProductCard} = load('src/components/ProductCard.tsx',dependencies);
 const {HomeProductGridCard} = load('src/components/HomeProductGridCard.tsx',dependencies);
