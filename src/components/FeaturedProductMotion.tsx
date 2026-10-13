@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import { getFeaturedProducts } from "@/lib/featured-products";
 import { getProductPrimaryImage } from "@/lib/product-images";
-import { getProductOfferPrice } from "@/lib/product-offers";
+import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { formatPrice } from "@/lib/format";
 import { useOfferClock } from "@/hooks/useOfferClock";
 import { OfferCountdown } from "@/components/OfferCountdown";
@@ -59,15 +59,25 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
   useEffect(() => { if (items.length > 1) { const next = new Image(); next.src = getProductPrimaryImage(items[(activeIndex + 1) % items.length]); } }, [items, activeIndex]);
   useEffect(() => () => { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); }, []);
   if (!current) return null;
+  const offerPrice = getProductOfferPrice(current, now);
+  const showOriginalPrice = isProductOfferActive(current, now) && offerPrice < current.price;
 
   return <section ref={root} id="featured-products" className={styles.section} data-motion-owned aria-label="Featured products" onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setFocused(false); }}>
     <div className={styles.layout}>
       <div className={styles.info} data-visible={visible}>
+        <p className={styles.eyebrow}>KLEID.IN / {current.category || "FEATURED"}</p>
         <h2>{current.name}</h2>
         {current.description ? <p className={styles.description}>{current.description}</p> : null}
-        <strong className={styles.price}>{formatPrice(getProductOfferPrice(current, now))}</strong>
-        <OfferCountdown product={current} now={now} />
-        <Link href={"/products/" + current.slug} className={styles.button}>View product <span aria-hidden="true">↗</span></Link>
+        <div className={styles.priceRow}>
+          <strong className={styles.price}>{formatPrice(offerPrice)}</strong>
+          {showOriginalPrice ? <del className={styles.originalPrice}>{formatPrice(current.price)}</del> : null}
+        </div>
+        <div className={styles.countdown}>
+          <OfferCountdown product={current} now={now} />
+        </div>
+        <Link href={"/products/" + current.slug} className={styles.button}>
+          <span>View product</span><span aria-hidden="true">↗</span>
+        </Link>
       </div>
       <Link href={"/products/" + current.slug} className={styles.media} data-visible={visible} aria-label={"View " + current.name}>
         <img src={getProductPrimaryImage(current)} alt={current.name} loading="lazy" decoding="async" draggable={false} />
