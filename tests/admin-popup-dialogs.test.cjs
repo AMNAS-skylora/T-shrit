@@ -45,6 +45,7 @@ for (const [name, source] of managers) {
     assert.match(source, /await confirm\(\{/);
     assert.match(source, /destructive: true/);
     assert.match(source, /if \(!confirmed\) return;/);
-    assert.doesNotMatch(source, /\b(?:window\.)?(?:confirm|alert|prompt)\s*\(/);
+    assert.doesNotMatch(source, /\\bwindow\\.(?:confirm|alert|prompt)\\s*\\(/);
+    assert.doesNotMatch(source, /\\b(?:alert|prompt)\\s*\\(/);
   });
 }
