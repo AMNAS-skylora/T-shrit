@@ -1,28 +1,50 @@
-/* Shared product grid: two readable cards on phones/tablets, three on desktop. */
+/* Shared collection grid: two cards per row on phones/tablets; three on desktop. */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(18px, 2.4vw, 32px) clamp(10px, 2vw, 24px);
+  grid-auto-flow: row;
   align-items: stretch;
+  column-gap: clamp(10px, 2vw, 24px);
+  row-gap: clamp(24px, 2.5vw, 34px);
+  width: 100%;
+  min-width: 0;
 }
+
 .grid > * {
   min-width: 0;
   height: 100%;
 }
-/* A filtered collection with only one product should not sit awkwardly in the first half of a phone. */
+
+/* Only the homepage preview uses a fixed six-product maximum (2×3 on phones). */
+.homeGrid {
+  align-content: start;
+}
+
+/* A filtered collection with one real product stays centered. No filler cards. */
 .grid > :only-child {
   grid-column: 1 / -1;
   width: min(100%, 340px);
   justify-self: center;
 }
+
 @media (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    column-gap: clamp(20px, 2vw, 28px);
+    row-gap: 36px;
   }
 }
-@media (max-width: 380px) {
+
+@media (max-width: 640px) {
+  .homeGrid {
+    column-gap: 12px;
+    row-gap: 28px;
+  }
+}
+
+@media (max-width: 360px) {
   .grid {
-    column-gap: 8px;
-    row-gap: 18px;
+    column-gap: 9px;
+    row-gap: 24px;
   }
 }
