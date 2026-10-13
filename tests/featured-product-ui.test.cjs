@@ -27,7 +27,7 @@ test("featured section omits eyebrow and countdown without changing other produc
 test("featured desktop layout is 60vh and has no outer border, radius or outline", () => {
   const section = styles.match(/\.section\s*\{([^}]+)\}/)?.[1] ?? "";
   const layout = styles.match(/\.layout\s*\{([^}]+)\}/)?.[1] ?? "";
-  const media = styles.match(/\.media\s*\{([^}]+)\}/)?.[1] ?? "";
+  const media = styles.match(/(?:^|\n)\.media\s*\{([^}]+)\}/)?.[1] ?? "";
   assert.match(section, /min-height:\s*60svh/);
   assert.match(layout, /border:\s*0/);
   assert.match(layout, /border-radius:\s*0/);
