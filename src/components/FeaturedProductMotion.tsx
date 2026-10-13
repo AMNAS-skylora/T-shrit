@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowUpRightIcon, ArrowLeftIcon, ArrowRightIcon } from "@/components/UiIcons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import { getFeaturedProducts } from "@/lib/featured-products";
@@ -71,7 +72,7 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
           {showOriginalPrice ? <del className={styles.originalPrice}>{formatPrice(current.price)}</del> : null}
         </div>
         <Link href={"/products/" + current.slug} className={styles.button}>
-          <span>View product</span><span aria-hidden="true">↗</span>
+          <span>View product</span><ArrowUpRightIcon width={18} height={18} />
         </Link>
       </div>
       <Link href={"/products/" + current.slug} className={styles.media} data-visible={visible} aria-label={"View " + current.name}>
@@ -79,10 +80,10 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
       </Link>
     </div>
     {items.length > 1 && layout !== "static" ? <div className={styles.controls} role="group" aria-label="Choose featured product">
-      <button type="button" onClick={() => select((activeIndex + items.length - 1) % items.length)} aria-label="Previous featured product">←</button>
+      <button type="button" onClick={() => select((activeIndex + items.length - 1) % items.length)} aria-label="Previous featured product"><ArrowLeftIcon width={20} height={20} /></button>
       <span className={styles.position} aria-live="off">{activeIndex + 1} / {items.length}</span>
       <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} aria-label={paused ? "Play featured slideshow" : "Pause featured slideshow"}>{paused ? "Play" : "Pause"}</button>
-      <button type="button" onClick={() => select((activeIndex + 1) % items.length)} aria-label="Next featured product">→</button>
+      <button type="button" onClick={() => select((activeIndex + 1) % items.length)} aria-label="Next featured product"><ArrowRightIcon width={20} height={20} /></button>
     </div> : null}
   </section>;
 }
