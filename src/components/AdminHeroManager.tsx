@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useAdminDialog } from "@/components/AdminDialogProvider";
 import { AdminHeroImageControls } from "@/components/AdminHeroImageControls";
 import { normalizeHeroImagePlacement, normalizeHeroImageOpacity, type HeroImagePlacement } from "@/lib/hero-image-placement";
 import { HomeHeroSlider } from "@/components/HomeHeroSlider";
@@ -115,6 +116,7 @@ function scheduleStatus(slide: HeroSlideConfig) {
 }
 
 export function AdminHeroManager() {
+  const { confirm } = useAdminDialog();
   const [slides, setSlides] = useState<HeroSlideConfig[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
@@ -122,6 +124,7 @@ export function AdminHeroManager() {
   const [message, setMessage] = useState("");
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
@@ -372,20 +375,29 @@ export function AdminHeroManager() {
   }
 
   async function remove(id: string) {
-    if (!window.confirm("Delete this hero slide?")) return;
-
-    const response = await fetch("/api/admin/hero/" + id, {
-      method: "DELETE",
+    if (deletingId) return;
+    const slide = slides.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: "Delete hero slide?",
+      description: `Delete "${slide?.title || "this hero slide"}" permanently? This cannot be undone.`,
+      confirmLabel: "Delete slide",
+      cancelLabel: "Keep slide",
+      destructive: true,
     });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setMessage(data.error || "Could not delete hero slide.");
-      return;
+    if (!confirmed) return;
+    setDeletingId(id);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/hero/" + id, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not delete hero slide.");
+      await load();
+      setMessage("Hero deleted.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not delete hero slide.");
+    } finally {
+      setDeletingId("");
     }
-
-    setMessage("Hero deleted.");
-    await load();
   }
 
   return (
@@ -897,9 +909,10 @@ export function AdminHeroManager() {
                   <button
                     type="button"
                     onClick={() => void remove(slide.id)}
+                    disabled={Boolean(deletingId)}
                     className="min-h-10 rounded-lg border border-red-200 px-3 text-xs font-semibold text-red-600"
                   >
-                    Delete
+                    {deletingId === slide.id ? "Deleting…" : "Delete"}
                   </button>
                 </div>
               </div>
