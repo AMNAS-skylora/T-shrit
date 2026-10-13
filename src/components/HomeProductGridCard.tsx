@@ -68,7 +68,7 @@ export function HomeProductGridCard({
               Sold out
             </span>
           ) : limitedOffer ? (
-            <span className="absolute left-2 top-2 max-w-[calc(100%-1rem)] rounded-[4px] bg-[#001cac] px-2 py-1 text-[9px] font-bold uppercase tracking-[.045em] text-white sm:left-3 sm:top-3 sm:text-[10px]">
+            <span className="absolute left-2 top-2 max-w-[85%] rounded-[4px] bg-[#001cac] px-2 py-1 text-[9px] font-bold uppercase tracking-[.045em] text-white sm:left-3 sm:top-3 sm:text-[10px]">
               Limited offer
             </span>
           ) : null}
