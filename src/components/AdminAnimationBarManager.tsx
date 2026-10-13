@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
+import { useAdminDialog } from "@/components/AdminDialogProvider";
 import { HomepageAnimationBars } from "@/components/HomepageAnimationBars";
 import type {
   AnimationBarConfig,
@@ -148,12 +149,14 @@ function Toggle({
 }
 
 export function AdminAnimationBarManager() {
+  const { confirm } = useAdminDialog();
   const [bars, setBars] = useState<AnimationBarConfig[]>([]);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState("");
 
   async function load() {
     const response = await fetch("/api/admin/animation-bars", {
@@ -340,20 +343,29 @@ export function AdminAnimationBarManager() {
   }
 
   async function remove(id: string) {
-    if (!window.confirm("Delete this animation bar?")) return;
-
-    const response = await fetch("/api/admin/animation-bars/" + id, {
-      method: "DELETE",
+    if (deletingId) return;
+    const bar = bars.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: "Delete animation bar?",
+      description: `Delete "${bar?.name || "this animation bar"}" permanently? This cannot be undone.`,
+      confirmLabel: "Delete bar",
+      cancelLabel: "Keep bar",
+      destructive: true,
     });
-    const data = await response.json();
-
-    if (!response.ok) {
-      setMessage(data.error || "Could not delete animation bar.");
-      return;
+    if (!confirmed) return;
+    setDeletingId(id);
+    setMessage("");
+    try {
+      const response = await fetch("/api/admin/animation-bars/" + id, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not delete animation bar.");
+      await load();
+      setMessage("Animation bar deleted.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not delete animation bar.");
+    } finally {
+      setDeletingId("");
     }
-
-    setMessage("Animation bar deleted.");
-    await load();
   }
 
   return (
@@ -477,9 +489,10 @@ export function AdminAnimationBarManager() {
                   <button
                     type="button"
                     onClick={() => void remove(bar.id)}
+                    disabled={Boolean(deletingId)}
                     className="min-h-10 rounded-xl border border-red-200 text-xs font-bold text-red-600"
                   >
-                    Delete
+                    {deletingId === bar.id ? "Deleting…" : "Delete"}
                   </button>
                 </div>
               </div>
