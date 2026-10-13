@@ -31,12 +31,12 @@ export function HomeProductGridCard({
   const dark = theme === "dark";
 
   return (
-    <article className="group flex h-full min-w-0 flex-col">
+    <article className="group flex h-full w-full min-w-0 flex-col">
       <Link
         href={`/products/${product.slug}`}
         data-product-transition
         aria-label={`View ${product.name}`}
-        className="flex h-full min-w-0 flex-col rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#001cac]"
+        className="flex h-full w-full min-w-0 flex-col rounded-[10px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#001cac]"
       >
         <div
           className={
@@ -50,7 +50,7 @@ export function HomeProductGridCard({
               alt={product.name}
               fill
               sizes="(max-width: 639px) 46vw, (max-width: 1023px) 44vw, (max-width: 1600px) 31vw, 500px"
-              className="object-contain p-2.5 transition-transform duration-500 ease-out group-hover:scale-[1.035] sm:p-4"
+              className="object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-[1.035] sm:p-4"
             />
           ) : (
             <span
@@ -74,7 +74,7 @@ export function HomeProductGridCard({
           ) : null}
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-0 px-0.5 pb-1 pt-3 sm:pt-4">
+        <div className="flex min-w-0 flex-1 flex-col px-0.5 pb-1 pt-3 sm:pt-4">
           {product.category ? (
             <p
               className={
@@ -95,7 +95,7 @@ export function HomeProductGridCard({
             {product.name}
           </h3>
 
-          <div className="mt-2.5 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 sm:mt-3">
+          <div className="mt-auto flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 pt-2.5 sm:pt-3">
             <strong
               className={
                 "text-[14px] font-semibold leading-[1.4] tabular-nums sm:text-[17px] " +
