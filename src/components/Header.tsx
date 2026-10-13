@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import type { StoreSettings } from "@/types/commerce";
+import { ArrowUpRightIcon, MenuIcon } from "@/components/UiIcons";
 
 const nav = [
   { href: "/", label: "Home" },
@@ -35,15 +36,6 @@ function CloseIcon() {
         fill="none"
       />
     </svg>
-  );
-}
-
-function MenuIcon({ open }: { open: boolean }) {
-  return (
-    <span className={`menu-icon ${open ? "open" : ""}`} aria-hidden="true">
-      <i />
-      <i />
-    </span>
   );
 }
 
@@ -264,7 +256,7 @@ export function Header({
               >
                 <span>{item.label}</span>
                 <span className="mobile-card-arrow" aria-hidden="true">
-                  ↗
+                  <ArrowUpRightIcon width={18} height={18} />
                 </span>
               </Link>
             ))}
@@ -335,7 +327,7 @@ export function Header({
                       </div>
 
                       <span className="search-result-arrow" aria-hidden="true">
-                        ↗
+                        <ArrowUpRightIcon width={18} height={18} />
                       </span>
                     </Link>
                   ))}

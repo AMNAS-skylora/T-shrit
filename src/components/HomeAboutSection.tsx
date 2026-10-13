@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AboutHangerImage } from "@/components/AboutHangerImage";
 import { homeAbout } from "@/data/home-about";
 import styles from "./HomeAboutSection.module.css";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 
 export function HomeAboutSection() {
   return <section id="about" aria-labelledby="home-about-title" className={styles.section}>
@@ -19,7 +20,7 @@ export function HomeAboutSection() {
             </li>
           ))}
         </ul>
-        <Link href="/products" className={styles.link}>Explore our T-shirts ↗</Link>
+        <Link href="/products" className={styles.link}>Explore our T-shirts <ArrowUpRightIcon width={18} height={18} /></Link>
       </div>
     </div>
   </section>;

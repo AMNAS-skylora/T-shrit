@@ -2,6 +2,7 @@
 
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Image from "next/image";
+import { ArrowLeftIcon, ArrowRightIcon } from "@/components/UiIcons";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/types/product";
@@ -101,9 +102,9 @@ export function ProductDetailClient({
         {variantImages.length > 1 ? (
           <>
           <div className={galleryStyles.controls}>
-            <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image">←</button>
+            <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image"><ArrowLeftIcon width={18} height={18} /></button>
             <span>{activeImageIndex + 1} / {variantImages.length}</span>
-            <button type="button" onClick={() => moveImage(1)} aria-label="Next product image">→</button>
+            <button type="button" onClick={() => moveImage(1)} aria-label="Next product image"><ArrowRightIcon width={18} height={18} /></button>
           </div>
           <div className={galleryStyles.thumbnails}>
             {variantImages.map((url, index) => (

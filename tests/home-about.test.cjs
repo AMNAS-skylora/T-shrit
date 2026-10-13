@@ -13,6 +13,7 @@ function load(path, dependencies = {}) {
 const { homeAbout } = load('src/data/home-about.ts');
 const { HomeAboutSection } = load('src/components/HomeAboutSection.tsx', {
   '@/data/home-about': { homeAbout },
+  '@/components/UiIcons': { ArrowUpRightIcon: () => React.createElement('svg', { 'aria-hidden': true }) },
   '@/components/AboutHangerImage': { AboutHangerImage: () => React.createElement('img', { src: '/images/about/tshirts-hanger.png', alt: 'T-shirts on hangers' }) },
   './HomeAboutSection.module.css': { default: { section: 'section' } },
   'next/link': { default: props => React.createElement('a', props, props.children) },

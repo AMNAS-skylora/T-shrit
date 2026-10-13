@@ -122,7 +122,7 @@
   transform: translateY(-2px);
 }
 
-.button span:last-child {
+.button svg {
   font-size: 17px;
   font-weight: 400;
 }
