@@ -93,6 +93,7 @@
   background: #d92d20;
   color: #fff;
   box-shadow: 0 3px 10px rgba(95, 13, 13, .18);
+  white-space: nowrap;
 }
 
 /* A small dot makes the time-limited label distinctive without a countdown. */
@@ -194,9 +195,12 @@
 }
 
 @media (max-width: 640px) {
-  .card { border-radius: 11px; }
+  .card { border-radius: 12px; }
 
-  .content { padding: 12px 10px 14px; }
+  /* Keep image and product information balanced in a genuine 2-column grid. */
+  .photo { padding: 4px; }
+
+  .content { padding: 13px 11px 16px; }
 
   .category {
     margin-bottom: 6px;
@@ -206,13 +210,13 @@
 
   .name {
     font-size: 13px;
-    line-height: 1.35;
-    min-height: 2.7em;
+    line-height: 1.4;
+    min-height: 2.8em;
   }
 
-  .prices { padding-top: 12px; column-gap: 6px; }
+  .prices { padding-top: 14px; column-gap: 7px; row-gap: 3px; }
 
-  .price { font-size: 14px; }
+  .price { font-size: clamp(14px, 3.8vw, 16px); }
 
   .oldPrice { font-size: 10px; }
 
@@ -221,7 +225,7 @@
     left: 8px;
     max-width: calc(100% - 16px);
     padding: 6px 7px;
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: .025em;
   }
 
@@ -241,11 +245,11 @@
 }
 
 @media (max-width: 360px) {
-  .content { padding: 10px 8px 12px; }
-  .name { font-size: 12px; }
-  .price { font-size: 13px; }
-  .oldPrice { font-size: 9px; }
-  .photo { padding: 5px; }
+  .content { padding: 11px 9px 14px; }
+  .name { font-size: 12.5px; }
+  .price { font-size: 14px; }
+  .oldPrice { font-size: 10px; }
+  .photo { padding: 3px; }
 
   .badgeOffer {
     left: 7px;
