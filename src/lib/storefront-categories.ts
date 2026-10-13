@@ -10,7 +10,7 @@ export function getStorefrontCategories(
   for (const value of [
     ...savedCategories,
     ...products
-      .filter((product) => product.status === "active")
+      .filter((product) => product.status !== "draft")
       .map((product) => product.category),
   ]) {
     if (typeof value !== "string") continue;
