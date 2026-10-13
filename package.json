@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test": "node --test",
+    "check": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "cloudinary": "^2.11.0",
@@ -28,5 +30,8 @@
   "overrides": {
     "source-map-js": "1.2.2",
     "sharp": "0.35.5"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

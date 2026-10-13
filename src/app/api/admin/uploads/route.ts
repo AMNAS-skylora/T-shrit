@@ -31,6 +31,17 @@ export async function POST(request: NextRequest) {
   const denied = await requireAdminRequest(request, "uploads.create");
   if (denied) return denied;
 
+  // Reject oversized requests before materializing multipart data in memory.
+  // Allow a small overhead for multipart boundaries and form fields.
+  const declaredSize = Number(request.headers.get("content-length"));
+  if (
+    request.headers.has("content-length") &&
+    Number.isFinite(declaredSize) &&
+    declaredSize > MAX_FILE_SIZE + 1024 * 1024
+  ) {
+    return NextResponse.json({ error: "Image must be 15 MB or smaller." }, { status: 413 });
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file");
@@ -117,14 +128,11 @@ export async function POST(request: NextRequest) {
       height: uploaded.height,
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Image upload failed.";
-
-    console.error("KLEID.IN Cloudinary upload error:", error);
-
+    // Provider details and secret configuration never belong in a public JSON response.
+    console.error("KLEID.IN image upload failed:", error instanceof Error ? error.name : "unknown");
     return NextResponse.json(
-      { error: message },
-      { status: 500 },
+      { error: "Image upload failed. Check the image service and try again." },
+      { status: 502 },
     );
   }
 }

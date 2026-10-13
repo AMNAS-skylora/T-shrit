@@ -2,6 +2,8 @@
 
 KLEID.IN is a Next.js ecommerce storefront with a built-in Next.js API backend and admin control panel.
 
+**Production deploy:** See [PRODUCTION.md](./PRODUCTION.md) for the Vercel, MongoDB, Cloudinary and go-live verification checklist. Node.js 22.x is supported; run `npm ci && npm run check` before deployment.
+
 ## Stack
 
 - Next.js 16
