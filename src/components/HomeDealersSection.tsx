@@ -5,7 +5,7 @@ import type { Product } from "@/types/product";
 import styles from "./HomeDealersSection.module.css";
 
 export function HomeDealersSection({ products, whatsappNumber, enabled }: { products: Product[]; whatsappNumber: string; enabled: boolean }) {
-  if (!enabled) return <section id="everyday-style" aria-labelledby="everyday-style-title" className={styles.section}>
+  if (!enabled) return <section id="everyday-style" aria-labelledby="everyday-style-title" className={`${styles.section} ${styles.everydayBlue}`}>
     <div className={styles.layout}>
       <div>
         <p className={styles.eyebrow}>KLEID.IN / EVERYDAY</p>
