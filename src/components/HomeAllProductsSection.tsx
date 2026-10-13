@@ -17,6 +17,8 @@ export function HomeAllProductsSection({
   title?: string;
   eyebrow?: string;
 }) {
+  const visibleProducts = products.slice(0, 6);
+
   return (
     <section
       id="all-products"
@@ -30,9 +32,9 @@ export function HomeAllProductsSection({
         </h2>
 
         {!products.length ? <p className={"mt-8 text-sm " + (theme === "dark" ? "text-white/60" : "text-black/50")}>The collection is coming soon.</p> : null}
-        <div className={"mt-7 sm:mt-8 " + styles.grid}>
-          {products.slice(0, 6).map((product) => (
-            <div key={product.id} className="min-w-0 h-full">
+        <div aria-label="Homepage products" className={"mt-7 sm:mt-8 " + styles.grid + " " + styles.homeGrid}>
+          {visibleProducts.map((product) => (
+            <div key={product.id} className="h-full min-w-0">
               <HomeProductGridCard
                 theme={theme}
                 product={product}
