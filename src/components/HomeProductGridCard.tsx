@@ -58,7 +58,7 @@ export function HomeProductGridCard({
         {statusText ? (
           <span
             className={
-              "absolute left-2 top-2 max-w-[calc(100%-16px)] rounded-sm px-2 py-1 text-[9px] font-semibold uppercase tracking-[.06em] sm:left-3 sm:top-3 sm:text-[10px] " +
+              "absolute left-2 top-2 max-w-[90%] rounded-sm px-2 py-1 text-[9px] font-semibold uppercase tracking-[.06em] sm:left-3 sm:top-3 sm:text-[10px] " +
               (!available ? "bg-[#252525] text-white" : "bg-white/95 text-[#001cac]")
             }
           >
