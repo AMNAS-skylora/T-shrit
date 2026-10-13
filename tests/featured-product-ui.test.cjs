@@ -40,8 +40,8 @@ test("featured desktop layout is 60vh and has no outer border, radius or outline
 
 test("tablet and mobile use image-first single column and full-width accessible CTA", () => {
   assert.match(styles, /@media \(max-width: 900px\)/);
-  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\)/);
-  assert.match(styles, /grid-row:\s*1/);
+  assert.match(styles, /flex-direction:\s*column/);
+  assert.match(styles, /order:\s*-1/);
   assert.match(styles, /\.button\s*\{[^}]*width:\s*100%/s);
   assert.match(styles, /\.button\s*\{[^}]*min-height:\s*50px/s);
   assert.match(styles, /@media \(max-width: 380px\)/);
