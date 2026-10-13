@@ -18,13 +18,19 @@ test("homepage keeps six real product cards and a separate all-products link", (
   assert.match(section, /href="\/products"/);
 });
 
-test("card content reflows on narrow screens with product and WhatsApp links", () => {
+test("catalog cards stay readable on small phones and link directly to product detail", () => {
   assert.match(card, /aspect-\[4\/5\]/);
   assert.match(card, /\(max-width: 639px\) 46vw/);
   assert.match(card, /line-clamp-2/);
   assert.match(card, /flex-wrap items-baseline/);
-  assert.match(card, /<OfferCountdown/);
-  assert.match(card, /min-h-11 w-full/);
-  assert.match(card, /getProductWhatsappUrl\(product, whatsappNumber\)/);
   assert.match(card, /data-product-transition/);
+  assert.match(card, /\/products\/\$\{product\.slug\}/);
+  assert.doesNotMatch(card, /<OfferCountdown|getProductWhatsappUrl|home-product-whatsapp-button/);
+});
+
+test("show Limited offer only for an active discount with an end time", () => {
+  assert.match(card, /const limitedOffer = available && discounted && Boolean\(product\.offerEndsAt\)/);
+  assert.match(card, /Limited offer/);
+  assert.match(card, /Sold out/);
+  assert.match(card, /useOfferClock\(product, false\)/);
 });
