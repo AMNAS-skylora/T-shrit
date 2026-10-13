@@ -1,6 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getCategoryShopHref, getStorefrontCategories, productMatchesCategory } from "@/lib/storefront-categories";
 import { HomeProductGridCard } from "@/components/HomeProductGridCard";
 import styles from "./HomeProductGrid.module.css";
 import catalogStyles from "./HomeProductCatalog.module.css";
@@ -11,24 +13,43 @@ export function HomeProductCatalog({
   eyebrow,
   title,
   whatsappNumber,
+  initialCategory = "All",
 }: {
   products: Product[];
   eyebrow: string;
   title: string;
   whatsappNumber: string;
+  initialCategory?: string;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState(initialCategory);
+
+  // Also update when a new category query arrives through client-side navigation.
+  useEffect(() => {
+    setCategory(initialCategory);
+  }, [initialCategory]);
 
   const activeProducts = useMemo(
     () => products.filter((product) => product.status !== "draft"),
     [products],
   );
 
+  const categoryOptions = useMemo(() => {
+    const names = getStorefrontCategories(activeProducts);
+    const hasSelected = names.some((name) =>
+      name.toLocaleLowerCase() === category.trim().toLocaleLowerCase()
+    );
+    if (category.trim().toLocaleLowerCase() !== "all" && !hasSelected && category.trim()) {
+      names.push(category.trim());
+    }
+    return ["All", ...names];
+  }, [activeProducts, category]);
+
   const filteredProducts = useMemo(() => {
     const term = query.trim().toLowerCase();
     return activeProducts.filter((product) =>
-      (category === "All" || product.category === category) &&
+      productMatchesCategory(product.category, category) &&
       (!term ||
       [
         product.name,
@@ -81,8 +102,18 @@ export function HomeProductCatalog({
       </div>
 
       <div className={catalogStyles.filters} aria-label="Filter products by category">
-        {["All", ...Array.from(new Set(activeProducts.map((product) => product.category).filter(Boolean)))].map((item) => (
-          <button key={item} type="button" aria-pressed={category === item} onClick={() => setCategory(item)}>{item}</button>
+        {categoryOptions.map((item) => (
+          <button
+            key={item}
+            type="button"
+            aria-pressed={category.trim().toLocaleLowerCase() === item.toLocaleLowerCase()}
+            onClick={() => {
+              setCategory(item);
+              router.replace(item === "All" ? "/products" : getCategoryShopHref(item), { scroll: false });
+            }}
+          >
+            {item}
+          </button>
         ))}
       </div>
       {filteredProducts.length ? (
