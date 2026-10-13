@@ -11,29 +11,29 @@ export function AboutHangerImage() {
     const visual = visualRef.current;
     if (!visual) return;
 
-    const mobile = window.matchMedia("(max-width: 800px)");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
 
-    // Follow page scrolling, without moving the surrounding About text or layout.
-    // Use only transforms (no React state on scroll) to keep mobile scrolling smooth.
+    // The rail and hanging shirts ENTER FROM OUTSIDE THE LEFT EDGE.
+    // As the About image scrolls into view, scrub the image horizontally into
+    // its final position. The About heading and other content never move.
     const update = () => {
       frame = 0;
+
       if (reducedMotion.matches) {
-        visual.style.setProperty("--about-scroll-y", "0px");
+        visual.style.setProperty("--hanger-enter-x", "0px");
         return;
       }
 
       const bounds = visual.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      if (bounds.bottom < -100 || bounds.top > viewportHeight + 100) return;
-
-      const distanceFromCenter =
-        (bounds.top + bounds.height / 2 - viewportHeight / 2) /
-        (viewportHeight / 2 + bounds.height / 2);
-      const progress = Math.max(-1, Math.min(1, distanceFromCenter));
-      const maxTravel = mobile.matches ? 18 : 44;
-      visual.style.setProperty("--about-scroll-y", `${(progress * maxTravel).toFixed(1)}px`);
+      const start = viewportHeight * 0.97;
+      const finish = viewportHeight * 0.24;
+      const progress = Math.max(0, Math.min(1, (start - bounds.top) / (start - finish)));
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const outsideDistance = bounds.width + Math.min(viewportHeight * 0.08, 64);
+      const offset = -outsideDistance * (1 - eased);
+      visual.style.setProperty("--hanger-enter-x", `${offset.toFixed(1)}px`);
     };
 
     const schedule = () => {
@@ -43,16 +43,14 @@ export function AboutHangerImage() {
     schedule();
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
-    mobile.addEventListener("change", schedule);
     reducedMotion.addEventListener("change", schedule);
 
     return () => {
       window.cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
-      mobile.removeEventListener("change", schedule);
       reducedMotion.removeEventListener("change", schedule);
-      visual.style.removeProperty("--about-scroll-y");
+      visual.style.removeProperty("--hanger-enter-x");
     };
   }, []);
 
