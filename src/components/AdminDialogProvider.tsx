@@ -61,6 +61,7 @@ export function AdminDialogProvider({ children }: { children: ReactNode }) {
   const previousFocus = useRef<HTMLElement | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
+  const acceptRef = useRef<HTMLButtonElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const open = useCallback((next: Request, finish: (value: Result) => void) => {
@@ -115,7 +116,11 @@ export function AdminDialogProvider({ children }: { children: ReactNode }) {
     const before = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const frame = window.requestAnimationFrame(() => {
-      (request.kind === "prompt" ? inputRef.current : cancelRef.current)?.focus();
+      (request.kind === "prompt"
+        ? inputRef.current
+        : request.kind === "notice"
+          ? acceptRef.current
+          : cancelRef.current)?.focus();
     });
 
     const handleKeys = (event: KeyboardEvent) => {
@@ -261,6 +266,7 @@ export function AdminDialogProvider({ children }: { children: ReactNode }) {
                   <button ref={cancelRef} type="button" onClick={() => close(true)} className="hidden" tabIndex={-1}>Close</button>
                 )}
                 <button
+                  ref={acceptRef}
                   type="submit"
                   className={
                     "min-h-11 w-full rounded-xl px-6 text-[12px] font-bold text-white transition hover:brightness-95 sm:w-auto " +
