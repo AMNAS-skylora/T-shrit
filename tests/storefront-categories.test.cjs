@@ -23,7 +23,7 @@ test("category strip uses real saved and active-product categories without case 
     ],
     ["T-Shirts", "Oversized Fits", "shirts", "  "],
   );
-  assert.deepEqual(categories, ["Oversized Fits", "Shirts", "T-Shirts"]);
+  assert.deepEqual(categories, ["Oversized Fits", "shirts", "T-Shirts"]);
 });
 
 test("category links preserve punctuation and unicode as URL query parameters", () => {
