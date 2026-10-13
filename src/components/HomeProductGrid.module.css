@@ -1,6 +1,22 @@
-.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 24px; }
-.grid > * { min-width: 0; }
-@media (max-width: 640px) {
-  .grid { gap: 24px 8px; }
-  .grid :global(.home-product-whatsapp-button) { padding-inline: 4px; letter-spacing: 0; }
+/* Shared product grid: two readable cards on phones/tablets, three on desktop. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(18px, 2.4vw, 32px) clamp(10px, 2vw, 24px);
+  align-items: stretch;
+}
+.grid > * {
+  min-width: 0;
+  height: 100%;
+}
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 380px) {
+  .grid {
+    column-gap: 8px;
+    row-gap: 18px;
+  }
 }

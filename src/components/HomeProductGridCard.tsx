@@ -24,55 +24,124 @@ export function HomeProductGridCard({
   const price = getProductOfferPrice(product, now);
   const available = product.status === "active" && product.stock > 0;
   const whatsappHref = available ? getProductWhatsappUrl(product, whatsappNumber) : "#";
+  const productHref = "/products/" + product.slug;
+  const statusText = !available ? "Sold out" : offerActive ? "Offer" : null;
 
   return (
-    <article className="group relative min-w-0">
+    <article
+      className={
+        "group flex h-full min-w-0 flex-col overflow-hidden rounded-[12px] border " +
+        (theme === "dark"
+          ? "border-white/15 bg-[#191919]"
+          : "border-black/[.07] bg-white")
+      }
+    >
       <Link
-        href={"/products/" + product.slug}
-        className="absolute inset-0 z-10"
+        href={productHref}
         data-product-transition
         aria-label={"View " + product.name}
-      />
+        className="relative block aspect-[4/5] w-full shrink-0 overflow-hidden bg-[#f2f2ef]"
+      >
+        {image ? (
+          <Image
+            src={image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 639px) 46vw, (max-width: 1023px) 44vw, (max-width: 1600px) 31vw, 500px"
+            className="object-contain p-2 transition-transform duration-500 ease-out group-hover:scale-[1.035] sm:p-4"
+          />
+        ) : (
+          <span className="flex h-full items-center justify-center px-2 text-center text-xs text-black/45">
+            No image
+          </span>
+        )}
+        {statusText ? (
+          <span
+            className={
+              "absolute left-2 top-2 max-w-[90%] rounded-sm px-2 py-1 text-[9px] font-semibold uppercase tracking-[.06em] sm:left-3 sm:top-3 sm:text-[10px] " +
+              (!available ? "bg-[#252525] text-white" : "bg-white/95 text-[#001cac]")
+            }
+          >
+            {statusText}
+          </span>
+        ) : null}
+      </Link>
 
-      <div className="relative aspect-[4/5] overflow-hidden bg-[#f1f1ef]">
-        {image ? <Image
-          src={image}
-          alt={product.name}
-          fill
-          sizes="(max-width: 640px) 33vw, (max-width: 1600px) 32vw, 520px"
-          className="object-contain p-1.5 sm:p-4 transition-transform duration-500 ease-out group-hover:scale-[1.025]"
-        /> : <span className="flex h-full items-center justify-center text-xs text-black/50">No image</span>}
-      </div>
+      <div className="flex min-w-0 flex-1 flex-col px-2.5 pb-3 pt-3 sm:px-4 sm:pb-4 sm:pt-4">
+        {product.category ? (
+          <p
+            className={
+              "mb-1 truncate text-[9px] font-medium uppercase tracking-[.08em] sm:text-[10px] " +
+              (theme === "dark" ? "text-white/55" : "text-[#737373]")
+            }
+          >
+            {product.category}
+          </p>
+        ) : null}
 
-      <div className="pt-3">
-        <h3 className={"m-0 min-h-[2.5em] break-words text-[11px] font-semibold leading-snug tracking-[-.01em] sm:text-[12px] " + (theme === "dark" ? "text-white" : "text-[#111]")}>
-          {product.name}
+        <h3
+          className={
+            "m-0 min-h-[2.8em] min-w-0 overflow-hidden text-[12px] font-semibold leading-[1.4] tracking-[-.015em] sm:text-sm " +
+            (theme === "dark" ? "text-white" : "text-[#111]")
+          }
+        >
+          <Link
+            href={productHref}
+            data-product-transition
+            className="line-clamp-2 break-words hover:underline"
+          >
+            {product.name}
+          </Link>
         </h3>
 
-        <p className={"mt-1 text-[10px] font-medium sm:text-[11px] " + (theme === "dark" ? "text-white/65" : "text-black/52")}>
-          {formatPrice(price)}
-          {offerActive ? <del className={"ml-2 " + (theme === "dark" ? "text-white/45" : "text-black/35")}>{formatPrice(product.price)}</del> : null}
-        </p>
+        <div className="mt-2 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
+          <strong
+            className={
+              "text-[13px] font-semibold tabular-nums sm:text-base " +
+              (theme === "dark" ? "text-white" : "text-[#111]")
+            }
+          >
+            {formatPrice(price)}
+          </strong>
+          {offerActive && product.price > price ? (
+            <del
+              className={
+                "text-[10px] tabular-nums sm:text-xs " +
+                (theme === "dark" ? "text-white/50" : "text-[#8b8b8b]")
+              }
+            >
+              {formatPrice(product.price)}
+            </del>
+          ) : null}
+        </div>
 
-        <OfferCountdown product={product} now={now} theme={theme} compact />
+        <div className="min-w-0">
+          <OfferCountdown product={product} now={now} theme={theme} compact />
+        </div>
 
-        <a
-          href={whatsappHref}
-          target={whatsappHref === "#" ? undefined : "_blank"}
-          rel={whatsappHref === "#" ? undefined : "noreferrer"}
-          aria-disabled={whatsappHref === "#" ? "true" : undefined}
-          onClick={(event) => { if (whatsappHref === "#") event.preventDefault(); }}
-          className={
-            "home-product-whatsapp-button relative z-20 mt-3 inline-flex min-h-11 w-full items-center justify-center rounded-full px-3 text-[8px] font-semibold uppercase tracking-[.07em] transition sm:min-h-11 sm:text-[9px] " +
-            (theme === "dark" ? "border border-white/30 bg-white !text-black " : "bg-black !text-white ") +
-            (whatsappHref === "#"
-              ? "cursor-default opacity-70"
-              : "hover:opacity-90")
-          }
-          aria-label={"Order " + product.name + " on WhatsApp"}
-        >
-          {available ? (whatsappHref === "#" ? "Unavailable" : "WhatsApp") : "Sold out"}
-        </a>
+        <div className="mt-auto pt-3 sm:pt-4">
+          <a
+            href={whatsappHref}
+            target={whatsappHref === "#" ? undefined : "_blank"}
+            rel={whatsappHref === "#" ? undefined : "noopener noreferrer"}
+            aria-disabled={whatsappHref === "#" ? "true" : undefined}
+            onClick={(event) => {
+              if (whatsappHref === "#") event.preventDefault();
+            }}
+            className={
+              "home-product-whatsapp-button inline-flex min-h-11 w-full min-w-0 items-center justify-center rounded-full px-2 text-center text-[10px] font-semibold uppercase tracking-[.025em] transition-opacity sm:px-3 sm:text-[11px] " +
+              (theme === "dark"
+                ? "border border-white/30 bg-white !text-black "
+                : "bg-black !text-white ") +
+              (whatsappHref === "#"
+                ? "cursor-default opacity-60"
+                : "hover:opacity-85")
+            }
+            aria-label={"Order " + product.name + " on WhatsApp"}
+          >
+            {available ? (whatsappHref === "#" ? "Unavailable" : "WhatsApp") : "Sold out"}
+          </a>
+        </div>
       </div>
     </article>
   );
