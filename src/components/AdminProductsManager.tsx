@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminActionFeedback } from "@/components/AdminActionFeedback";
+import { useAdminDialog } from "@/components/AdminDialogProvider";
 import { validateDealerProduct } from "@/lib/dealer-products";
 
 import Image from "next/image";
@@ -156,6 +157,7 @@ function Toggle({
 }
 
 export function AdminProductsManager() {
+  const { confirm } = useAdminDialog();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<Draft>(emptyDraft);
@@ -438,7 +440,16 @@ export function AdminProductsManager() {
   }
 
   async function remove(id: string) {
-    if (deletingId || !window.confirm("Delete this product?")) return;
+    if (deletingId) return;
+    const product = products.find((item) => item.id === id);
+    const confirmed = await confirm({
+      title: "Delete product?",
+      description: `You are about to permanently delete "${product?.name || "this product"}". This action cannot be undone.`,
+      confirmLabel: "Delete product",
+      cancelLabel: "Keep product",
+      destructive: true,
+    });
+    if (!confirmed) return;
     setDeletingId(id); setMessageError(false); setMessage("");
     try {
       const response = await fetch("/api/admin/products/" + id, { method: "DELETE" });
