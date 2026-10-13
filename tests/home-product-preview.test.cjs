@@ -10,6 +10,7 @@ const code = ts.transpileModule(fs.readFileSync('src/components/HomeAllProductsS
 }).outputText;
 const deps = {
   'next/link': { default: props => React.createElement('a', props, props.children) },
+  '@/components/UiIcons': { ArrowUpRightIcon: () => React.createElement('svg', { 'aria-hidden': true }) },
   './HomeProductGrid.module.css': { default: { grid: 'product-grid' } },
   '@/components/HomeProductGridCard': { HomeProductGridCard: ({ product }) => React.createElement('article', null, product.name) },
 };
