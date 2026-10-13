@@ -120,23 +120,10 @@
   height: clamp(470px, 43vw, 705px);
   max-height: 88svh;
   overflow: hidden;
-  border: 1px solid #ddd9d0;
-  background: linear-gradient(138deg, #e5e3de 0%, #dcd9d3 52%, #eeece8 100%);
+  /* The photographic cards float directly over the hero background. */
+  border: none;
+  background: transparent;
   animation: visualReveal 1s .15s both;
-}
-
-.visualCanvas::after {
-  content: "";
-  position: absolute;
-  top: 10%;
-  right: 10%;
-  width: 32%;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #c9d0e3;
-  filter: blur(50px);
-  opacity: .24;
-  pointer-events: none;
 }
 
 .stack {
