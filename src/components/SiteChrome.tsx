@@ -58,27 +58,6 @@ export function SiteChrome({
     };
   }, [isTryOn]);
 
-  useEffect(() => {
-    if (isAdmin) return;
-
-    let frame = 0;
-    const lockViewportX = () => {
-      if (window.scrollX === 0) return;
-      window.cancelAnimationFrame(frame);
-      frame = window.requestAnimationFrame(() => {
-        const top = window.scrollY;
-        document.documentElement.scrollLeft = 0;
-        document.body.scrollLeft = 0;
-        window.scrollTo(0, top);
-      });
-    };
-
-    window.addEventListener("scroll", lockViewportX, { passive: true });
-    return () => {
-      window.cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", lockViewportX);
-    };
-  }, [isAdmin]);
 
   if (isAdmin) return <>{children}</>;
 
