@@ -28,7 +28,7 @@ test("mobile horizontal clipping replaces scrollTo loop, avoiding scroll shaking
 
 test("important storefront controls use accessible inline SVG icons, not arrow text or font libraries", () => {
   for(const name of ["ArrowUpRightIcon", "ArrowLeftIcon", "ArrowRightIcon", "MenuIcon"]){
-    assert.match(icons, new RegExp("function " + name + "\\\\b"));
+    assert.ok(icons.includes("function " + name + "(") || icons.includes("function " + name + "({"), "Missing " + name);
   }
   assert.match(icons, /aria-hidden/);
   assert.match(icons, /viewBox: "0 0 24 24"/);
