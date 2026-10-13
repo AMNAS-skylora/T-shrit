@@ -36,3 +36,8 @@ button:focus-visible, a:focus-visible { outline: 2px solid #001cac; outline-offs
   color: #fff !important;
   -webkit-text-fill-color: #fff;
 }
+
+/* CSS clipping prevents sideways viewport drift without scrollTo loops. */
+@media (max-width: 767px) {
+  html, body { max-width: 100%; overflow-x: clip; }
+}
