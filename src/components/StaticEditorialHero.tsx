@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import styles from "./StaticEditorialHero.module.css";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 
 type EditorialPhoto = {
   id: string;
@@ -149,7 +150,7 @@ export function StaticEditorialHero() {
             </p>
             <Link href="/products" className={styles.cta}>
               Shop now
-              <span aria-hidden="true">↗</span>
+              <ArrowUpRightIcon width={18} height={18} />
             </Link>
           </div>
         </div>
