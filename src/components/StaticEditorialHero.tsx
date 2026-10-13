@@ -1,45 +1,48 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { getProductPrimaryImage } from "@/lib/product-images";
-import type { Product } from "@/types/product";
+import { useEffect, useRef, useState } from "react";
 import styles from "./StaticEditorialHero.module.css";
 
-type HeroCard = {
+type EditorialPhoto = {
   id: string;
-  name: string;
-  slug: string;
-  image: string;
+  src: string;
+  alt: string;
 };
 
+// Fashion editorial photography, not product imagery or celebrity endorsements.
+// Photos: Joon Tae Kim, 거열 박 and CUONG QUANG on Pexels.
+// The card photos are intentionally independent of shop inventory.
+// For an exclusive KLEID.IN campaign, replace with commissioned/model-released shots.
+const EDITORIAL_PHOTOS: readonly EditorialPhoto[] = [
+  {
+    id: "seoul-studio",
+    src: "https://images.pexels.com/photos/8460301/pexels-photo-8460301.jpeg?auto=compress&cs=tinysrgb&w=950",
+    alt: "Korean-style men's casual fashion studio editorial",
+  },
+  {
+    id: "seoul-street",
+    src: "https://images.pexels.com/photos/34586553/pexels-photo-34586553.jpeg?auto=compress&cs=tinysrgb&w=950",
+    alt: "Seoul street-style editorial in a contemporary white outfit",
+  },
+  {
+    id: "seoul-blue",
+    src: "https://images.pexels.com/photos/8460709/pexels-photo-8460709.jpeg?auto=compress&cs=tinysrgb&w=950",
+    alt: "Minimal Seoul streetwear fashion portrait in blue",
+  },
+  {
+    id: "seoul-neutral",
+    src: "https://images.pexels.com/photos/20478046/pexels-photo-20478046.jpeg?auto=compress&cs=tinysrgb&w=950",
+    alt: "Contemporary Korean-inspired street fashion portrait in a neutral coat",
+  },
+];
+
 const ROTATION_INTERVAL = 3800;
-const CARD_POSITIONS = [
-  "front",
-  "right",
-  "back",
-  "left",
-] as const;
+const CARD_POSITIONS = ["front", "right", "back", "left"] as const;
 
-export function StaticEditorialHero({ products }: { products: Product[] }) {
-  // Editorial layout and copy are intentionally independent of the removed
-  // /admin/homepage editor. Only real, active catalog images appear here.
-  const cards = useMemo<HeroCard[]>(() => {
-    return products
-      .filter((product) => product.status === "active")
-      .map((product) => ({
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        image: product.featuredImage || getProductPrimaryImage(product),
-      }))
-      .filter((product) => Boolean(product.image && product.slug))
-      .slice(0, 4);
-  }, [products]);
-
+export function StaticEditorialHero() {
   const [frontIndex, setFrontIndex] = useState(0);
   const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
   const [inView, setInView] = useState(true);
   const [pageVisible, setPageVisible] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -73,16 +76,22 @@ export function StaticEditorialHero({ products }: { products: Product[] }) {
   }, []);
 
   useEffect(() => {
-    if (cards.length < 2 || hovered || focused || !inView || !pageVisible || reduceMotion) {
+    if (
+      EDITORIAL_PHOTOS.length < 2 ||
+      hovered ||
+      !inView ||
+      !pageVisible ||
+      reduceMotion
+    ) {
       return;
     }
 
     const timer = window.setInterval(() => {
-      setFrontIndex((current) => (current + 1) % cards.length);
+      setFrontIndex((current) => (current + 1) % EDITORIAL_PHOTOS.length);
     }, ROTATION_INTERVAL);
 
     return () => window.clearInterval(timer);
-  }, [cards.length, hovered, focused, inView, pageVisible, reduceMotion]);
+  }, [hovered, inView, pageVisible, reduceMotion]);
 
   useEffect(() => {
     const stage = visualRef.current;
@@ -130,20 +139,12 @@ export function StaticEditorialHero({ products }: { products: Product[] }) {
       ref={sectionRef}
       className={styles.hero}
       data-motion-owned
-      aria-label="KLEID.IN editorial collection"
+      aria-label="KLEID.IN fashion editorial"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onFocusCapture={() => setFocused(true)}
-      onBlurCapture={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
-      }}
     >
       <div className={styles.inner}>
         <div className={styles.copy}>
-          <span className={styles.eyebrow}>
-            <span className={styles.eyebrowLine} aria-hidden="true" />
-            Everyday essentials / New perspective
-          </span>
           <h1 className={styles.title}>KLEID<span>.IN</span></h1>
           <div className={styles.intro}>
             <p className={styles.description}>
@@ -155,60 +156,35 @@ export function StaticEditorialHero({ products }: { products: Product[] }) {
               <span aria-hidden="true">↗</span>
             </Link>
           </div>
-          <div className={styles.footer}>
-            <span>Independent style. Every day.</span>
-            <span>01 / KLEID.IN</span>
-          </div>
         </div>
 
         <div ref={visualRef} className={styles.visual}>
           <div className={styles.visualCanvas}>
-            <span className={styles.artLabel}>THE DAILY EDIT</span>
-            <span className={styles.artNumber}>EST. / KLEID</span>
-            {cards.length ? (
-              <div className={styles.stack} aria-label="Featured products">
-                {cards.map((card, index) => {
-                  const position = CARD_POSITIONS[
-                    (index - (frontIndex % cards.length) + cards.length) % cards.length
-                  ];
-                  const front = position === "front";
+            <div className={styles.stack} aria-label="Fashion inspiration gallery">
+              {EDITORIAL_PHOTOS.map((photo, index) => {
+                const position = CARD_POSITIONS[
+                  (index - frontIndex + EDITORIAL_PHOTOS.length) % EDITORIAL_PHOTOS.length
+                ];
+                const front = position === "front";
 
-                  return (
-                    <Link
-                      href={`/products/${card.slug}`}
-                      key={card.id}
-                      className={`${styles.card} ${styles[position]}`}
-                      tabIndex={front ? 0 : -1}
-                      aria-hidden={!front}
+                return (
+                  <figure
+                    key={photo.id}
+                    className={`${styles.card} ${styles[position]}`}
+                    aria-hidden={!front}
+                  >
+                    <img
+                      src={photo.src}
+                      alt={front ? photo.alt : ""}
+                      loading={index === 0 ? "eager" : "lazy"}
+                      decoding="async"
+                      fetchPriority={index === 0 ? "high" : "auto"}
                       draggable={false}
-                    >
-                      <div className={styles.cardImage}>
-                        <img
-                          src={card.image}
-                          alt={front ? card.name : ""}
-                          loading={index === 0 ? "eager" : "lazy"}
-                          decoding="async"
-                          draggable={false}
-                        />
-                      </div>
-                      <div className={styles.cardCaption}>
-                        <span>{card.name}</span>
-                        <span aria-hidden="true">↗</span>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className={styles.emptyArtwork}>
-                <img
-                  src="/images/about/tshirts-hanger.png"
-                  alt="T-shirts displayed on a clothing rail"
-                  loading="eager"
-                />
-              </div>
-            )}
-            <span className={styles.artBottom}>GOOD CLOTHES. GOOD DAYS.</span>
+                    />
+                  </figure>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

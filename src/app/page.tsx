@@ -16,7 +16,7 @@ export default async function Home() {
   const activeProducts = products.filter((product) => product.status === "active")
     .sort((a, b) => (a.sortOrder ?? a.featuredSortOrder ?? 100) - (b.sortOrder ?? b.featuredSortOrder ?? 100));
   return <div className="reference-home">
-    <StaticEditorialHero products={activeProducts} />
+    <StaticEditorialHero />
     <HomeHeroSlider section="secondary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <HomeHeroSlider section="tertiary" settings={settings} products={activeProducts} slides={slides} initialNow={Date.now()} />
     <FeaturedProductMotion products={activeProducts} layout={settings.homeFeaturedLayout} />
