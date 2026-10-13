@@ -42,7 +42,6 @@ const CARD_POSITIONS = ["front", "right", "back", "left"] as const;
 
 export function StaticEditorialHero() {
   const [frontIndex, setFrontIndex] = useState(0);
-  const [hovered, setHovered] = useState(false);
   const [inView, setInView] = useState(true);
   const [pageVisible, setPageVisible] = useState(true);
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -78,7 +77,6 @@ export function StaticEditorialHero() {
   useEffect(() => {
     if (
       EDITORIAL_PHOTOS.length < 2 ||
-      hovered ||
       !inView ||
       !pageVisible ||
       reduceMotion
@@ -91,7 +89,7 @@ export function StaticEditorialHero() {
     }, ROTATION_INTERVAL);
 
     return () => window.clearInterval(timer);
-  }, [hovered, inView, pageVisible, reduceMotion]);
+  }, [inView, pageVisible, reduceMotion]);
 
   useEffect(() => {
     const stage = visualRef.current;
@@ -140,8 +138,6 @@ export function StaticEditorialHero() {
       className={styles.hero}
       data-motion-owned
       aria-label="KLEID.IN fashion editorial"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
     >
       <div className={styles.inner}>
         <div className={styles.copy}>
@@ -176,7 +172,7 @@ export function StaticEditorialHero() {
                     <img
                       src={photo.src}
                       alt={front ? photo.alt : ""}
-                      loading={index === 0 ? "eager" : "lazy"}
+                      loading="eager"
                       decoding="async"
                       fetchPriority={index === 0 ? "high" : "auto"}
                       draggable={false}

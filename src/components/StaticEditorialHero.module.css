@@ -131,6 +131,9 @@
   inset: 0;
   z-index: 1;
   perspective: 1100px;
+  /* The entire photo stack gently floats between the automatic rotations. */
+  animation: photoStackFloat 6.4s ease-in-out infinite;
+  transform-origin: center;
 }
 
 .card {
@@ -148,9 +151,9 @@
   box-shadow: 0 18px 45px rgba(29, 28, 25, .18);
   backface-visibility: hidden;
   transition:
-    transform 950ms cubic-bezier(.22, 1, .36, 1),
-    box-shadow 950ms ease,
-    filter 950ms ease;
+    transform 1250ms cubic-bezier(.22, 1, .36, 1),
+    box-shadow 1250ms ease,
+    filter 1250ms ease;
   will-change: transform;
 }
 
@@ -162,6 +165,13 @@
   object-position: center;
   user-select: none;
   pointer-events: none;
+  /* A subtle always-on image drift gives motion even between card rotations. */
+  animation: editorialPhotoDrift 9.2s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.card:nth-child(even) img {
+  animation-delay: -4.6s;
 }
 
 .front {
@@ -187,6 +197,16 @@
   z-index: 3;
   transform: translate3d(-94%, -36%, -40px) rotate(-13deg) scale(.86);
   filter: brightness(.92);
+}
+
+@keyframes photoStackFloat {
+  0%, 100% { transform: translate3d(0, 7px, 0) rotate(-.35deg); }
+  50% { transform: translate3d(0, -9px, 0) rotate(.35deg); }
+}
+
+@keyframes editorialPhotoDrift {
+  from { transform: translate3d(-1.2%, 1.2%, 0) scale(1.035); }
+  to { transform: translate3d(1.2%, -1.2%, 0) scale(1.085); }
 }
 
 @keyframes copyReveal {
@@ -259,4 +279,5 @@
 @media (prefers-reduced-motion: reduce) {
   .title, .intro, .visualCanvas { animation: none; }
   .card, .cta { transition: none; }
+  .stack, .card img { animation: none; }
 }
