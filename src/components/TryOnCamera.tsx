@@ -141,7 +141,7 @@ export function TryOnCamera({ product }: { product: Product }) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1180px] px-3 py-4 sm:px-5 sm:py-6">
+    <main className="mx-auto w-full min-w-0 max-w-[1180px] px-3 pb-[calc(28px+env(safe-area-inset-bottom))] pt-4 sm:px-5 sm:py-6">
       <section
         ref={requirementRef}
         className={
@@ -158,7 +158,7 @@ export function TryOnCamera({ product }: { product: Product }) {
               Image requirement
             </p>
 
-            <h2 className="mt-3 text-[42px] font-semibold leading-[.92] tracking-[-.055em] sm:text-[58px] lg:text-[76px]">
+            <h2 className="mt-3 text-[clamp(32px,9vw,42px)] font-semibold leading-[1.02] tracking-[-.055em] sm:text-[58px] sm:leading-[.95] lg:text-[76px]">
               Stand clear. Keep the full outfit visible.
             </h2>
 
@@ -224,9 +224,10 @@ export function TryOnCamera({ product }: { product: Product }) {
           </Link>
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="relative overflow-hidden rounded-[22px] bg-[#111111]">
-          <div className="relative aspect-[3/4] min-h-[520px] w-full overflow-hidden sm:aspect-square sm:min-h-0">
+        <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="relative min-w-0 overflow-hidden rounded-[18px] bg-[#111111] sm:rounded-[22px]">
+          <div data-tryon-camera-preview
+          className="relative aspect-[3/4] min-h-[min(520px,70svh)] w-full overflow-hidden sm:aspect-square sm:min-h-0">
             <video
               ref={videoRef}
               playsInline

@@ -46,3 +46,94 @@
 @media (max-width: 800px) { .page { grid-template-columns: 1fr; gap: 20px; } .gallery { max-height: 640px; } .info { padding: 8px 0 0; } }
 @media (max-width: 640px) { .breadcrumbs, .page { width: calc(100% - 32px); } .page { padding-bottom: 44px; } .gallery { max-height: none; } .image { padding: 20px; } .gallery:has(.thumbnails) .image { padding: 68px 20px 96px; } .heading { gap: 16px; } .price strong { font-size: 22px; } .description { font-size: 13px; } }
 @media (prefers-reduced-motion: reduce) { .image { animation: none; } }
+
+/* Mobile-first polish for every /products/[slug] detail page. */
+@media (max-width: 800px) {
+  .page { gap: 24px; }
+  .info { padding: 0; }
+}
+
+@media (max-width: 640px) {
+  .breadcrumbs,
+  .page {
+    width: calc(100% - 32px);
+    min-width: 0;
+  }
+
+  .breadcrumbs { padding-top: 12px; }
+
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+    padding: 14px 0 calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .gallery {
+    width: 100%;
+    aspect-ratio: 4 / 4.7;
+    max-height: 540px;
+    border-radius: 14px;
+  }
+
+  .image { padding: clamp(14px, 4vw, 22px); }
+  .gallery:has(.thumbnails) .image { padding: 62px 18px 86px; }
+
+  .controls { inset: 10px 10px auto; }
+  .controls button { width: 44px; height: 44px; }
+  .controls span { padding: 8px 10px; font-size: 11px; }
+
+  .tag {
+    top: 63px;
+    right: 10px;
+    max-width: calc(100% - 20px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+  }
+
+  .thumbnails {
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    gap: 8px;
+    padding: 4px 2px;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .thumbnails::-webkit-scrollbar { display: none; }
+  .thumbnail { width: 52px; height: 58px; }
+
+  .heading { gap: 13px; margin-bottom: 16px; }
+  .eyebrow { margin-bottom: 8px; font-size: 10px; }
+  .heading h1 { font-size: clamp(26px, 7.5vw, 34px); line-height: 1.12; }
+  .price { gap: 8px 12px; }
+  .price strong { font-size: clamp(23px, 6.5vw, 28px); }
+  .price del { font-size: 13px; }
+  .description { margin-top: 20px; font-size: 14px; line-height: 1.7; }
+
+  .optionBlock { padding-top: 20px; }
+  .optionHead { margin-bottom: 12px; font-size: 13px; }
+  .swatches, .sizes { gap: 10px; }
+  .sizes button { min-width: 48px; min-height: 46px; }
+
+  .attributes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+  .attributes > div { min-width: 0; }
+  .attributes strong { font-size: 13px; line-height: 1.5; }
+
+  .actions { gap: 12px; margin-top: 24px; }
+  .primaryButton, .secondaryButton { min-height: 52px; padding-inline: 14px; font-size: 14px; }
+  .notes { margin-top: 20px; font-size: 12px; }
+}
+
+@media (max-width: 370px) {
+  .breadcrumbs, .page { width: calc(100% - 28px); }
+  .gallery { aspect-ratio: 4 / 5; }
+  .attributes { grid-template-columns: minmax(0, 1fr); gap: 13px; }
+  .tag { font-size: 9px; }
+}

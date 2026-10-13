@@ -161,6 +161,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={
                     "block shrink-0 rounded-xl px-3 py-2.5 text-[12px] font-semibold transition " +
                     (active
@@ -182,7 +183,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </button>
         </aside>
 
-        <main className="min-w-0 p-4 pb-[104px] md:p-7 lg:p-9">
+        <main data-admin-content className="min-w-0 px-3 pb-[calc(100px+env(safe-area-inset-bottom))] pt-4 sm:px-5 md:p-7 lg:p-9">
           {children}
         </main>
       </div>
@@ -196,7 +197,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
             className="absolute inset-0 bg-black/25 backdrop-blur-[2px]"
           />
 
-          <div className="absolute bottom-[calc(84px+env(safe-area-inset-bottom))] left-3 right-3 max-h-[calc(100dvh-140px)] overflow-y-auto rounded-[22px] border border-black/10 bg-white p-2 shadow-2xl">
+          <div data-admin-more-menu className="absolute bottom-[calc(84px+env(safe-area-inset-bottom))] left-3 right-3 max-h-[calc(100dvh-140px)] overflow-y-auto rounded-[22px] border border-black/10 bg-white p-2 shadow-2xl">
             <div className="px-3 pb-2 pt-2">
               <p className="text-[9px] font-bold uppercase tracking-[.14em] text-black/40">
                 More
@@ -211,6 +212,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   <Link
                     key={item.href}
                     href={item.href}
+                    aria-current={active ? "page" : undefined}
                     onClick={() => setMoreOpen(false)}
                     className={
                       "flex min-h-12 items-center gap-3 rounded-xl px-3 text-xs font-bold transition " +
@@ -253,6 +255,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
       <nav
         aria-label="Admin mobile navigation"
+        data-admin-mobile-nav
         className="fixed bottom-0 left-0 right-0 z-[140] border-t border-black/10 bg-white px-2 pb-[max(8px,env(safe-area-inset-bottom))] pt-2 shadow-[0_-8px_30px_rgba(0,0,0,.06)] md:hidden"
       >
         <div className="mx-auto grid max-w-[560px] grid-cols-5 gap-1">
@@ -263,6 +266,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 onClick={() => setMoreOpen(false)}
                 className={
                   "flex min-h-[58px] flex-col items-center justify-center gap-1 rounded-xl px-1 text-[9px] font-bold transition " +
