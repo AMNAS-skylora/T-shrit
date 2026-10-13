@@ -4,6 +4,7 @@ const fs = require("node:fs");
 
 const grid = fs.readFileSync("src/components/HomeProductGrid.module.css", "utf8");
 const card = fs.readFileSync("src/components/HomeProductGridCard.tsx", "utf8");
+const cardStyles = fs.readFileSync("src/components/HomeProductGridCard.module.css", "utf8");
 const section = fs.readFileSync("src/components/HomeAllProductsSection.tsx", "utf8");
 
 test("product grid is two columns on phones and tablets, three on desktop", () => {
@@ -20,11 +21,11 @@ test("homepage keeps six real product cards and a separate all-products link", (
   assert.match(section, /href="\/products"/);
 });
 
-test("catalog cards stay readable on small phones and link directly to product detail", () => {
-  assert.match(card, /aspect-\[4\/5\]/);
+test("premium catalog cards remain readable and clickable on small phones", () => {
+  assert.match(cardStyles, /aspect-ratio:\s*4 \/ 5/);
   assert.match(card, /\(max-width: 639px\) 46vw/);
-  assert.match(card, /line-clamp-2/);
-  assert.match(card, /flex-wrap items-baseline/);
+  assert.match(cardStyles, /-webkit-line-clamp:\s*2/);
+  assert.match(cardStyles, /align-items:\s*baseline/);
   assert.match(card, /data-product-transition/);
   assert.match(card, /\/products\/\$\{product\.slug\}/);
   assert.doesNotMatch(card, /<OfferCountdown|getProductWhatsappUrl|home-product-whatsapp-button/);
@@ -49,10 +50,14 @@ test("mobile home preview keeps two even columns and balanced spacing for a 2 by
   assert.match(grid, /grid-auto-flow:\s*row/);
 });
 
-test("mobile product card content fits two-column widths and aligns price to bottom", () => {
-  assert.match(card, /aspect-\[4\/5\]/);
-  assert.match(card, /line-clamp-2/);
-  assert.match(card, /mt-auto flex min-w-0 flex-wrap items-baseline/);
-  assert.match(card, /w-full min-w-0 flex-col/);
+test("mobile card has a unified bordered surface, left-aligned copy and a bottom-aligned price", () => {
+  assert.match(card, /className=\{styles\.card/);
+  assert.match(card, /className=\{styles\.media\}/);
+  assert.match(card, /className=\{styles\.content\}/);
+  assert.match(cardStyles, /aspect-ratio:\s*4 \/ 5/);
+  assert.match(cardStyles, /margin-top:\s*auto/);
+  assert.match(cardStyles, /text-align:\s*left/);
+  assert.match(cardStyles, /@media \(max-width: 640px\)/);
+  assert.match(cardStyles, /border: 1px solid #e5e5e2/);
   assert.doesNotMatch(card, /<OfferCountdown|home-product-whatsapp-button/);
 });
