@@ -49,20 +49,24 @@ test('About mobile layout stacks content and displays feature points as readable
 
 const hanger = fs.readFileSync('src/components/AboutHangerImage.tsx', 'utf8');
 
-test('About hanger image tracks vertical scroll with throttled transforms', () => {
+test('About hanger rail and T-shirts enter horizontally from outside while scrolling', () => {
   assert.match(hanger, /requestAnimationFrame\(update\)/);
   assert.match(hanger, /addEventListener\("scroll", schedule, \{ passive: true \}\)/);
   assert.match(hanger, /getBoundingClientRect\(\)/);
-  assert.match(hanger, /--about-scroll-y/);
-  assert.match(hanger, /mobile\.matches \? 18 : 44/);
-  assert.match(styles, /transform: translate3d\(0, var\(--about-scroll-y, 0px\), 0\)/);
+  assert.match(hanger, /--hanger-enter-x/);
+  assert.match(hanger, /bounds\.width \+ Math\.min\(viewportHeight \* 0\.08, 64\)/);
+  assert.match(hanger, /offset = -outsideDistance \* \(1 - eased\)/);
+  assert.match(styles, /transform: translate3d\(var\(--hanger-enter-x, 0px\), 0, 0\)/);
+  assert.doesNotMatch(hanger, /--about-scroll-y/);
+  assert.doesNotMatch(styles, /--about-scroll-y/);
 });
 
-test('About parallax stays within frame and cleans up listeners on navigation', () => {
+test('horizontal rail entrance works on mobile and cleans up without moving copy', () => {
   assert.match(hanger, /window\.cancelAnimationFrame\(frame\)/);
   assert.match(hanger, /window\.removeEventListener\("scroll", schedule\)/);
   assert.match(hanger, /prefers-reduced-motion: reduce/);
-  assert.match(styles, /height: calc\(100% \+ 128px\)/);
+  assert.match(styles, /overflow: hidden/);
   assert.match(styles, /padding: 24px clamp\(8px, 2vw, 18px\)/);
+  assert.match(styles, /object-fit: contain/);
   assert.match(styles, /\.visual img \{ transform: none; will-change: auto; \}/);
 });
