@@ -23,3 +23,26 @@ test('About renders permanent copy, local hanger image and product link', () => 
   assert.match(html, /src="\/images\/about\/tshirts-hanger.png"/);
   assert.match(html, /href="\/products"/);
 });
+
+const styles = fs.readFileSync('src/components/HomeAboutSection.module.css','utf8');
+const aboutMarkup = fs.readFileSync('src/components/HomeAboutSection.tsx','utf8');
+
+test('mobile About image is fully contained, with no crop or gradient mask', () => {
+  assert.match(styles, /@media \(max-width: 800px\)/);
+  assert.match(styles, /object-fit:\s*contain/);
+  assert.match(styles, /object-position:\s*center bottom/);
+  assert.match(styles, /mask-image:\s*none/);
+  assert.match(styles, /height:\s*clamp\(220px, 75vw, 320px\)/);
+});
+
+test('About mobile layout stacks content and displays feature points as readable rows', () => {
+  assert.match(styles, /grid-template-columns:\s*minmax\(0, 1fr\)/);
+  assert.match(styles, /\.points\s*\{\s*display:\s*grid/);
+  assert.match(styles, /\.points li\s*\{[^}]*min-height:\s*43px/s);
+  assert.match(styles, /\.link\s*\{\s*width:\s*100%/);
+  assert.match(aboutMarkup, /className=\{styles\.pointIndex\}/);
+  const html = renderToStaticMarkup(React.createElement(HomeAboutSection));
+  for (const point of homeAbout.points) assert.match(html, new RegExp(point.title.replace('&', '&amp;')));
+  assert.match(html, /01/);
+  assert.match(html, /03/);
+});

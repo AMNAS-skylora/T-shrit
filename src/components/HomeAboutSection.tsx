@@ -12,7 +12,12 @@ export function HomeAboutSection() {
         <h2 id="home-about-title" className={styles.title}>{homeAbout.title}</h2>
         <p className={styles.body}>{homeAbout.body}</p>
         <ul className={styles.points}>
-          {homeAbout.points.map(point => <li key={point.title}>{point.title}</li>)}
+          {homeAbout.points.map((point, index) => (
+            <li key={point.title}>
+              <span className={styles.pointIndex} aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+              <span>{point.title}</span>
+            </li>
+          ))}
         </ul>
         <Link href="/products" className={styles.link}>Explore our T-shirts ↗</Link>
       </div>
