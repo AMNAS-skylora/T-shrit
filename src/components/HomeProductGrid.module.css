@@ -4,27 +4,24 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-flow: row;
   align-items: stretch;
+  justify-items: stretch;
   column-gap: clamp(10px, 2vw, 24px);
   row-gap: clamp(24px, 2.5vw, 34px);
   width: 100%;
   min-width: 0;
 }
 
+/* Every real product takes exactly one grid cell, even when it is the only one. */
 .grid > * {
+  grid-column: auto;
   min-width: 0;
+  width: 100%;
   height: 100%;
 }
 
-/* Only the homepage preview uses a fixed six-product maximum (2×3 on phones). */
+/* Homepage preview: up to six real products (2×3 mobile / 3×2 desktop). */
 .homeGrid {
   align-content: start;
-}
-
-/* A filtered collection with one real product stays centered. No filler cards. */
-.grid > :only-child {
-  grid-column: 1 / -1;
-  width: min(100%, 340px);
-  justify-self: center;
 }
 
 @media (min-width: 1024px) {

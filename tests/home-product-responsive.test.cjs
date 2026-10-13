@@ -38,9 +38,13 @@ test("show Limited offer only for an active discount with an end time", () => {
   assert.match(card, /useOfferClock\(product, false\)/);
 });
 
-test("a filtered collection with only one product is centered, not stuck at the left", () => {
-  assert.match(grid, /\.grid > :only-child\s*\{[^}]*grid-column: 1 \/ -1/s);
-  assert.match(grid, /justify-self: center/);
+test("one real product stays in the leftmost grid column instead of spanning or centering", () => {
+  assert.doesNotMatch(grid, /\.grid\s*>\s*:only-child/);
+  assert.doesNotMatch(grid, /grid-column:\s*1\s*\/\s*-1/);
+  assert.doesNotMatch(grid, /justify-self:\s*center/);
+  assert.match(grid, /\.grid\s*>\s*\*\s*\{[^}]*grid-column:\s*auto/s);
+  assert.match(grid, /\.grid\s*>\s*\*\s*\{[^}]*width:\s*100%/s);
+  assert.match(grid, /justify-items:\s*stretch/);
 });
 
 test("mobile home preview keeps two even columns and balanced spacing for a 2 by 3 display", () => {
@@ -60,4 +64,11 @@ test("mobile card has a unified bordered surface, left-aligned copy and a bottom
   assert.match(cardStyles, /@media \(max-width: 640px\)/);
   assert.match(cardStyles, /border: 1px solid #e5e5e2/);
   assert.doesNotMatch(card, /<OfferCountdown|home-product-whatsapp-button/);
+});
+
+test("limited-time offer stays a compact badge, never an added product tile or countdown", () => {
+  assert.match(card, /const limitedOffer = available && discounted && Boolean\(product\.offerEndsAt\)/);
+  assert.match(card, /className=\{styles\.badge \+ " " \+ styles\.badgeOffer\}/);
+  assert.doesNotMatch(card, /<OfferCountdown/);
+  assert.match(section, /products\.slice\(0, 6\)/);
 });
