@@ -111,10 +111,13 @@ export async function adjustInventory(input: {
     const updated = await collection.updateOne(
       {
         _id,
+        stock: doc.stock === undefined ? { $exists: false } : doc.stock,
+        inventoryVersion: doc.inventoryVersion === undefined ? { $exists: false } : doc.inventoryVersion,
         updatedAt: doc.updatedAt === undefined ? { $exists: false } : doc.updatedAt,
       },
       {
         $set: { stock, colors, sizes, colorVariants, status, updatedAt: new Date() },
+        $inc: { inventoryVersion: 1 },
       },
     );
     if (updated.modifiedCount !== 1) continue;
