@@ -5,6 +5,7 @@ import { useState } from "react";
 import type { Product } from "@/types/product";
 import { getProductWhatsappUrl } from "@/lib/format";
 import { useStoreSettings } from "@/components/StoreSettingsContext";
+import { useCart } from "@/components/CartProvider";
 
 type Props = {
   product: Product;
@@ -22,13 +23,18 @@ export function ProductActions({
   onColorChange,
 }: Props) {
   const settings = useStoreSettings();
+  const { addItem } = useCart();
+  const [cartNotice, setCartNotice] = useState("");
   useOfferClock(product);
   const [size, setSize] = useState(product.sizes[0] ?? "One size");
   const colors = [...new Set([...(product.colorVariants ?? []).map(variant => variant.name), ...product.colors])];
   const [color, setColor] = useState(colors[0] ?? "Default");
   const selectedColor = showColorOptions ? color : product.colors[0] ?? "Default";
   const variant = product.colorVariants?.find(item => item.name === selectedColor);
-  const stock = showColorOptions ? variant?.sizeStocks?.[size] ?? variant?.stock ?? product.stock : product.stock;
+  const sizeStocks = variant?.sizeStocks ?? {};
+  const stock = showColorOptions
+    ? Object.keys(sizeStocks).length ? Number(sizeStocks[size] ?? 0) : variant?.stock ?? product.stock
+    : product.stock;
   const disabled = product.status !== "active" || stock <= 0;
 
   const orderUrl =
@@ -71,6 +77,17 @@ export function ProductActions({
       </div>
 
       <div className="product-action-buttons">
+        <button
+          type="button"
+          className="button button-secondary"
+          disabled={disabled}
+          onClick={() => {
+            addItem({ productId: product.id, color: selectedColor, size, quantity: 1 });
+            setCartNotice("Added to your shopping bag.");
+          }}
+        >
+          Add to bag
+        </button>
         {!disabled && orderUrl !== "#" ? (
           <a
             className="button button-primary whatsapp-order-button"
@@ -90,6 +107,7 @@ export function ProductActions({
           </button>
         )}
       </div>
+      {cartNotice ? <p role="status" aria-live="polite" className="mt-2 text-xs">{cartNotice}</p> : null}
     </div>
   );
 }
