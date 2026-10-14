@@ -17083,3 +17083,32 @@ select,
     padding-top: 0 !important;
   }
 }
+
+
+/* Product photo visibility: preserve the entire garment in every storefront card.
+   These rules intentionally override older catalog/premium image 'cover' rules. */
+.product-card-refined .product-card-visual-refined img.product-card-image-refined,
+.premium-product-grid .product-card-refined .product-card-visual-refined img.product-card-image-refined,
+.catalog-store-grid .product-card-refined .product-card-visual-refined img.product-card-image-refined {
+  object-fit: contain !important;
+  object-position: center center !important;
+  padding: clamp(6px, 1.5vw, 15px);
+  box-sizing: border-box !important;
+  transform: none !important;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.product-card-refined:hover .product-card-visual-refined img.product-card-image-refined {
+  transform: none !important;
+}
+
+.product-card-refined .product-card-visual-refined {
+  background: #f4f3f0 !important;
+}
+
+@media (max-width: 640px) {
+  .product-card-refined .product-card-visual-refined img.product-card-image-refined {
+    padding: 6px !important;
+  }
+}
