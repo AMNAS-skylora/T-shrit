@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { HomeShoppingMotion } from "@/components/HomeShoppingMotion";
 import { Header } from "@/components/Header";
+import { CartProvider } from "@/components/CartProvider";
 import { Footer } from "@/components/Footer";
 import { ShopPageTransition } from "@/components/ShopPageTransition";
 import { ProductImageTransition } from "@/components/ProductImageTransition";
@@ -63,6 +64,7 @@ export function SiteChrome({
 
   return (
     <StoreSettingsProvider settings={settings}>
+      <CartProvider>
       {showAnnouncement ? (
         <div className="relative flex min-h-9 w-full items-center justify-center gap-2 bg-[#111111] px-10 py-2 text-center text-[9px] font-bold uppercase tracking-[.14em] text-white">
           <span>{settings.announcementText}</span>
@@ -108,6 +110,7 @@ export function SiteChrome({
         {children}
       </main>
       {settings.footerEnabled ? <Footer settings={settings} /> : null}
+      </CartProvider>
     </StoreSettingsProvider>
   );
 }
