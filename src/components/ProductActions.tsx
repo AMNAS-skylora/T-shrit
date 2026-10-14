@@ -35,7 +35,7 @@ export function ProductActions({
   const stock = showColorOptions
     ? Object.keys(sizeStocks).length ? Number(sizeStocks[size] ?? 0) : variant?.stock ?? product.stock
     : product.stock;
-  const disabled = product.status !== "active" || stock <= 0;
+  const disabled = Boolean(product.isDemo) || product.status !== "active" || stock <= 0;
 
   const orderUrl =
     whatsappUrl ??
@@ -103,7 +103,7 @@ export function ProductActions({
             className="button button-primary whatsapp-order-button"
             disabled
           >
-            {disabled ? "Sold out" : "WhatsApp unavailable"}
+            {product.isDemo ? "Demo preview" : disabled ? "Sold out" : "WhatsApp unavailable"}
           </button>
         )}
       </div>
