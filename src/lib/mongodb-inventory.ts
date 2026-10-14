@@ -2,7 +2,8 @@ import "server-only";
 
 import { ObjectId, type Document } from "mongodb";
 import { getDb } from "@/lib/mongodb";
-import { getProductById, updateProduct } from "@/lib/mongodb-products";
+import { getProductById } from "@/lib/mongodb-products";
+import type { ProductColorVariant } from "@/types/product";
 import type { InventoryMovement, InventoryStockAlert } from "@/types/admin";
 
 function toMovement(doc: Document): InventoryMovement {
@@ -34,91 +35,105 @@ export async function adjustInventory(input: {
   reason: string;
   reference?: string;
 }) {
-  const delta = Math.trunc(Number(input.delta));
-  if (!delta) throw new Error("Inventory adjustment must be non-zero.");
-
-  const product = await getProductById(input.productId);
-  if (!product) throw new Error("Product not found.");
+  const delta = Number(input.delta);
+  if (!Number.isSafeInteger(delta) || delta === 0 || Math.abs(delta) > 100000) {
+    throw new Error("Inventory adjustment must be a non-zero whole number up to 100,000 units.");
+  }
+  if (!ObjectId.isValid(input.productId)) throw new Error("Product not found.");
 
   const color = input.color?.trim() || undefined;
   const size = input.size?.trim() || undefined;
+  const db = await getDb();
+  const collection = db.collection("products");
+  const _id = new ObjectId(input.productId);
 
-  let stock = product.stock;
-  let colorVariants = [...(product.colorVariants ?? [])];
-  let colors = [...product.colors];
-  let sizes = [...product.sizes];
+  // Compare-and-swap on updatedAt stops simultaneous orders from both selling
+  // the same final units. Admin product edits also advance this timestamp.
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const doc = await collection.findOne({ _id });
+    if (!doc) throw new Error("Product not found.");
 
-  if (color) {
-    let index = colorVariants.findIndex(
-      (variant) => variant.name.toLowerCase() === color.toLowerCase(),
-    );
+    let stock = Math.max(0, Number(doc.stock ?? 0));
+    const colorVariants: ProductColorVariant[] = Array.isArray(doc.colorVariants)
+      ? (doc.colorVariants as ProductColorVariant[]).map((variant) => ({
+          ...variant,
+          sizeStocks: { ...(variant.sizeStocks ?? {}) },
+        }))
+      : [];
+    const colors: string[] = Array.isArray(doc.colors) ? [...doc.colors] : [];
+    const sizes: string[] = Array.isArray(doc.sizes) ? [...doc.sizes] : [];
 
-    if (index < 0) {
-      colorVariants.push({
-        name: color,
-        value: color,
-        stock: 0,
-        sizeStocks: {},
-      });
-      colors = Array.from(new Set([...colors, color]));
-      index = colorVariants.length - 1;
-    }
-
-    const variant = { ...colorVariants[index] };
-    const sizeStocks = { ...(variant.sizeStocks ?? {}) };
-
-    if (size) {
-      const next = Math.max(0, Number(sizeStocks[size] ?? 0) + delta);
-      if (Number(sizeStocks[size] ?? 0) + delta < 0) {
-        throw new Error("Not enough stock for this size.");
-      }
-      sizeStocks[size] = next;
-      sizes = Array.from(new Set([...sizes, size]));
-      variant.sizeStocks = sizeStocks;
-      variant.stock = Object.values(sizeStocks).reduce(
-        (sum, value) => sum + Number(value || 0),
-        0,
+    if (color) {
+      let index = colorVariants.findIndex(
+        (variant) => variant.name.toLowerCase() === color.toLowerCase(),
       );
-    } else {
-      const currentVariantStock = Number(variant.stock ?? 0);
-      if (currentVariantStock + delta < 0) {
-        throw new Error("Not enough stock for this colour.");
+      if (index < 0) {
+        if (delta < 0) throw new Error("Not enough stock for this colour.");
+        colorVariants.push({ name: color, value: color, stock: 0, sizeStocks: {} });
+        if (!colors.includes(color)) colors.push(color);
+        index = colorVariants.length - 1;
       }
-      variant.stock = currentVariantStock + delta;
+
+      const variant = { ...colorVariants[index] };
+      const sizeStocks = { ...(variant.sizeStocks ?? {}) };
+      const trackedSizes = Object.keys(sizeStocks).length > 0;
+
+      if (size && (trackedSizes || Number(variant.stock ?? 0) === 0)) {
+        const next = Number(sizeStocks[size] ?? 0) + delta;
+        if (!Number.isFinite(next) || next < 0) {
+          throw new Error("Not enough stock for this size.");
+        }
+        sizeStocks[size] = next;
+        if (!sizes.includes(size)) sizes.push(size);
+        variant.sizeStocks = sizeStocks;
+        variant.stock = Object.values(sizeStocks).reduce((sum, count) => sum + Number(count || 0), 0);
+      } else {
+        // Products without a size-level breakdown still use their colour stock.
+        const next = Number(variant.stock ?? 0) + delta;
+        if (!Number.isFinite(next) || next < 0) {
+          throw new Error("Not enough stock for this colour.");
+        }
+        variant.stock = next;
+      }
+
+      colorVariants[index] = variant;
+      stock = colorVariants.reduce((sum, item) => sum + Math.max(0, Number(item.stock ?? 0)), 0);
+    } else {
+      if (!Number.isFinite(stock + delta) || stock + delta < 0) {
+        throw new Error("Not enough stock.");
+      }
+      stock += delta;
     }
 
-    colorVariants[index] = variant;
-    stock = colorVariants.reduce(
-      (sum, item) => sum + Math.max(0, Number(item.stock ?? 0)),
-      0,
+    const status = doc.status === "draft"
+      ? "draft"
+      : stock <= 0 ? "sold-out" : doc.status === "sold-out" ? "active" : doc.status;
+    const updated = await collection.updateOne(
+      {
+        _id,
+        updatedAt: doc.updatedAt === undefined ? { $exists: false } : doc.updatedAt,
+      },
+      {
+        $set: { stock, colors, sizes, colorVariants, status, updatedAt: new Date() },
+      },
     );
-  } else {
-    if (stock + delta < 0) throw new Error("Not enough stock.");
-    stock += delta;
+    if (updated.modifiedCount !== 1) continue;
+
+    await db.collection("inventoryMovements").insertOne({
+      productId: input.productId,
+      productName: String(doc.name ?? ""),
+      sku: String(doc.sku ?? ""),
+      color,
+      size,
+      delta,
+      reason: input.reason.trim() || "Manual adjustment",
+      reference: input.reference?.trim() || undefined,
+      createdAt: new Date(),
+    });
+    return getProductById(input.productId);
   }
 
-  const updated = await updateProduct(product.id, {
-    stock,
-    colors,
-    sizes,
-    colorVariants,
-    status: stock <= 0 ? "sold-out" : product.status === "sold-out" ? "active" : product.status,
-  });
-
-  const db = await getDb();
-  await db.collection("inventoryMovements").insertOne({
-    productId: product.id,
-    productName: product.name,
-    sku: product.sku,
-    color,
-    size,
-    delta,
-    reason: input.reason.trim() || "Manual adjustment",
-    reference: input.reference?.trim() || undefined,
-    createdAt: new Date(),
-  });
-
-  return updated;
+  throw new Error("Stock changed while processing this request. Please retry.");
 }
 
 export async function listInventoryMovements(productId?: string) {
