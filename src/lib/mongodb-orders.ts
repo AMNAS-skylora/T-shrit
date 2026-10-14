@@ -5,6 +5,7 @@ import { ObjectId, type Document } from "mongodb";
 import { getDb } from "@/lib/mongodb";
 import { getProductById } from "@/lib/mongodb-products";
 import { adjustInventory } from "@/lib/mongodb-inventory";
+import { getProductOfferPrice } from "@/lib/product-offers";
 import type {
   Customer,
   CustomerSnapshot,
@@ -115,15 +116,20 @@ function parseCustomer(value: unknown): CustomerSnapshot {
     pincode: text(source.pincode) || undefined,
   };
 
-  if (!customer.name) throw new Error("Customer name is required.");
-  if (!customer.phone) throw new Error("Customer phone is required.");
-  if (!customer.address) throw new Error("Customer address is required.");
+  if (!customer.name || customer.name.length > 120) throw new Error("Enter a customer name of up to 120 characters.");
+  const digits = customer.phone.replace(/\D/g, "");
+  if (!/^[+\d\s().-]+$/.test(customer.phone) || digits.length < 7 || digits.length > 15) {
+    throw new Error("Enter a valid customer phone number.");
+  }
+  if (!customer.address || customer.address.length > 1000) {
+    throw new Error("Enter a delivery address of up to 1000 characters.");
+  }
   return customer;
 }
 
 async function resolveItems(value: unknown) {
-  if (!Array.isArray(value) || !value.length) {
-    throw new Error("At least one order item is required.");
+  if (!Array.isArray(value) || !value.length || value.length > 50) {
+    throw new Error("An order must contain between 1 and 50 items.");
   }
 
   const resolved: OrderItem[] = [];
@@ -132,9 +138,18 @@ async function resolveItems(value: unknown) {
     if (!raw || typeof raw !== "object") continue;
     const source = raw as Record<string, unknown>;
     const productId = text(source.productId);
-    const quantity = Math.max(1, Math.floor(Number(source.quantity ?? 1)));
+    const quantity = Number(source.quantity ?? 1);
+    if (!Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000) {
+      throw new Error("Each item must have a whole-number quantity between 1 and 1000.");
+    }
     const product = await getProductById(productId);
-    if (!product) throw new Error("One of the selected products no longer exists.");
+    if (!product || product.status === "draft") {
+      throw new Error("One of the selected products is no longer available.");
+    }
+    const unitPrice = getProductOfferPrice(product);
+    if (!Number.isFinite(unitPrice) || unitPrice < 0) {
+      throw new Error("A product has an invalid price.");
+    }
 
     resolved.push({
       productId: product.id,
@@ -143,9 +158,9 @@ async function resolveItems(value: unknown) {
       color: text(source.color) || undefined,
       size: text(source.size) || undefined,
       quantity,
-      unitPrice: product.price,
+      unitPrice,
       costPrice: product.costPrice,
-      total: product.price * quantity,
+      total: unitPrice * quantity,
     });
   }
 
@@ -193,6 +208,10 @@ async function upsertCustomer(customer: CustomerSnapshot, orderTotal: number, cr
 export async function createOrder(input: Record<string, unknown>) {
   const db = await getDb();
   const customer = parseCustomer(input.customer);
+  // New orders must start active: cancelled/returned records would otherwise reserve stock.
+  if (input.status !== undefined && !["new", "confirmed", "processing"].includes(String(input.status))) {
+    throw new Error("New orders cannot start as cancelled, returned, refunded or fulfilled.");
+  }
   const items = await resolveItems(input.items);
   const subtotal = items.reduce((sum, item) => sum + item.total, 0);
   const discount = money(input.discount);
