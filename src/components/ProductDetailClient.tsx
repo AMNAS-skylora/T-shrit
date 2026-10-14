@@ -42,7 +42,7 @@ export function ProductDetailClient({
   const stock = Object.keys(trackedSizes).length
     ? Number(trackedSizes[size] ?? 0)
     : selectedVariant?.stock ?? product.stock;
-  const soldOut = product.status !== "active" || stock <= 0;
+  const soldOut = Boolean(product.isDemo) || product.status !== "active" || stock <= 0;
   const offerActive = isProductOfferActive(product, now);
   const displayPrice = offerActive ? getProductOfferPrice(product, now) : product.price;
 
@@ -102,7 +102,7 @@ export function ProductDetailClient({
         )}
 
         <div className={galleryStyles.tag}>
-          {soldOut ? "Sold out" : selectedColor}
+          {product.isDemo ? "Demo preview" : soldOut ? "Sold out" : selectedColor}
         </div>
 
         {variantImages.length > 1 ? (
@@ -221,7 +221,7 @@ export function ProductDetailClient({
           <div className={galleryStyles.attributes}>
             <div>
               <span>Availability</span>
-              <strong>{soldOut ? "Sold out" : `${stock} in stock`}</strong>
+              <strong>{product.isDemo ? "Sample listing · not for sale" : soldOut ? "Sold out" : `${stock} in stock`}</strong>
             </div>
             <div>
               <span>Selected</span>
@@ -238,7 +238,7 @@ export function ProductDetailClient({
                 Try-On Anywhere
               </Link>
             ) : null}
-            <button
+            {!product.isDemo ? <button
               type="button"
               className={galleryStyles.secondaryButton}
               disabled={soldOut}
@@ -248,7 +248,7 @@ export function ProductDetailClient({
               }}
             >
               Add to bag
-            </button>
+            </button> : null}
             {whatsappUrl !== "#" && !soldOut ? (
               <a
                 className={galleryStyles.primaryButton}
@@ -264,7 +264,7 @@ export function ProductDetailClient({
                 className={galleryStyles.primaryButton}
                 disabled
               >
-                {soldOut ? "Sold out" : "WhatsApp unavailable"}
+                {product.isDemo ? "Demo preview — not for sale" : soldOut ? "Sold out" : "WhatsApp unavailable"}
               </button>
             )}
           </div>
@@ -272,6 +272,7 @@ export function ProductDetailClient({
           {cartNotice ? <p role="status" aria-live="polite" className="mt-3 text-sm font-medium">{cartNotice}</p> : null}
 
           <div className={galleryStyles.notes}>
+            {product.isDemo ? <span>This uses sample photography and example product details, not actual KLEID.IN inventory.</span> : null}
             {product.featuredImage ? (
               <span>Live camera try-on available</span>
             ) : null}
