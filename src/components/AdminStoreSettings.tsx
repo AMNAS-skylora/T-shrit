@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type { StoreSettings } from "@/types/commerce";
 
-const sectionControls = [["homeCatalogEnabled", "Product catalog"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
+const sectionControls = [["homeCatalogEnabled", "Product catalog"], ["demoCatalogEnabled", "Demo catalog (only when no real products)"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
 
 function label(key: string) {
   return key
@@ -216,7 +216,7 @@ export function AdminStoreSettings() {
       >
         <fieldset className="mb-4 rounded-2xl bg-white p-4 ring-1 ring-black/5">
           <legend className="px-2 text-sm font-bold">Section visibility</legend>
-          <p className="mb-3 text-xs text-black/50">Turn sections on or off, then Save settings. Hidden sections keep their content.</p>
+          <p className="mb-3 text-xs text-black/50">Turn sections on or off, then Save settings. Hidden sections keep their content. Demo mode displays labelled sample products only when your real catalog is empty; samples cannot be ordered and do not change inventory.</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {sectionControls.map(([key, name]) => (
               <label key={key} className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-black/10 px-3 py-2 text-sm">
