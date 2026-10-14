@@ -190,7 +190,7 @@
     box-shadow: 0 12px 25px rgba(0,0,0,.06);
   }
 
-  .card:hover .photo { transform: scale(1.035); }
+  .card:hover .photo { transform: none; }
   .dark:hover { border-color: #646464; }
 }
 
