@@ -31,6 +31,9 @@ const labelClass =
 function cloneProduct(product: Product): Product {
   return {
     ...product,
+    images: [...new Set([product.image, ...(product.images ?? [])].filter(
+      (url): url is string => Boolean(url),
+    ))].slice(0, 3),
     sizes: [...product.sizes],
     colors: [...product.colors],
     colorVariants: (product.colorVariants ?? []).map((variant) => ({
@@ -168,6 +171,72 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
   function patch(patch: Partial<Product>) {
     setDraft((current) => (current ? { ...current, ...patch } : current));
+  }
+
+  function setGalleryImages(next: string[]) {
+    const images = [...new Set(next.filter(Boolean))].slice(0, 3);
+    setDraft((current) => current ? {
+      ...current,
+      image: images[0] ?? "",
+      images,
+    } : current);
+  }
+
+  function makeGalleryMain(index: number) {
+    if (!draft) return;
+    const photos = draft.images ?? [];
+    const chosen = photos[index];
+    if (!chosen) return;
+    setGalleryImages([chosen, ...photos.filter((_, i) => i !== index)]);
+  }
+
+  function removeGalleryPhoto(index: number) {
+    if (!draft) return;
+    setGalleryImages((draft.images ?? []).filter((_, i) => i !== index));
+  }
+
+  async function uploadGalleryPhotos(event: ChangeEvent<HTMLInputElement>, slot?: number) {
+    const files = Array.from(event.target.files ?? []);
+    event.target.value = "";
+    if (!files.length || !draft || uploading) return;
+
+    const before = [...(draft.images ?? [])];
+    const available = Math.max(0, 3 - before.length);
+    if ((slot === undefined && files.length > available) ||
+        (slot !== undefined && (slot < 0 || slot > 2 || files.length !== 1 || slot > before.length))) {
+      setMessageError(true);
+      setMessage("A product can have up to 3 gallery photos. Remove one to add another.");
+      return;
+    }
+
+    const previewUrls = files.map((file) => URL.createObjectURL(file));
+    const preview = [...before];
+    if (slot !== undefined && slot < preview.length) preview[slot] = previewUrls[0];
+    else preview.push(...previewUrls);
+    setGalleryImages(preview);
+    setUploading("gallery");
+    setMessageError(false);
+    setMessage("");
+
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of files) {
+        const uploaded = await uploadAdminImage(file, "kleidin/products");
+        uploadedUrls.push(uploaded.url);
+      }
+      const next = [...before];
+      if (slot !== undefined && slot < next.length) next[slot] = uploadedUrls[0];
+      else next.push(...uploadedUrls);
+      setGalleryImages(next);
+      setMessage("Gallery photo uploaded. Click Save changes to publish it.");
+    } catch (error) {
+      setGalleryImages(before);
+      setMessageError(true);
+      setMessage(error instanceof Error ? error.message : "Gallery upload failed.");
+    } finally {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+      setUploading("");
+    }
   }
 
   function setSizes(nextSizes: string[]) {
@@ -329,28 +398,6 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     }
   }
 
-  async function uploadMain(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-
-    const previous = draft?.image;
-    const previewUrl = URL.createObjectURL(file);
-    patch({ image: previewUrl });
-
-    try {
-      const url = await uploadFile(file, "main");
-      patch({ image: url });
-      setMessage("Main image uploaded. Save product to publish the change.");
-    } catch (error) {
-      setMessageError(true);
-      patch({ image: previous });
-      setMessage(error instanceof Error ? error.message : "Image upload failed.");
-    } finally {
-      URL.revokeObjectURL(previewUrl);
-    }
-  }
-
   async function uploadAnimation(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -408,6 +455,13 @@ export function AdminProductDetail({ productId }: { productId: string }) {
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
     if (!files.length) return;
+
+    const existingCount = draft?.colorVariants?.[index]?.images?.length ?? 0;
+    if (existingCount + files.length > 3) {
+      setMessageError(true);
+      setMessage("Each colour supports up to 3 photos. Remove a photo before adding more.");
+      return;
+    }
 
     const previewUrls = files.map((file) => URL.createObjectURL(file));
 
@@ -539,6 +593,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
   const variants = draft.colorVariants ?? [];
   const primaryPreviewImage = getProductPrimaryImage(draft);
+  const galleryPhotos = draft.images ?? [];
 
   return (
     <div className="min-w-0 pb-28">
@@ -847,7 +902,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                       <div className="flex items-center justify-between">
                         <span className={labelClass}>Colour images</span>
                         <span className="text-[10px] text-black/40">
-                          {(variant.images ?? []).length} image(s)
+                          {(variant.images ?? []).length} / 3 photos
                         </span>
                       </div>
 
@@ -861,7 +916,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                               <img
                                 src={url}
                                 alt=""
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-contain p-1"
                               />
                               <button
                                 type="button"
@@ -891,12 +946,14 @@ export function AdminProductDetail({ productId }: { productId: string }) {
                       <label className="mt-2 flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-dashed border-black/20 bg-white px-3 text-[10px] font-bold">
                         {uploading === "variant-" + index
                           ? "Uploading…"
-                          : "+ Add colour images"}
+                          : (variant.images ?? []).length >= 3
+                            ? "3 photos uploaded"
+                            : "+ Add colour photos (up to 3)"}
                         <input
                           type="file"
                           accept="image/*"
                           multiple
-                          disabled={Boolean(uploading)}
+                          disabled={Boolean(uploading) || (variant.images ?? []).length >= 3}
                           onChange={(event) =>
                             void uploadVariantImages(index, event)
                           }
@@ -1220,30 +1277,74 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
         <aside id="product-images" className="order-1 min-w-0 scroll-mt-6 space-y-4 xl:order-2 xl:sticky xl:top-5 xl:self-start">
           <section className="overflow-hidden rounded-2xl bg-white ring-1 ring-black/5">
+            <div className="p-4 pb-3">
+              <p className={labelClass}>Product gallery</p>
+              <h2 className="mt-1 text-base font-bold">3 product photos</h2>
+              <p className="mt-1 text-xs leading-5 text-black/50">
+                Upload front, back and detail photos. Photo 1 is the main storefront image.
+                Select any uploaded photo as the main image, then save.
+              </p>
+            </div>
             <div className="relative h-60 bg-[#f1f1ef] xl:h-72">
               {primaryPreviewImage ? (
                 <img
                   src={primaryPreviewImage}
-                  alt={draft.name}
+                  alt={draft.name + " main product photo"}
                   className="h-full w-full object-contain p-3"
                 />
               ) : (
                 <div className="grid h-full place-items-center text-xs text-black/40">
-                  No main image
+                  Upload your first product photo
                 </div>
               )}
             </div>
-            <div className="p-4">
-              <label className="flex min-h-11 cursor-pointer items-center justify-center rounded-xl border border-black/10 text-xs font-bold">
-                {uploading === "main" ? "Uploading…" : "Change main image"}
+            <div className="grid grid-cols-3 gap-2 p-3" aria-label="Product gallery photo slots">
+              {[0, 1, 2].map((index) => {
+                const url = galleryPhotos[index];
+                return (
+                  <div key={index} className="min-w-0 rounded-xl border border-black/10 bg-[#fafafa] p-1.5">
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-lg bg-white">
+                      {url ? <img src={url} alt={draft.name + " photo " + (index + 1)} className="h-full w-full object-contain p-1" />
+                        : <span className="grid h-full place-items-center text-[10px] text-black/40">Photo {index + 1}</span>}
+                    </div>
+                    <p className="mt-1.5 text-center text-[10px] font-bold">{index === 0 ? "Main" : "Photo " + (index + 1)}</p>
+                    {url && index > 0 ? (
+                      <button type="button" disabled={Boolean(uploading)} onClick={() => makeGalleryMain(index)}
+                        className="mt-1 min-h-8 w-full rounded-lg border border-black/15 bg-white px-1 text-[10px] font-semibold disabled:opacity-40">
+                        Set as main
+                      </button>
+                    ) : null}
+                    <label className={"mt-1 flex min-h-9 items-center justify-center rounded-lg border border-dashed border-black/20 bg-white px-1 text-center text-[10px] font-bold " + (uploading ? "opacity-40" : "cursor-pointer")}>
+                      {uploading === "gallery" ? "Uploading…" : url ? "Replace" : index === galleryPhotos.length ? "Upload" : "Empty"}
+                      <input type="file" accept="image/jpeg,image/png,image/webp,image/avif"
+                        disabled={Boolean(uploading) || (!url && index !== galleryPhotos.length)}
+                        onChange={(event) => void uploadGalleryPhotos(event, index)}
+                        className="sr-only" />
+                    </label>
+                    {url ? (
+                      <button type="button" disabled={Boolean(uploading)}
+                        onClick={() => removeGalleryPhoto(index)}
+                        className="mt-1 min-h-8 w-full text-[10px] font-semibold text-red-600 disabled:opacity-40">
+                        Remove
+                      </button>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+            <div className="px-4 pb-4">
+              <label className={"flex min-h-11 items-center justify-center rounded-xl border border-black/10 text-center text-xs font-bold " + (galleryPhotos.length >= 3 || uploading ? "opacity-50" : "cursor-pointer")}>
+                {galleryPhotos.length >= 3 ? "All 3 photos uploaded" : "Upload photos (" + galleryPhotos.length + "/3)"}
                 <input
                   type="file"
-                  accept="image/*"
-                  disabled={Boolean(uploading)}
-                  onChange={(event) => void uploadMain(event)}
+                  accept="image/jpeg,image/png,image/webp,image/avif"
+                  multiple
+                  disabled={Boolean(uploading) || galleryPhotos.length >= 3}
+                  onChange={(event) => void uploadGalleryPhotos(event)}
                   className="sr-only"
                 />
               </label>
+              <p className="mt-2 text-center text-[10px] text-black/45">Photos stay fully visible (no cropping). Save changes to publish.</p>
             </div>
           </section>
 

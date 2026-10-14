@@ -140,6 +140,7 @@ function toProduct(doc: Document): Product {
       text(doc.showcaseBackgroundImage) || undefined,
     status: status(doc.status),
     image: text(doc.image) || undefined,
+    images: strings(doc.images).slice(0, 3),
     sortOrder:
       doc.sortOrder === null || doc.sortOrder === undefined
         ? undefined
@@ -258,6 +259,7 @@ function productFields(
       ) || undefined,
     status: nextStatus,
     image: text(input.image, current?.image) || undefined,
+    images: input.images !== undefined ? strings(input.images).slice(0, 3) : current?.images ?? [],
     sortOrder:
       input.sortOrder === null
         ? undefined

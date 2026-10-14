@@ -29,7 +29,6 @@ export function ProductDetailClient({
   );
   const [size, setSize] = useState(product.sizes[0] ?? "One size");
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [galleryPaused, setGalleryPaused] = useState(false);
   const touchStart = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
@@ -50,15 +49,6 @@ export function ProductDetailClient({
     setActiveImageIndex(0);
   }, [selectedColor]);
 
-  useEffect(() => {
-    if (variantImages.length <= 1 || galleryPaused) return;
-    const timer = window.setInterval(() => {
-      if (document.hidden) return;
-      setActiveImageIndex((index) => (index + 1) % variantImages.length);
-    }, 3800);
-    return () => window.clearInterval(timer);
-  }, [variantImages.length, selectedColor, galleryPaused]);
-
   function moveImage(direction: number) {
     if (variantImages.length) setActiveImageIndex((index) => (index + direction + variantImages.length) % variantImages.length);
   }
@@ -72,69 +62,85 @@ export function ProductDetailClient({
 
   return (
     <>
-      <div className={galleryStyles.gallery}
-        data-product-image-target
-        onPointerEnter={(event) => { if (event.pointerType === "mouse") setGalleryPaused(true); }}
-        onPointerLeave={() => setGalleryPaused(false)}
-        onFocusCapture={() => setGalleryPaused(true)}
-        onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setGalleryPaused(false); }}
-        onTouchStart={(event) => { touchStart.current = event.touches[0]?.clientX ?? null; touchStartY.current = event.touches[0]?.clientY ?? null; setGalleryPaused(true); }}
-        onTouchEnd={(event) => {
-          const end = event.changedTouches[0]?.clientX;
-          if (touchStart.current !== null && end !== undefined && Math.abs(end - touchStart.current) > 40 && Math.abs(end - touchStart.current) > Math.abs((event.changedTouches[0]?.clientY ?? 0) - (touchStartY.current ?? 0))) moveImage(end < touchStart.current ? 1 : -1);
-          touchStart.current = null;
-          setGalleryPaused(false);
-        }}
-        onTouchCancel={() => { touchStart.current = null; setGalleryPaused(false); }}
-      >
-        {image ? (
-          <Image
-            key={image}
-            src={image}
-            alt={`${product.name} — ${selectedColor}`}
-            fill
-            preload={activeImageIndex === 0}
-            sizes="(max-width: 800px) 100vw, 58vw"
-            className={galleryStyles.image}
-          />
-        ) : (
-          <span className={galleryStyles.empty}>No product image</span>
-        )}
+      <div className={galleryStyles.galleryColumn}>
+        <div
+          className={galleryStyles.gallery}
+          data-product-image-target
+          onTouchStart={(event) => {
+            touchStart.current = event.touches[0]?.clientX ?? null;
+            touchStartY.current = event.touches[0]?.clientY ?? null;
+          }}
+          onTouchEnd={(event) => {
+            const endX = event.changedTouches[0]?.clientX;
+            const endY = event.changedTouches[0]?.clientY;
+            if (
+              touchStart.current !== null &&
+              endX !== undefined &&
+              Math.abs(endX - touchStart.current) > 40 &&
+              Math.abs(endX - touchStart.current) > Math.abs((endY ?? 0) - (touchStartY.current ?? 0))
+            ) {
+              moveImage(endX < touchStart.current ? 1 : -1);
+            }
+            touchStart.current = null;
+            touchStartY.current = null;
+          }}
+          onTouchCancel={() => {
+            touchStart.current = null;
+            touchStartY.current = null;
+          }}
+        >
+          {image ? (
+            <Image
+              key={image}
+              src={image}
+              alt={product.name + " — " + selectedColor + ", photo " + (activeImageIndex + 1)}
+              fill
+              preload={activeImageIndex === 0}
+              sizes="(max-width: 800px) 100vw, 58vw"
+              className={galleryStyles.image}
+            />
+          ) : (
+            <span className={galleryStyles.empty}>No product image</span>
+          )}
 
-        <div className={galleryStyles.tag}>
-          {soldOut ? "Sold out" : selectedColor}
+          <div className={galleryStyles.tag}>
+            {soldOut ? "Sold out" : selectedColor}
+          </div>
+
+          {variantImages.length > 1 ? (
+            <div className={galleryStyles.controls}>
+              <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image">
+                <ArrowLeftIcon width={18} height={18} />
+              </button>
+              <span aria-live="polite">{activeImageIndex + 1} / {variantImages.length}</span>
+              <button type="button" onClick={() => moveImage(1)} aria-label="Next product image">
+                <ArrowRightIcon width={18} height={18} />
+              </button>
+            </div>
+          ) : null}
         </div>
 
         {variantImages.length > 1 ? (
-          <>
-          <div className={galleryStyles.controls}>
-            <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image"><ArrowLeftIcon width={18} height={18} /></button>
-            <span>{activeImageIndex + 1} / {variantImages.length}</span>
-            <button type="button" onClick={() => moveImage(1)} aria-label="Next product image"><ArrowRightIcon width={18} height={18} /></button>
-          </div>
-          <div className={galleryStyles.thumbnails}>
+          <div className={galleryStyles.thumbnails} role="group" aria-label="Choose product photo">
             {variantImages.map((url, index) => (
               <button
                 key={url + index}
                 type="button"
                 onClick={() => setActiveImageIndex(index)}
-                className={
-                  galleryStyles.thumbnail + " " + (index === activeImageIndex ? galleryStyles.selected : "")
-                }
-                aria-label={"Show image " + (index + 1)}
+                className={galleryStyles.thumbnail + " " + (index === activeImageIndex ? galleryStyles.selected : "")}
+                aria-label={"Show photo " + (index + 1) + " as main image"}
                 aria-pressed={index === activeImageIndex}
               >
                 <Image
                   src={url}
-                  alt={product.name + " image " + (index + 1)}
+                  alt={product.name + " photo " + (index + 1)}
                   fill
-                  sizes="56px"
+                  sizes="(max-width: 640px) 33vw, 120px"
                   className={galleryStyles.thumbnailImage}
                 />
               </button>
             ))}
           </div>
-          </>
         ) : null}
       </div>
 

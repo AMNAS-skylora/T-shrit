@@ -47,6 +47,8 @@ export type Product = {
   showcaseBackgroundImage?: string;
   status: ProductStatus;
   image?: string;
+  /** Up to three storefront gallery photos, ordered with the main image first. */
+  images?: string[];
   sortOrder?: number;
 };
 
