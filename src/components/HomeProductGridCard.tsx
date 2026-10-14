@@ -23,7 +23,7 @@ export function HomeProductGridCard({
   const offerActive = isProductOfferActive(product, now);
   const price = getProductOfferPrice(product, now);
   const discounted = offerActive && price < product.price;
-  const available = product.status === "active" && product.stock > 0;
+  const available = !product.isDemo && product.status === "active" && product.stock > 0;
   const limitedOffer = available && discounted && Boolean(product.offerEndsAt);
 
   return (
@@ -47,7 +47,9 @@ export function HomeProductGridCard({
             <span className={styles.placeholder}>No image</span>
           )}
 
-          {!available ? (
+          {product.isDemo ? (
+            <span className={styles.badge + " " + styles.badgeSold}>Demo preview</span>
+          ) : !available ? (
             <span className={styles.badge + " " + styles.badgeSold}>Sold out</span>
           ) : limitedOffer ? (
             <span className={styles.badge + " " + styles.badgeOffer}>Limited offer</span>
@@ -62,6 +64,7 @@ export function HomeProductGridCard({
           <h3 className={styles.name}>{product.name}</h3>
 
           <div className={styles.prices}>
+            {product.isDemo ? <span className="w-full text-[10px] font-medium uppercase tracking-wide text-black/50">Example price · not for sale</span> : null}
             <strong className={styles.price}>{formatPrice(price)}</strong>
             {discounted ? (
               <del className={styles.oldPrice}>{formatPrice(product.price)}</del>
