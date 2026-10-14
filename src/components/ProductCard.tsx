@@ -41,7 +41,9 @@ export function ProductCard({ product }: { product: Product }) {
 
   const badge = useMemo(
     () =>
-      soldOut
+      product.isDemo
+        ? "Demo preview"
+        : soldOut
         ? "Sold out"
         : limitedStock
           ? `Limited stock · ${currentStock} left`
@@ -63,6 +65,7 @@ export function ProductCard({ product }: { product: Product }) {
       product.offerBadge,
       activeProductOffer,
       soldOut,
+      product.isDemo,
     ],
   );
 
@@ -132,6 +135,7 @@ export function ProductCard({ product }: { product: Product }) {
         </Link>
 
         <div className="product-card-price">
+          {product.isDemo ? <span className="w-full text-[10px] text-black/50">Example price</span> : null}
           <strong>{formatPrice(displayPrice)}</strong>
           {hasOffer && originalPrice && originalPrice > displayPrice ? (
             <del>{formatPrice(originalPrice)}</del>
@@ -166,7 +170,9 @@ export function ProductCard({ product }: { product: Product }) {
             aria-hidden="true"
           />
           <span>
-            {soldOut
+            {product.isDemo
+              ? "Sample listing · preview only"
+              : soldOut
               ? "Sold out"
               : limitedStock
                 ? `Low stock · ${currentStock}`
@@ -174,7 +180,11 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         </div>
 
-        {soldOut || whatsappHref === "#" ? (
+        {product.isDemo ? (
+          <Link href={"/products/" + product.slug} className="product-whatsapp-cta">
+            <span>View demo preview</span>
+          </Link>
+        ) : soldOut || whatsappHref === "#" ? (
           <button
             type="button"
             className="product-whatsapp-cta is-disabled"
