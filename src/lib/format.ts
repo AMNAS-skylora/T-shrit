@@ -29,7 +29,7 @@ export function getProductWhatsappUrl(
   selectedColor?: string,
   selectedSize?: string,
 ) {
-  if (!whatsappNumber) return "#";
+  if (!whatsappNumber || product.isDemo) return "#";
 
   const activeOffer = isProductOfferActive(product);
   const orderPrice = activeOffer ? getProductOfferPrice(product) : product.price;
