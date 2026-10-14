@@ -2,6 +2,7 @@
 
 import { ChangeEvent, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
+import { readProductExcel } from "@/lib/client-product-excel";
 
 type ImportResult = {
   created: number;
@@ -28,6 +29,7 @@ const headers = [
   "stock",
   "main_image_url",
   "color_image_url",
+  "gallery_image_urls",
   "offer_enabled",
   "offer_type",
   "offer_value",
@@ -119,12 +121,14 @@ export function AdminProductImport({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [confirmed, setConfirmed] = useState(false);
 
   function reset() {
     setFileName("");
     setRows([]);
     setMessage("");
     setResult(null);
+    setConfirmed(false);
   }
 
   function close() {
@@ -154,31 +158,34 @@ export function AdminProductImport({
 
     setMessage("");
     setResult(null);
+    setConfirmed(false);
 
-    if (!file.name.toLowerCase().endsWith(".csv")) {
+    if (!/\.(csv|xlsx)$/i.test(file.name)) {
       setRows([]);
       setFileName(file.name);
-      setMessage(
-        "Open the Excel template and use Save As → CSV UTF-8, then upload that CSV file.",
-      );
+      setMessage("Choose a supported .xlsx or .csv product file.");
       return;
     }
 
     try {
-      const content = await file.text();
-      const parsed = parseCsv(content);
+      if (file.size > 4 * 1024 * 1024) throw new Error("Maximum file size is 4 MB.");
+      const parsed = file.name.toLowerCase().endsWith(".xlsx")
+        ? await readProductExcel(file)
+        : parseCsv(await file.text());
 
       if (!parsed.length) {
-        throw new Error("The CSV has no product rows.");
+        throw new Error("The file has no product rows.");
       }
 
       if (!Object.prototype.hasOwnProperty.call(parsed[0], "sku")) {
-        throw new Error("The CSV must include an SKU column.");
+        throw new Error("An SKU column is required.");
       }
 
+      if (parsed.length > 1000) throw new Error("Import up to 1,000 rows at a time.");
+      if (parsed.some((row) => !row.sku?.trim())) throw new Error("Every row must have an SKU.");
       setRows(parsed);
       setFileName(file.name);
-      setMessage(parsed.length + " rows ready to import.");
+      setMessage(parsed.length + " rows loaded. Review the preview and confirm before importing.");
     } catch (error) {
       setRows([]);
       setFileName(file.name);
@@ -189,7 +196,7 @@ export function AdminProductImport({
   }
 
   async function runImport() {
-    if (!rows.length) return;
+    if (!rows.length || !confirmed) return;
     setBusy(true);
     setMessage("");
     setResult(null);
@@ -242,7 +249,7 @@ export function AdminProductImport({
       <AdminDrawer
         open={open}
         title="Excel bulk product import"
-        description="Download the template, edit it in Excel, save as CSV UTF-8, then upload it here. Multiple rows with the same SKU become colour and size variants."
+        description="Upload Excel (.xlsx) or CSV directly. Review the data before import. Matching SKUs update existing MongoDB products."
         onClose={close}
         footer={
           <div className="grid grid-cols-2 gap-2 sm:flex sm:justify-end">
@@ -257,7 +264,7 @@ export function AdminProductImport({
             <button
               type="button"
               onClick={() => void runImport()}
-              disabled={busy || !rows.length}
+              disabled={busy || !rows.length || !confirmed}
               className="min-h-11 rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white disabled:opacity-50"
             >
               {busy ? "Importing…" : "Import products"}
@@ -290,17 +297,17 @@ export function AdminProductImport({
             <p className="text-[10px] font-bold uppercase tracking-[.1em] text-black/40">
               Step 2
             </p>
-            <h3 className="mt-2 text-sm font-bold">Upload completed CSV</h3>
+            <h3 className="mt-2 text-sm font-bold">Upload Excel or CSV</h3>
             <label className="mt-4 flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-black/20 bg-black/[.015] px-4 text-center">
               <strong className="text-xs">
-                {fileName || "Choose CSV file"}
+                {fileName || "Choose .xlsx or .csv file"}
               </strong>
               <span className="mt-1 text-[10px] text-black/45">
-                Excel → Save As → CSV UTF-8
+                Supports Excel (.xlsx) and CSV · Max 4 MB / 1,000 rows
               </span>
               <input
                 type="file"
-                accept=".csv,text/csv"
+                accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={(event) => void readFile(event)}
                 className="sr-only"
               />
@@ -324,6 +331,49 @@ export function AdminProductImport({
                 </div>
               </div>
             ) : null}
+
+            {rows.length ? (
+              <section className="mt-4 space-y-3" aria-label="Import preview">
+                <h4 className="text-xs font-bold">Review imported products</h4>
+                <div className="overflow-x-auto rounded-xl border border-black/10">
+                  <table className="w-full min-w-[510px] text-left text-xs">
+                    <thead className="bg-[#f5f5f5] text-black/60"><tr>
+                      <th className="px-3 py-2">SKU</th>
+                      <th className="px-3 py-2">Product</th>
+                      <th className="px-3 py-2">Price</th>
+                      <th className="px-3 py-2">Status</th>
+                      <th className="px-3 py-2">Stock</th>
+                    </tr></thead>
+                    <tbody>{rows.slice(0, 8).map((row, index) => (
+                      <tr key={row.sku + index} className="border-t border-black/5">
+                        <td className="px-3 py-2 font-semibold">{row.sku}</td>
+                        <td className="px-3 py-2">{row.name || "Unnamed"}</td>
+                        <td className="px-3 py-2">{row.price || "—"}</td>
+                        <td className="px-3 py-2">{row.status || "active"}</td>
+                        <td className="px-3 py-2">{row.stock || "0"}</td>
+                      </tr>
+                    ))}</tbody>
+                  </table>
+                </div>
+                {rows.length > 8 ? <p className="text-[11px] text-black/50">Showing the first 8 of {rows.length} rows.</p> : null}
+                {rows.every((row) => row.status?.toLowerCase() === "draft") ?
+                  <p className="rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                    All imported products are drafts. They will not appear on the live store until published.
+                  </p> : null}
+                {rows.every((row) => Number(row.stock || 0) === 0) ?
+                  <p className="rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                    The file has no available stock; update real inventory before selling.
+                  </p> : null}
+                {rows.every((row) => !row.main_image_url && !row.color_image_url && !row.gallery_image_urls) ?
+                  <p className="rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+                    No product photos are included. Upload genuine photos in the product editor after import.
+                  </p> : null}
+                <label className="flex items-start gap-3 rounded-xl border border-black/10 bg-white px-3 py-3 text-xs leading-5">
+                  <input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} className="mt-1" />
+                  <span>I reviewed this file and authorize creating products and updating existing MongoDB products with matching SKUs.</span>
+                </label>
+              </section>
+            ) : null}
           </section>
 
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
@@ -338,8 +388,8 @@ export function AdminProductImport({
               </p>
               <p>
                 <strong>Images:</strong> use public Cloudinary/image URLs in
-                main_image_url and color_image_url. Multiple colour images can
-                be separated with |.
+                main_image_url, color_image_url and gallery_image_urls (up to 3
+                separated with |). Upload actual photos via Admin → Product Images.
               </p>
               <p>
                 <strong>Offers:</strong> offer_type supports percentage, fixed,

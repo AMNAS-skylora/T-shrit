@@ -68,6 +68,13 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as { rows?: ImportRow[] };
     const rows = Array.isArray(body.rows) ? body.rows : [];
 
+    if (rows.length > 1000) {
+      return NextResponse.json({ error: "Import up to 1,000 rows at a time." }, { status: 400 });
+    }
+    if (rows.some((row) => !row || typeof row !== "object" || Array.isArray(row))) {
+      return NextResponse.json({ error: "Invalid import row." }, { status: 400 });
+    }
+
     if (!rows.length) {
       return NextResponse.json(
         { error: "No import rows were provided." },
@@ -85,7 +92,7 @@ export async function POST(request: NextRequest) {
       groups.set(sku, current);
     }
 
-    if (!groups.size) {
+    if (!groups.size || rows.some((row) => !text(row.sku))) {
       return NextResponse.json(
         { error: "Every imported product needs an SKU." },
         { status: 400 },
@@ -165,7 +172,7 @@ export async function POST(request: NextRequest) {
               text(colorRows.find((row) => text(row.color_value))?.color_value) ||
               color,
             image: images[0] || undefined,
-            images,
+            images: images.slice(0, 3),
             stock: sizeStock || explicitStock,
             sizeStocks,
           };
@@ -182,8 +189,13 @@ export async function POST(request: NextRequest) {
 
         const name = text(first.name) || existing?.name || sku;
         const price = Math.max(0, num(first.price, existing?.price ?? 0));
-        const mainImage =
-          text(first.main_image_url) || existing?.image || variants[0]?.image || "";
+        // Photo URLs are optional; blank columns must not erase previously
+        // uploaded media when re-importing product stock or descriptions.
+        const galleryUrls = unique([
+          ...text(first.main_image_url).split("|"),
+          ...productRows.flatMap((row) => text(row.gallery_image_urls).split("|")),
+        ]).slice(0, 3);
+        const mainImage = galleryUrls[0] || existing?.image || variants[0]?.image || "";
 
         const payload: Record<string, unknown> = {
           name,
@@ -201,6 +213,7 @@ export async function POST(request: NextRequest) {
             text(first.description) || existing?.description || "",
           status: status(first.status || existing?.status),
           image: mainImage,
+          images: galleryUrls.length ? galleryUrls : existing?.images ?? [],
           sizes: sizes.length ? sizes : existing?.sizes ?? [],
           colors: colors.length ? colors : existing?.colors ?? [],
           colorVariants: variants.length
