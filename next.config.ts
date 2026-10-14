@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com", pathname: "/photo-**" },
       { protocol: "https", hostname: "purepng.com", pathname: "/public/uploads/large/**" },
       {
         protocol: "https",
