@@ -19,6 +19,7 @@ export type StoreSettings = HomepageLayouts & {
   homeFeaturedEnabled: boolean;
   homeAboutEnabled: boolean;
   homeCatalogEnabled: boolean;
+  demoCatalogEnabled: boolean;
   homeDealersEnabled: boolean;
   homeSpotlightEnabled: boolean;
   homeAnimationBarsEnabled: boolean;
