@@ -17,7 +17,7 @@ type CartRow = {
 };
 
 function availableStock(product: Product, color: string, size: string): number {
-  if (product.status !== "active") return 0;
+  if (product.isDemo || product.status !== "active") return 0;
   if (product.sizes.length && !product.sizes.includes(size)) return 0;
   const variants = product.colorVariants ?? [];
   if (variants.length) {
