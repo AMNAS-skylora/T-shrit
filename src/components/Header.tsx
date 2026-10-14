@@ -7,6 +7,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import type { StoreSettings } from "@/types/commerce";
 import { ArrowUpRightIcon, MenuIcon } from "@/components/UiIcons";
+import { useCart } from "@/components/CartProvider";
 
 const nav = [
   { href: "/", label: "Home" },
@@ -49,6 +50,7 @@ export function Header({
   overlayHome?: boolean;
 }) {
   const pathname = usePathname();
+  const { count } = useCart();
   const visibleNav = nav.filter(item => item.href !== "/wholesale" || settings.homeDealersEnabled);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuMounted, setMenuMounted] = useState(false);
@@ -199,6 +201,20 @@ export function Header({
           >
             <SearchIcon />
           </button>
+
+          <Link
+            href="/cart"
+            className="icon-button relative"
+            aria-label={"Shopping bag, " + count + " items"}
+            title="Shopping bag"
+            onClick={closePanels}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 8h16l-1.5 12h-13L4 8Z" />
+              <path d="M9 9V6a3 3 0 0 1 6 0v3" />
+            </svg>
+            {count > 0 ? <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[#3155e7] px-1 text-[9px] font-bold leading-none text-white">{count > 99 ? "99+" : count}</span> : null}
+          </Link>
 
           {settings.whatsappNumber ? (
             <a
