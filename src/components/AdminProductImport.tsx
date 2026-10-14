@@ -283,19 +283,7 @@ export function AdminProductImport({
               >
                 Download empty CSV template
               </button>
-              <a
-                href="/templates/kleidin-15-demo-products.csv"
-                download="kleidin-15-demo-products.csv"
-                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/10 bg-white px-4 text-center text-xs font-bold !text-[#001cac]"
-              >
-                Download 15 demo products
-              </a>
             </div>
-            <p className="mt-3 text-[11px] leading-5 text-black/55">
-              Demo file: 15 sample T-shirts, 2 colours and 4 sizes each. All 120 rows import as
-              draft products with zero stock and no images; review and upload real product photos
-              before publishing.
-            </p>
           </section>
 
           <section className="rounded-2xl bg-white p-4 ring-1 ring-black/5">

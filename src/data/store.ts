@@ -17,8 +17,6 @@ export const localStoreSettings: StoreSettings = {
   homeFeaturedEnabled: true,
   homeAboutEnabled: true,
   homeCatalogEnabled: true,
-  // Demo products are off by default and never populate the database.
-  demoCatalogEnabled: false,
   homeDealersEnabled: false,
   homeSpotlightEnabled: true,
   homeAnimationBarsEnabled: true,
