@@ -11,6 +11,8 @@ export type ProductColorVariant = {
 };
 
 export type Product = {
+  /** Read-only sample data; never a real inventory item. */
+  isDemo?: boolean;
   id: string;
   sku: string;
   name: string;
