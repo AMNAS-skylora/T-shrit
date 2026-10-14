@@ -211,7 +211,8 @@ export async function POST(request: NextRequest) {
             : existing?.compareAtPrice ?? null,
           description:
             text(first.description) || existing?.description || "",
-          status: status(first.status || existing?.status),
+          // Unspecified status never publishes a new import accidentally.
+          status: status(first.status || existing?.status || "draft"),
           image: mainImage,
           images: galleryUrls.length ? galleryUrls : existing?.images ?? [],
           sizes: sizes.length ? sizes : existing?.sizes ?? [],
