@@ -10,6 +10,7 @@ import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
 import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { getProductGalleryForColor } from "@/lib/product-images";
 import { OfferCountdown } from "@/components/OfferCountdown";
+import { useCart } from "@/components/CartProvider";
 import galleryStyles from "@/components/ProductGallery.module.css";
 
 export function ProductDetailClient({
@@ -19,6 +20,8 @@ export function ProductDetailClient({
   product: Product;
   whatsappNumber: string;
 }) {
+  const { addItem } = useCart();
+  const [cartNotice, setCartNotice] = useState("");
   const variants = product.colorVariants ?? [];
   const now = useOfferClock(product);
   const [selectedColor, setSelectedColor] = useState(
@@ -35,8 +38,11 @@ export function ProductDetailClient({
 
   const variantImages = getProductGalleryForColor(product, selectedColor);
   const image = variantImages[activeImageIndex] ?? variantImages[0];
-  const stock = selectedVariant?.stock ?? product.stock;
-  const soldOut = product.status === "sold-out" || stock <= 0;
+  const trackedSizes = selectedVariant?.sizeStocks ?? {};
+  const stock = Object.keys(trackedSizes).length
+    ? Number(trackedSizes[size] ?? 0)
+    : selectedVariant?.stock ?? product.stock;
+  const soldOut = product.status !== "active" || stock <= 0;
   const offerActive = isProductOfferActive(product, now);
   const displayPrice = offerActive ? getProductOfferPrice(product, now) : product.price;
 
@@ -232,6 +238,17 @@ export function ProductDetailClient({
                 Try-On Anywhere
               </Link>
             ) : null}
+            <button
+              type="button"
+              className={galleryStyles.secondaryButton}
+              disabled={soldOut}
+              onClick={() => {
+                addItem({ productId: product.id, color: selectedColor, size, quantity: 1 });
+                setCartNotice("Added to your bag. View it using the bag icon above.");
+              }}
+            >
+              Add to bag
+            </button>
             {whatsappUrl !== "#" && !soldOut ? (
               <a
                 className={galleryStyles.primaryButton}
@@ -251,6 +268,8 @@ export function ProductDetailClient({
               </button>
             )}
           </div>
+
+          {cartNotice ? <p role="status" aria-live="polite" className="mt-3 text-sm font-medium">{cartNotice}</p> : null}
 
           <div className={galleryStyles.notes}>
             {product.featuredImage ? (
