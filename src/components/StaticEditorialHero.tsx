@@ -10,57 +10,38 @@ const CARD_POSITIONS = ["front", "right", "left"] as const;
 
 export function StaticEditorialHero({ photos }: { photos: string[] }) {
   const uploadedPhotos = photos.filter(Boolean).slice(0, 3);
-  const [manualSelection, setManualSelection] = useState(false);
   const [frontIndex, setFrontIndex] = useState(0);
-  const [inView, setInView] = useState(true);
+  const [paused, setPaused] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
-  const [reduceMotion, setReduceMotion] = useState(false);
+  // A manual photo choice should not permanently disable the slideshow.
+  const resumeAfterInteraction = useRef(0);
   const sectionRef = useRef<HTMLElement>(null);
   const visualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotion = () => setReduceMotion(motion.matches);
     const updateVisibility = () => setPageVisible(!document.hidden);
-
-    updateMotion();
     updateVisibility();
-    motion.addEventListener("change", updateMotion);
     document.addEventListener("visibilitychange", updateVisibility);
-
-    const observer = typeof IntersectionObserver === "undefined"
-      ? null
-      : new IntersectionObserver(
-          ([entry]) => setInView(entry.isIntersecting),
-          { threshold: 0.1 },
-        );
-
-    if (sectionRef.current) observer?.observe(sectionRef.current);
-
+    // Safari can restore a page from its back/forward cache.
+    window.addEventListener("pageshow", updateVisibility);
     return () => {
-      motion.removeEventListener("change", updateMotion);
       document.removeEventListener("visibilitychange", updateVisibility);
-      observer?.disconnect();
+      window.removeEventListener("pageshow", updateVisibility);
     };
   }, []);
 
   useEffect(() => {
-    if (
-      uploadedPhotos.length < 2 ||
-      !inView ||
-      !pageVisible ||
-      reduceMotion ||
-      manualSelection
-    ) {
-      return;
-    }
+    // Image rotation is separate from visual motion. Photos continue changing
+    // when iOS Reduce Motion is enabled; CSS disables movement in that mode.
+    if (uploadedPhotos.length < 2 || !pageVisible || paused) return;
 
     const timer = window.setInterval(() => {
+      if (Date.now() < resumeAfterInteraction.current) return;
       setFrontIndex((current) => (current + 1) % uploadedPhotos.length);
     }, ROTATION_INTERVAL);
 
     return () => window.clearInterval(timer);
-  }, [inView, pageVisible, reduceMotion, uploadedPhotos.length, manualSelection]);
+  }, [uploadedPhotos.length, pageVisible, paused]);
 
   useEffect(() => {
     const stage = visualRef.current;
@@ -143,7 +124,8 @@ export function StaticEditorialHero({ photos }: { photos: string[] }) {
                       aria-pressed={front}
                       onClick={() => {
                         setFrontIndex(index);
-                        setManualSelection(true);
+                        // Allow the selected photo to remain visible before resuming.
+                        resumeAfterInteraction.current = Date.now() + ROTATION_INTERVAL;
                       }}
                     >
                       <img
@@ -164,6 +146,20 @@ export function StaticEditorialHero({ photos }: { photos: string[] }) {
                 <p>Our next collection is taking shape.</p>
               </div>
             )}
+            {uploadedPhotos.length > 1 ? (
+              <button
+                type="button"
+                className={styles.rotationControl}
+                aria-label={paused ? "Play homepage photo slideshow" : "Pause homepage photo slideshow"}
+                aria-pressed={paused}
+                onClick={() => {
+                  resumeAfterInteraction.current = 0;
+                  setPaused((current) => !current);
+                }}
+              >
+                {paused ? "Play photos" : "Pause photos"}
+              </button>
+            ) : null}
           </div>
         </div>
       </div>
