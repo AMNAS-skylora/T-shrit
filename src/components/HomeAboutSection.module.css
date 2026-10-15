@@ -220,27 +220,124 @@
 }
 
 @media (max-width: 480px) {
-  .copy,
-  .layout:has(.visual) .copy {
-    padding: 24px 20px calc(40px + env(safe-area-inset-bottom));
+  /* The iPhone About section must stay readable without occupying several
+     viewports or placing its CTA directly behind Safari's floating controls. */
+  .section {
+    overflow: clip;
+    scroll-margin-top: 68px;
+  }
+
+  .layout, .layout:has(.visual) {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-width: 0;
   }
 
   .visual {
-    height: clamp(220px, 75vw, 320px);
+    order: 0;
+    width: 100%;
+    height: clamp(190px, 56vw, 265px);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .visual img {
+    width: 100%;
+    height: 100%;
+    padding: 10px 16px 0;
+    object-fit: contain;
+    object-position: center bottom;
+  }
+
+  .copy,
+  .layout:has(.visual) .copy {
+    order: 1;
+    max-width: 100%;
+    min-width: 0;
+    padding: 24px 20px calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .eyebrow {
+    font-size: 10px;
+    line-height: 1.4;
+    letter-spacing: .15em;
   }
 
   .title {
-    font-size: clamp(26px, 7.5vw, 32px);
+    max-width: 100%;
+    margin-top: 12px;
+    font-size: clamp(24px, 6.25vw, 30px);
+    font-weight: 750;
+    line-height: 1.12;
+    letter-spacing: -.045em;
+    overflow-wrap: break-word;
+    text-wrap: balance;
   }
 
   .body {
-    font-size: 13.5px;
-    line-height: 1.72;
+    max-width: 42ch;
+    margin-top: 16px;
+    font-size: 13px;
+    line-height: 1.62;
+    overflow-wrap: break-word;
+  }
+
+  .points {
+    display: grid;
+    gap: 0;
+    margin-top: 22px;
+    padding-top: 0;
+  }
+
+  .points li {
+    display: flex;
+    align-items: center;
+    min-height: 47px;
+    gap: 15px;
+    padding: 11px 0;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
+  .pointIndex {
+    display: inline-block;
+    min-width: 22px;
+    font-size: 11px;
+    font-weight: 750;
+    letter-spacing: .08em;
   }
 
   .link {
+    display: flex;
     width: 100%;
+    min-height: 52px;
+    margin-top: 22px;
+    padding: 13px 20px;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 16px;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: left;
   }
+
+  .link svg {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 360px) {
+  .copy, .layout:has(.visual) .copy {
+    padding-inline: 16px;
+  }
+  .title { font-size: 23px; }
+  .body { font-size: 12.75px; }
+  .points li { font-size: 12.5px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
