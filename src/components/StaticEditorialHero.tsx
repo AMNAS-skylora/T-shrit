@@ -12,7 +12,6 @@ const CARD_POSITIONS = ["front", "right", "left"] as const;
 export function StaticEditorialHero({ photos }: { photos: string[] }) {
   const uploadedPhotos = photos.filter(Boolean).slice(0, 3);
   const [frontIndex, setFrontIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   // A manual photo choice should not permanently disable the slideshow.
   const resumeAfterInteraction = useRef(0);
@@ -34,7 +33,7 @@ export function StaticEditorialHero({ photos }: { photos: string[] }) {
   useEffect(() => {
     // Image rotation is separate from visual motion. Photos continue changing
     // when iOS Reduce Motion is enabled; CSS disables movement in that mode.
-    if (uploadedPhotos.length < 2 || !pageVisible || paused) return;
+    if (uploadedPhotos.length < 2 || !pageVisible) return;
 
     const timer = window.setInterval(() => {
       if (Date.now() < resumeAfterInteraction.current) return;
@@ -42,7 +41,7 @@ export function StaticEditorialHero({ photos }: { photos: string[] }) {
     }, ROTATION_INTERVAL);
 
     return () => window.clearInterval(timer);
-  }, [uploadedPhotos.length, pageVisible, paused]);
+  }, [uploadedPhotos.length, pageVisible]);
 
   useEffect(() => {
     const stage = visualRef.current;
@@ -147,20 +146,6 @@ export function StaticEditorialHero({ photos }: { photos: string[] }) {
                 <p>Our next collection is taking shape.</p>
               </div>
             )}
-            {uploadedPhotos.length > 1 ? (
-              <button
-                type="button"
-                className={styles.rotationControl}
-                aria-label={paused ? "Play homepage photo slideshow" : "Pause homepage photo slideshow"}
-                aria-pressed={paused}
-                onClick={() => {
-                  resumeAfterInteraction.current = 0;
-                  setPaused((current) => !current);
-                }}
-              >
-                {paused ? "Play photos" : "Pause photos"}
-              </button>
-            ) : null}
           </div>
         </div>
       </div>
