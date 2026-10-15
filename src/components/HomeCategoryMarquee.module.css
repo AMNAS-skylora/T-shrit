@@ -13,7 +13,9 @@
   display: flex;
   align-items: center;
   min-height: 120px;
+  width: 100%;
   overflow: hidden;
+  /* Horizontal gestures do not move the track; vertical page scroll works. */
   touch-action: pan-y;
   -webkit-mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
   mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent);
@@ -23,7 +25,8 @@
   display: flex;
   flex: 0 0 auto;
   width: max-content;
-  animation: categoryMarquee var(--marquee-duration, 35s) linear infinite;
+  animation: categoryMarquee var(--marquee-duration, 42s) linear infinite;
+  animation-play-state: running;
   will-change: transform;
 }
 
@@ -52,23 +55,18 @@
   text-transform: uppercase;
   white-space: nowrap;
   text-decoration: none;
+  touch-action: pan-y;
   transition: color .2s ease;
 }
 
-.category:hover {
+.category:hover,
+.category:focus-visible {
   color: #fff !important;
 }
 
 .category:focus-visible {
-  color: #fff !important;
   outline: 2px solid #aeb9ff;
   outline-offset: 6px;
-}
-
-.window:hover .track,
-.window:focus-within .track,
-.window:active .track {
-  animation-play-state: paused;
 }
 
 .empty {
@@ -79,6 +77,7 @@
 }
 
 @keyframes categoryMarquee {
+  from { transform: translate3d(0, 0, 0); }
   to { transform: translate3d(-50%, 0, 0); }
 }
 
@@ -95,71 +94,11 @@
   }
 }
 
+/* Deliberately retain the category loop for Reduce Motion ON as requested.
+   There is no manual scrolling and no hover/focus pause behaviour. */
 @media (prefers-reduced-motion: reduce) {
-  .track { animation: none; will-change: auto; }
-  .window {
-    overflow-x: auto;
-    scrollbar-width: none;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-  .window::-webkit-scrollbar { display: none; }
-  .category { transition: none; }
-}
-
-/* A separate native scroller on touch-sized screens avoids the old animated
-   track's overflow:hidden + touch-action:pan-y, which blocked iPhone swipes. */
-.mobileScroll {
-  display: none;
-}
-
-@media (max-width: 767px) {
-  .window {
-    display: none;
-  }
-
-  .mobileScroll {
-    display: block;
-    width: 100%;
-    min-height: 90px;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: contain;
-    touch-action: pan-x pan-y;
-    /* Continuous autoplay and native finger swipes must not fight snap points. */
-    scroll-snap-type: none;
-    scroll-behavior: auto;
-    scrollbar-width: none;
-    -webkit-mask-image: none;
-    mask-image: none;
-  }
-
-  .mobileScroll::-webkit-scrollbar {
-    display: none;
-  }
-
-  .mobileTrack {
-    display: flex;
-    width: max-content;
-    min-width: 100%;
-    align-items: center;
-  }
-
-  .mobileGroup {
-    display: flex;
-    align-items: center;
-    gap: 34px;
-    width: max-content;
-    min-width: 100%;
-    min-height: 90px;
-    padding-inline: 20px;
-  }
-
-  .mobileGroup .category {
-    min-height: 90px;
-    touch-action: pan-x pan-y;
-    font-size: 15px;
-    letter-spacing: .04em;
+  .track {
+    animation: categoryMarquee var(--marquee-duration, 42s) linear infinite;
+    animation-play-state: running;
   }
 }
