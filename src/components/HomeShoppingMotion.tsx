@@ -2,129 +2,128 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 
-// One owner for public-page reveals, including content added after navigation.
+const TEXT_TARGETS = "h1, h2, h3, p, article, [data-scroll-reveal]";
+const SKIP_REGIONS =
+  '[data-motion-owned], #about, [data-scroll-reveal-ignore], [role="dialog"], dialog, [aria-live], [role="status"], nav, form';
+
+/**
+ * One scroll-reveal owner for all public storefront pages.
+ *
+ * No global opacity CSS: content is always readable with JavaScript disabled,
+ * slow hydration, Reduce Motion enabled, or an unsupported browser.
+ * Individual About-section choreography remains owned by HomeAboutSection.
+ */
 export function HomeShoppingMotion() {
   const pathname = usePathname();
 
   useEffect(() => {
     if (pathname.startsWith("/admin")) return;
-    const root = document.querySelector("main");
-    if (!root) return;
-    // Mobile Safari/Chrome: native, one-shot IntersectionObserver reveals avoid
-    // repeated ScrollTrigger refreshes while browser chrome changes viewport size.
-    // Content starts visible, so unsupported APIs never hide products or controls.
-    if (window.matchMedia("(max-width: 767px)").matches) {
-      if (!("IntersectionObserver" in window)) return;
-      const seen = new WeakSet<HTMLElement>();
-      const observer = new IntersectionObserver((entries) => {
+    const root = document.querySelector<HTMLElement>("main");
+    const footer = document.querySelector<HTMLElement>("footer.site-footer");
+    if (!root || typeof IntersectionObserver === "undefined") return;
+
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const seen = new WeakSet<HTMLElement>();
+    const animations = new Set<Animation>();
+    const roots = [root, footer].filter((value): value is HTMLElement => Boolean(value));
+    const observed = new Set<HTMLElement>();
+    let scheduledScan = 0;
+    let disposed = false;
+
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
         for (const entry of entries) {
           if (!entry.isIntersecting) continue;
           const element = entry.target as HTMLElement;
-          observer.unobserve(element);
-          if (document.hidden || typeof element.animate !== "function") continue;
-          element.animate(
+          revealObserver.unobserve(element);
+          observed.delete(element);
+
+          if (disposed || motion.matches || !element.isConnected || typeof element.animate !== "function") {
+            continue;
+          }
+          // Existing complex motion components control their own transforms.
+          if (element.closest(SKIP_REGIONS)) continue;
+
+          const isCard = element.matches("article, [data-scroll-reveal='card']");
+          const shiftY = isCard ? 22 : 16;
+          const duration = isCard ? 720 : 620;
+          const delay = Number(element.dataset.revealDelay ?? "0");
+          const animation = element.animate(
             [
-              { opacity: 0.55, transform: "translate3d(0,16px,0)" },
+              { opacity: 0.2, transform: `translate3d(0,${shiftY}px,0)` },
               { opacity: 1, transform: "translate3d(0,0,0)" },
             ],
-            { duration: 520, easing: "cubic-bezier(.22,1,.36,1)" },
-          );
-        }
-      }, { threshold: 0.04, rootMargin: "0px 0px -2% 0px" });
-      let frame = 0;
-      const discoverMobile = () => {
-        frame = 0;
-        if (!root.isConnected) return;
-        root.querySelectorAll<HTMLElement>("[data-shop-reveal], h1, h2, article, .product-card, .home-spotlight-media").forEach((element) => {
-          if (seen.has(element) || element.closest("[data-motion-owned]")) return;
-          if (element.parentElement?.closest("[data-shop-reveal], article, .product-card")) return;
-          seen.add(element);
-          observer.observe(element);
-        });
-      };
-      const queueScan = () => {
-        if (!frame) frame = window.requestAnimationFrame(discoverMobile);
-      };
-      discoverMobile();
-      const mutations = new MutationObserver(queueScan);
-      mutations.observe(root, { childList: true, subtree: true });
-      return () => {
-        window.cancelAnimationFrame(frame);
-        mutations.disconnect();
-        observer.disconnect();
-      };
-    }
-
-    gsap.registerPlugin(ScrollTrigger);
-    ScrollTrigger.config({ ignoreMobileResize: true });
-
-    let disposed = false;
-    let refreshTimer = 0;
-    const animations = new Map<HTMLElement, gsap.core.Tween>();
-    const context = gsap.context(() => {}, root);
-    const selector = "[data-shop-reveal], h1, h2, article, .product-card, .home-spotlight-media";
-
-    const refresh = () => {
-      window.clearTimeout(refreshTimer);
-      refreshTimer = window.setTimeout(() => {
-        if (!disposed) ScrollTrigger.refresh();
-      }, 150);
-    };
-    const discover = () => {
-      for (const [element, tween] of animations) {
-        if (!root.contains(element)) {
-          tween.scrollTrigger?.kill();
-          tween.revert();
-          animations.delete(element);
-        }
-      }
-      context.add(() => {
-        root.querySelectorAll<HTMLElement>(selector).forEach((element) => {
-          if (animations.has(element)) return;
-          if (element.closest("[data-motion-owned]")) return;
-          // Don't layer transforms on an explicitly animated parent.
-          if (element.parentElement?.closest("[data-shop-reveal], article, .product-card")) return;
-          const tween = gsap.fromTo(element,
-            { opacity: 0.35, y: 24 },
             {
-              opacity: 1, y: 0, duration: 0.7, ease: "power2.out",
-              immediateRender: false,
-              scrollTrigger: {
-                trigger: element,
-                start: "top 94%",
-                toggleActions: "play none none reverse",
-                invalidateOnRefresh: true,
-              },
-            });
-          animations.set(element, tween);
-        });
-      });
-      refresh();
+              duration,
+              delay: Number.isFinite(delay) ? Math.min(260, Math.max(0, delay)) : 0,
+              easing: "cubic-bezier(.22,1,.36,1)",
+              fill: "none",
+            },
+          );
+          animations.add(animation);
+          animation.finished
+            .catch(() => undefined)
+            .finally(() => animations.delete(animation));
+        }
+      },
+      { threshold: 0.02, rootMargin: "0px 0px -6% 0px" },
+    );
+
+    const eligible = (element: HTMLElement) => {
+      if (seen.has(element) || element.closest(SKIP_REGIONS)) return false;
+      if (element.closest("[data-scroll-reveal]") && !element.hasAttribute("data-scroll-reveal")) return false;
+      // Animate product cards as one piece, never animate each child separately.
+      const parentCard = element.closest("article");
+      if (parentCard && parentCard !== element) return false;
+      // Avoid fading nested paragraphs inside the same named content block.
+      if (element.matches("p") && element.closest("button, a, [data-product-transition]")) return false;
+      if (element.getAttribute("aria-hidden") === "true") return false;
+      return true;
     };
-    discover();
-    const observer = new MutationObserver(discover);
-    observer.observe(root, { childList: true, subtree: true });
-    const resizeObserver = new ResizeObserver(refresh);
-    resizeObserver.observe(root);
-    root.addEventListener("load", refresh, true);
-    window.addEventListener("orientationchange", refresh);
-    window.addEventListener("pageshow", refresh);
-    document.fonts.ready.then(() => { if (!disposed) refresh(); });
+
+    const discover = () => {
+      scheduledScan = 0;
+      if (disposed || motion.matches) return;
+      for (const container of roots) {
+        if (!container.isConnected) continue;
+        container.querySelectorAll<HTMLElement>(TEXT_TARGETS).forEach((element) => {
+          if (!eligible(element)) return;
+          seen.add(element);
+          observed.add(element);
+          revealObserver.observe(element);
+        });
+      }
+    };
+
+    const schedule = () => {
+      if (!scheduledScan && !disposed) scheduledScan = window.requestAnimationFrame(discover);
+    };
+
+    const mutations = new MutationObserver(schedule);
+    roots.forEach((container) => mutations.observe(container, { childList: true, subtree: true }));
+    const onMotionChange = () => {
+      if (motion.matches) {
+        revealObserver.disconnect();
+        observed.clear();
+        animations.forEach((animation) => animation.cancel());
+        animations.clear();
+      } else schedule();
+    };
+    motion.addEventListener("change", onMotionChange);
+    schedule();
 
     return () => {
       disposed = true;
-      window.clearTimeout(refreshTimer);
-      observer.disconnect();
-      resizeObserver.disconnect();
-      root.removeEventListener("load", refresh, true);
-      window.removeEventListener("orientationchange", refresh);
-      window.removeEventListener("pageshow", refresh);
-      context.revert();
+      window.cancelAnimationFrame(scheduledScan);
+      mutations.disconnect();
+      revealObserver.disconnect();
+      motion.removeEventListener("change", onMotionChange);
+      animations.forEach((animation) => animation.cancel());
       animations.clear();
+      observed.clear();
     };
   }, [pathname]);
+
   return null;
 }
