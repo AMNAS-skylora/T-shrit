@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const TEXT_TARGETS = "h1, h2, h3, p, article, [data-scroll-reveal]";
+const TEXT_TARGETS = "h1, h2, h3, p, article, [data-scroll-reveal], .footer-intro, .footer-column, .footer-bottom";
 const SKIP_REGIONS =
   '[data-motion-owned], #about, [data-scroll-reveal-ignore], [role="dialog"], dialog, [aria-live], [role="status"], nav, form';
 
@@ -105,10 +105,14 @@ export function HomeShoppingMotion() {
     const onMotionChange = () => {
       if (motion.matches) {
         revealObserver.disconnect();
-        observed.clear();
         animations.forEach((animation) => animation.cancel());
         animations.clear();
-      } else schedule();
+      } else {
+        observed.forEach((element) => {
+          if (element.isConnected) revealObserver.observe(element);
+        });
+        schedule();
+      }
     };
     motion.addEventListener("change", onMotionChange);
     schedule();
