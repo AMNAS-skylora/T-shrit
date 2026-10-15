@@ -81,14 +81,24 @@ export function ProductImageTransition() {
         link.querySelector<HTMLImageElement>("img") ||
         link.closest("article")?.querySelector<HTMLImageElement>("img");
 
-      if (
-        !source?.complete ||
-        !source.naturalWidth
-      ) {
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (typeof link.animate !== "function") return;
+
+      // Keep touch navigation responsive when the image is not decoded yet.
+      // Reduce Motion gets a short opacity-only effect, not a flying image.
+      if (reduced || !source?.complete || !source.naturalWidth || typeof source.animate !== "function") {
+        event.preventDefault();
+        event.stopPropagation();
+        const panel = link.closest("article") || link;
+        panel.animate(
+          [{ opacity: 1 }, { opacity: 0.72 }, { opacity: 1 }],
+          { duration: reduced ? 150 : 190, easing: "ease-out" },
+        );
+        window.setTimeout(() => {
+          router.push(url.pathname + url.search, { scroll: true });
+        }, reduced ? 145 : 185);
         return;
       }
-
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || typeof source.animate !== "function") return;
 
       const sourceRect = source.getBoundingClientRect();
       if (!sourceRect.width || !sourceRect.height) return;

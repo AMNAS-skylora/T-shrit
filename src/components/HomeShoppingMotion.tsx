@@ -39,24 +39,27 @@ export function HomeShoppingMotion() {
           revealObserver.unobserve(element);
           observed.delete(element);
 
-          if (disposed || motion.matches || !element.isConnected || typeof element.animate !== "function") {
+          if (disposed || !element.isConnected || typeof element.animate !== "function") {
             continue;
           }
           // Existing complex motion components control their own transforms.
           if (element.closest(SKIP_REGIONS)) continue;
 
           const isCard = element.matches("article, [data-scroll-reveal='card']");
+          const reduced = motion.matches;
           const shiftY = isCard ? 22 : 16;
-          const duration = isCard ? 720 : 620;
+          const duration = reduced ? 160 : isCard ? 720 : 620;
           const delay = Number(element.dataset.revealDelay ?? "0");
           const animation = element.animate(
-            [
-              { opacity: 0.2, transform: `translate3d(0,${shiftY}px,0)` },
-              { opacity: 1, transform: "translate3d(0,0,0)" },
-            ],
+            reduced
+              ? [{ opacity: 0.84 }, { opacity: 1 }]
+              : [
+                  { opacity: 0.2, transform: `translate3d(0,${shiftY}px,0)` },
+                  { opacity: 1, transform: "translate3d(0,0,0)" },
+                ],
             {
               duration,
-              delay: Number.isFinite(delay) ? Math.min(260, Math.max(0, delay)) : 0,
+              delay: reduced ? 0 : Number.isFinite(delay) ? Math.min(260, Math.max(0, delay)) : 0,
               easing: "cubic-bezier(.22,1,.36,1)",
               fill: "none",
             },
@@ -84,7 +87,7 @@ export function HomeShoppingMotion() {
 
     const discover = () => {
       scheduledScan = 0;
-      if (disposed || motion.matches) return;
+      if (disposed) return;
       for (const container of roots) {
         if (!container.isConnected) continue;
         container.querySelectorAll<HTMLElement>(TEXT_TARGETS).forEach((element) => {
@@ -103,16 +106,11 @@ export function HomeShoppingMotion() {
     const mutations = new MutationObserver(schedule);
     roots.forEach((container) => mutations.observe(container, { childList: true, subtree: true }));
     const onMotionChange = () => {
-      if (motion.matches) {
-        revealObserver.disconnect();
-        animations.forEach((animation) => animation.cancel());
-        animations.clear();
-      } else {
-        observed.forEach((element) => {
-          if (element.isConnected) revealObserver.observe(element);
-        });
-        schedule();
-      }
+      // Leave pending intersections registered; the callback chooses reduced
+      // opacity-only motion or full slide-up at the moment it enters the view.
+      animations.forEach((animation) => animation.cancel());
+      animations.clear();
+      schedule();
     };
     motion.addEventListener("change", onMotionChange);
     schedule();

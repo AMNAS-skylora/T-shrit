@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import { useOfferClock } from "@/hooks/useOfferClock";
 import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { formatPrice } from "@/lib/format";
@@ -54,7 +55,9 @@ export function HomeProductGridCard({
             <span className={styles.badge + " " + styles.badgeOffer}>{offerPercent}% off</span>
           ) : null}
           </div>
-          <span className={styles.imageAction} aria-hidden="true">↗</span>
+          <span className={styles.imageAction} aria-hidden="true">
+            <ArrowUpRightIcon width={18} height={18} strokeWidth={1.8} />
+          </span>
         </div>
 
         <div className={styles.content}>
@@ -71,7 +74,7 @@ export function HomeProductGridCard({
               <del className={styles.oldPrice}>{formatPrice(product.price)}</del>
             ) : null}
           </div>
-          <span className={styles.viewLabel} aria-hidden="true">View details ↗</span>
+          <span className={styles.viewLabel} aria-hidden="true">View details <ArrowUpRightIcon width={14} height={14} /></span>
           </div>
         </div>
       </Link>

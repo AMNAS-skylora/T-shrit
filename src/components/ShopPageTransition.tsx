@@ -19,13 +19,19 @@ export function ShopPageTransition() {
     window.clearTimeout(active.timeout);
     active.animation.cancel();
     pending.current = null;
-    if (pathname !== "/products" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (pathname !== "/products") return;
     const main = document.querySelector("main");
     if (!main) return;
-    incoming.current = main.animate([
-      { opacity: 0.55, transform: "translate3d(0,12px,0)" },
-      { opacity: 1, transform: "translate3d(0,0,0)" },
-    ], { duration: 420, easing: "cubic-bezier(.22,1,.36,1)" });
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    incoming.current = main.animate(
+      reduced
+        ? [{ opacity: 0.88 }, { opacity: 1 }]
+        : [
+            { opacity: 0.65, transform: "translate3d(0,10px,0)" },
+            { opacity: 1, transform: "translate3d(0,0,0)" },
+          ],
+      { duration: reduced ? 150 : 460, easing: "cubic-bezier(.22,1,.36,1)" },
+    );
   }, [pathname]);
 
   useEffect(() => {
@@ -36,15 +42,21 @@ export function ShopPageTransition() {
       const url = new URL(link.href, location.href);
       if (url.origin !== location.origin || url.pathname !== "/products" || pathname === "/products") return;
       const main = document.querySelector("main");
-      if (!main || typeof main.animate !== "function" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      if (!main || typeof main.animate !== "function") return;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       event.preventDefault();
       if (pending.current) return;
       incoming.current?.cancel();
       router.prefetch(url.pathname + url.search);
-      const animation = main.animate([
-        { opacity: 1, transform: "translate3d(0,0,0)" },
-        { opacity: 0.55, transform: "translate3d(0,-12px,0)" },
-      ], { duration: 200, easing: "ease-out", fill: "forwards" });
+      const animation = main.animate(
+        reduced
+          ? [{ opacity: 1 }, { opacity: 0.86 }]
+          : [
+              { opacity: 1, transform: "translate3d(0,0,0)" },
+              { opacity: 0.64, transform: "translate3d(0,-10px,0)" },
+            ],
+        { duration: reduced ? 150 : 230, easing: "cubic-bezier(.22,1,.36,1)", fill: "forwards" },
+      );
       const active: Transition = { main, animation, timeout: 0, cancelled: false };
       active.timeout = window.setTimeout(() => {
         active.cancelled = true;
