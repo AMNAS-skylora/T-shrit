@@ -14,9 +14,8 @@ export function HomeAboutSection() {
     const copy = copyRef.current;
     if (!copy || typeof IntersectionObserver === "undefined") return;
 
-    // If motion has been reduced or the section is rendered without JavaScript,
-    // its text is always visible; never block reading the page.
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Reduced Motion still gets a short opacity-only entrance. Without
+    // JavaScript, no reveal data attribute is added and text remains visible.
 
     const observer = new IntersectionObserver(
       ([entry]) => {
