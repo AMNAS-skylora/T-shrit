@@ -181,6 +181,28 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* Read-only progress indicates which real product is being auto-displayed. */
+.progressTrack {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: min(210px, 56vw);
+}
+.progressSegment {
+  display: block;
+  flex: 1 1 0;
+  height: 3px;
+  border-radius: 999px;
+  background: #dedede;
+  transition: background-color 300ms ease;
+}
+.progressSegment[data-current="true"] {
+  background: #152dab;
+}
+@media (max-width: 900px) {
+  .controls { margin-top: 12px; gap: 14px; }
+}
+
 /* Keyboard navigation remains visible without a permanent decorative outline. */
 .section a:focus-visible,
 .controls button:focus-visible {

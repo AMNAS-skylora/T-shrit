@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRightIcon, ArrowLeftIcon, ArrowRightIcon } from "@/components/UiIcons";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Product } from "@/types/product";
 import { getFeaturedProducts } from "@/lib/featured-products";
@@ -12,12 +12,22 @@ import { useOfferClock } from "@/hooks/useOfferClock";
 import styles from "./FeaturedProductMotion.module.css";
 
 export function FeaturedProductMotion({ products = [], layout = "motion" }: { products?: Product[]; layout?: "motion" | "static" }) {
-  const items = useMemo(() => getFeaturedProducts(products), [products]);
+  const items = useMemo(() => {
+    const featured = getFeaturedProducts(products);
+    if (featured.length >= 2) return featured;
+    // A single featured item cannot auto-rotate. Fill remaining slots with
+    // genuinely published products and their real uploaded images.
+    const otherProducts = products
+      .filter((product) =>
+        product.status === "active" &&
+        Boolean(getProductPrimaryImage(product)) &&
+        !featured.some((item) => item.id === product.id),
+      )
+      .sort((a, b) => (a.sortOrder ?? 100) - (b.sortOrder ?? 100));
+    return [...featured, ...otherProducts].slice(0, 5);
+  }, [products]);
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
-  const [paused, setPaused] = useState(false);
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
   const [inView, setInView] = useState(false);
   const [pageVisible, setPageVisible] = useState(true);
   const [reduced, setReduced] = useState(false);
@@ -51,10 +61,10 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
     }, 260);
   }
   useEffect(() => {
-    if (layout === "static" || reduced || paused || hovered || focused || !inView || !pageVisible || items.length < 2) return;
-    const rotation = window.setInterval(() => select(((index < items.length ? index : 0) + 1) % items.length), 5000);
+    if (!inView || !pageVisible || items.length < 2) return;
+    const rotation = window.setInterval(() => select(((index < items.length ? index : 0) + 1) % items.length), 4500);
     return () => window.clearInterval(rotation);
-  }, [index, items.length, layout, reduced, paused, hovered, focused, inView, pageVisible]);
+  }, [index, items.length, layout, reduced, inView, pageVisible]);
   useEffect(() => { if (layout === "static") { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); setIndex(0); setVisible(true); } }, [layout]);
   useEffect(() => { if (items.length > 1) { const next = new Image(); next.src = getProductPrimaryImage(items[(activeIndex + 1) % items.length]); } }, [items, activeIndex]);
   useEffect(() => () => { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); }, []);
@@ -62,7 +72,7 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
   const offerPrice = getProductOfferPrice(current, now);
   const showOriginalPrice = isProductOfferActive(current, now) && offerPrice < current.price;
 
-  return <section ref={root} id="featured-products" className={styles.section} data-motion-owned aria-label="Featured products" onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(true); }} onPointerLeave={() => setHovered(false)} onFocusCapture={() => setFocused(true)} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setFocused(false); }}>
+  return <section ref={root} id="featured-products" className={styles.section} data-motion-owned aria-label="Featured products">
     <div className={styles.layout}>
       <div className={styles.info} data-visible={visible}>
         <h2>{current.name}</h2>
@@ -79,11 +89,21 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
         <img src={getProductPrimaryImage(current)} alt={current.name} loading="lazy" decoding="async" draggable={false} />
       </Link>
     </div>
-    {items.length > 1 && layout !== "static" ? <div className={styles.controls} role="group" aria-label="Choose featured product">
-      <button type="button" onClick={() => select((activeIndex + items.length - 1) % items.length)} aria-label="Previous featured product"><ArrowLeftIcon width={20} height={20} /></button>
-      <span className={styles.position} aria-live="off">{activeIndex + 1} / {items.length}</span>
-      <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} aria-label={paused ? "Play featured slideshow" : "Pause featured slideshow"}>{paused ? "Play" : "Pause"}</button>
-      <button type="button" onClick={() => select((activeIndex + 1) % items.length)} aria-label="Next featured product"><ArrowRightIcon width={20} height={20} /></button>
-    </div> : null}
+    {items.length > 1 ? (
+      <div className={styles.controls} aria-label="Featured products change automatically">
+        <span className={styles.position} aria-hidden="true">
+          {String(activeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+        </span>
+        <div className={styles.progressTrack} aria-hidden="true">
+          {items.map((item, itemIndex) => (
+            <span
+              key={item.id}
+              className={styles.progressSegment}
+              data-current={activeIndex === itemIndex}
+            />
+          ))}
+        </div>
+      </div>
+    ) : null}
   </section>;
 }
