@@ -345,3 +345,44 @@
   .link { transition: none; }
   .link:hover { transform: none; }
 }
+
+/* Scroll-triggered copy entrance. Activated only after IntersectionObserver
+   starts watching the About copy; all content stays visible without JavaScript.
+   Trigger once on entry, stagger text without moving layout or page scroll. */
+.copy .eyebrow.reveal { --reveal-delay: 0ms; }
+.copy .title.reveal { --reveal-delay: 90ms; }
+.copy .body.reveal { --reveal-delay: 220ms; }
+.copy .link.reveal { --reveal-delay: 760ms; }
+
+.copy[data-reveal="waiting"] .reveal {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition: none;
+}
+
+.copy[data-reveal="shown"] .reveal {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition:
+    opacity 730ms cubic-bezier(.22, 1, .36, 1),
+    transform 830ms cubic-bezier(.22, 1, .36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+.copy[data-reveal="shown"] .link:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 480px) {
+  .copy[data-reveal="waiting"] .reveal {
+    transform: translate3d(0, 15px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copy[data-reveal] .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
