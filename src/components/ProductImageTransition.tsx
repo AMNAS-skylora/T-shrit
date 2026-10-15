@@ -129,8 +129,9 @@ export function ProductImageTransition() {
       const cleanup = () => {
         copy.remove();
         veil.remove();
-        delete document.documentElement.dataset.productTransitionActive;
+        // An old fallback must not clear the next navigation's overlay.
         if (pending.current === active) {
+          delete document.documentElement.dataset.productTransitionActive;
           window.clearTimeout(active.timer);
           pending.current = null;
         }
@@ -173,11 +174,22 @@ export function ProductImageTransition() {
     let settled = false;
     let movement: Animation | null = null;
     let fade: Animation | null = null;
+    let waitingForImage: HTMLImageElement | null = null;
 
     const findDestination = () => {
       if (settled || pending.current !== active) return;
       const destination = document.querySelector<HTMLImageElement>(TARGET);
       if (!destination) return;
+      // Wait for Next Image's real pixels so the transition never ends on a
+      // blank hero when the visitor has a slower mobile connection.
+      if (!destination.complete || !destination.naturalWidth) {
+        if (waitingForImage !== destination) {
+          waitingForImage?.removeEventListener("load", findDestination);
+          waitingForImage = destination;
+          destination.addEventListener("load", findDestination, { once: true });
+        }
+        return;
+      }
       const rectangle = destination.getBoundingClientRect();
       if (!rectangle.width || !rectangle.height) return;
 
@@ -242,6 +254,7 @@ export function ProductImageTransition() {
 
     return () => {
       observer.disconnect();
+      waitingForImage?.removeEventListener("load", findDestination);
       window.cancelAnimationFrame(raf);
       window.clearTimeout(fallback);
       movement?.cancel();
