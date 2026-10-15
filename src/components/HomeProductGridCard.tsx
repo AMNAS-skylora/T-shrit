@@ -24,7 +24,7 @@ export function HomeProductGridCard({
   const price = getProductOfferPrice(product, now);
   const discounted = offerActive && price < product.price;
   const available = product.status === "active" && product.stock > 0;
-  const limitedOffer = available && discounted && Boolean(product.offerEndsAt);
+  const offerPercent = discounted && product.price > 0 ? Math.round(100 * (product.price - price) / product.price) : 0;
 
   return (
     <article className={styles.card + (theme === "dark" ? " " + styles.dark : "")}>
@@ -47,11 +47,14 @@ export function HomeProductGridCard({
             <span className={styles.placeholder}>No image</span>
           )}
 
+          <div className={styles.badgeRow}>
           {!available ? (
             <span className={styles.badge + " " + styles.badgeSold}>Sold out</span>
-          ) : limitedOffer ? (
-            <span className={styles.badge + " " + styles.badgeOffer}>Limited offer</span>
+          ) : available && offerPercent > 0 ? (
+            <span className={styles.badge + " " + styles.badgeOffer}>{offerPercent}% off</span>
           ) : null}
+          </div>
+          <span className={styles.imageAction} aria-hidden="true">↗</span>
         </div>
 
         <div className={styles.content}>
@@ -61,11 +64,14 @@ export function HomeProductGridCard({
 
           <h3 className={styles.name}>{product.name}</h3>
 
+          <div className={styles.bottom}>
           <div className={styles.prices}>
             <strong className={styles.price}>{formatPrice(price)}</strong>
             {discounted ? (
               <del className={styles.oldPrice}>{formatPrice(product.price)}</del>
             ) : null}
+          </div>
+          <span className={styles.viewLabel} aria-hidden="true">View details ↗</span>
           </div>
         </div>
       </Link>
