@@ -3,212 +3,158 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-type Pending = {
-  image: HTMLImageElement;
-  backdrop: HTMLDivElement;
+type ActiveTransition = {
   href: string;
+  pathname: string;
+  image: HTMLImageElement;
+  veil: HTMLDivElement;
   timer: number;
   cleanup: () => void;
 };
 
-function getCenteredRect(sourceRect: DOMRect) {
-  const viewportWidth = window.innerWidth;
-  const viewportHeight = window.innerHeight;
-  const aspect = sourceRect.width / Math.max(sourceRect.height, 1);
+const TARGET = "[data-product-image-target] img";
+const EASE = "cubic-bezier(.22, 1, .36, 1)";
 
-  const maxWidth = viewportWidth < 768
-    ? Math.min(viewportWidth * 0.34, 150)
-    : Math.min(viewportWidth * 0.22, 220);
-  const maxHeight = viewportWidth < 768
-    ? Math.min(viewportHeight * 0.30, 220)
-    : Math.min(viewportHeight * 0.34, 300);
-
-  let width = Math.min(sourceRect.width * 0.58, maxWidth);
-  let height = width / aspect;
-
-  if (height > maxHeight) {
-    height = maxHeight;
-    width = height * aspect;
-  }
-
-  // Keep the card's aspect ratio, including narrow three-column mobile cards.
-  width = Math.max(width, Math.min(sourceRect.width, 56));
-  height = width / aspect;
-
-  return {
-    left: (viewportWidth - width) / 2,
-    top: (viewportHeight - height) / 2,
-    width,
-    height,
-  };
-}
-
+/**
+ * Shared-element transition for storefront product links.
+ *
+ * Full motion: a clone stays at its ORIGINAL card location until the detail
+ * image mounts, then travels DIRECTLY to that image's rect. There is no
+ * intermediate move-to-the-center and no separate shrinking phase.
+ *
+ * Reduced motion: short, opacity-only feedback followed by regular routing.
+ * Both modes work on touch and desktop. Missing images/API support use Next
+ * Link's native navigation rather than trapping a visitor on the listing.
+ */
 export function ProductImageTransition() {
   const router = useRouter();
   const pathname = usePathname();
-  const pending = useRef<Pending | null>(null);
+  const pending = useRef<ActiveTransition | null>(null);
+  const reducedTimers = useRef(new Set<number>());
 
   useEffect(() => {
     function onClick(event: MouseEvent) {
       if (
+        event.defaultPrevented ||
         event.button !== 0 ||
         event.metaKey ||
         event.ctrlKey ||
         event.shiftKey ||
         event.altKey
-      ) {
-        return;
-      }
+      ) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
 
-      const link = (event.target as Element)?.closest<HTMLAnchorElement>(
+      const link = target.closest<HTMLAnchorElement>(
         'a[data-product-transition], a[href^="/products/"]',
       );
-
-      if (!link || link.target === "_blank" || link.hasAttribute("download")) {
-        return;
-      }
-
-      const url = new URL(link.href, location.href);
+      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      const url = new URL(link.href, window.location.href);
       if (
-        url.origin !== location.origin ||
+        url.origin !== window.location.origin ||
         !url.pathname.startsWith("/products/") ||
         url.pathname === pathname
-      ) {
-        return;
-      }
+      ) return;
 
-      const source =
-        link.querySelector<HTMLImageElement>("img") ||
-        link.closest("article")?.querySelector<HTMLImageElement>("img");
-
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (typeof link.animate !== "function") return;
+      const image = link.querySelector<HTMLImageElement>("img") ??
+        link.closest("article")?.querySelector<HTMLImageElement>("img");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-      // Keep touch navigation responsive when the image is not decoded yet.
-      // Reduce Motion gets a short opacity-only effect, not a flying image.
-      if (reduced || !source?.complete || !source.naturalWidth || typeof source.animate !== "function") {
+      // No flying picture when an image is missing, not decoded, or Reduce
+      // Motion is on. A short pressed-state fade makes the navigation clear.
+      if (reduced || !image?.complete || !image.naturalWidth) {
         event.preventDefault();
         event.stopPropagation();
-        const panel = link.closest("article") || link;
-        panel.animate(
-          [{ opacity: 1 }, { opacity: 0.72 }, { opacity: 1 }],
-          { duration: reduced ? 150 : 190, easing: "ease-out" },
+        pending.current?.cleanup();
+        const duration = reduced ? 130 : 180;
+        (link.closest("article") ?? link).animate(
+          [{ opacity: 1 }, { opacity: .78 }, { opacity: 1 }],
+          { duration, easing: "ease-out" },
         );
-        window.setTimeout(() => {
-          router.push(url.pathname + url.search, { scroll: true });
-        }, reduced ? 145 : 185);
+        const timer = window.setTimeout(() => {
+          reducedTimers.current.delete(timer);
+          router.push(url.pathname + url.search + url.hash, { scroll: true });
+        }, duration);
+        reducedTimers.current.add(timer);
         return;
       }
 
-      const sourceRect = source.getBoundingClientRect();
-      if (!sourceRect.width || !sourceRect.height) return;
+      const rect = image.getBoundingClientRect();
+      if (!rect.width || !rect.height) return; // normal link as fallback
 
       event.preventDefault();
       event.stopPropagation();
       pending.current?.cleanup();
 
-      document.documentElement.dataset.productTransitionActive = "true";
+      const computed = window.getComputedStyle(image);
+      const copy = document.createElement("img");
+      copy.src = image.currentSrc || image.src;
+      copy.alt = "";
+      copy.setAttribute("aria-hidden", "true");
+      Object.assign(copy.style, {
+        position: "fixed",
+        left: rect.left + "px",
+        top: rect.top + "px",
+        width: rect.width + "px",
+        height: rect.height + "px",
+        maxWidth: "none",
+        boxSizing: "border-box",
+        objectFit: computed.objectFit,
+        objectPosition: computed.objectPosition,
+        padding: computed.padding,
+        margin: "0",
+        borderRadius: computed.borderRadius,
+        pointerEvents: "none",
+        transformOrigin: "top left",
+        zIndex: "10001",
+        willChange: "transform, opacity",
+        boxShadow: "0 20px 46px rgba(0,0,0,.12)",
+      });
 
-      const backdrop = document.createElement("div");
-      backdrop.setAttribute("aria-hidden", "true");
-      Object.assign(backdrop.style, {
+      const veil = document.createElement("div");
+      veil.setAttribute("aria-hidden", "true");
+      Object.assign(veil.style, {
         position: "fixed",
         inset: "0",
         background: "#fafafa",
         opacity: "0",
-        zIndex: "9998",
         pointerEvents: "none",
-        willChange: "opacity",
-      });
-
-      const image = document.createElement("img");
-      image.src = source.currentSrc || source.src;
-      image.alt = "";
-      image.setAttribute("aria-hidden", "true");
-
-      const sourceStyle = getComputedStyle(source);
-      Object.assign(image.style, {
-        position: "fixed",
-        left: `${sourceRect.left}px`,
-        top: `${sourceRect.top}px`,
-        width: `${sourceRect.width}px`,
-        height: `${sourceRect.height}px`,
-        margin: "0",
-        objectFit: sourceStyle.objectFit,
-        objectPosition: sourceStyle.objectPosition,
-        background: "#f1f1ef",
         zIndex: "10000",
-        pointerEvents: "none",
-        borderRadius: sourceStyle.borderRadius,
-        transform: "translate3d(0,0,0)",
-        transformOrigin: "top left",
-        willChange: "transform, opacity",
-        padding: sourceStyle.padding,
-        boxSizing: "border-box",
-        maxWidth: "none",
       });
+      document.body.append(veil, copy);
+      document.documentElement.dataset.productTransitionActive = "true";
 
-      document.body.append(backdrop, image);
-
+      let active: ActiveTransition;
       const cleanup = () => {
-        image.remove();
-        backdrop.remove();
+        copy.remove();
+        veil.remove();
         delete document.documentElement.dataset.productTransitionActive;
-
-        if (pending.current?.image === image) {
-          window.clearTimeout(pending.current.timer);
+        if (pending.current === active) {
+          window.clearTimeout(active.timer);
           pending.current = null;
         }
       };
-
-      const active: Pending = {
-        image,
-        backdrop,
-        href: url.pathname,
+      active = {
+        href: url.pathname + url.search,
+        pathname: url.pathname,
+        image: copy,
+        veil,
+        timer: window.setTimeout(cleanup, 4800),
         cleanup,
-        timer: window.setTimeout(cleanup, 5200),
       };
-
       pending.current = active;
 
-      const center = getCenteredRect(sourceRect);
-      router.prefetch(url.pathname + url.search);
-      const centerTransform = `translate3d(${center.left - sourceRect.left}px, ${center.top - sourceRect.top}px, 0) scale(${center.width / sourceRect.width}, ${center.height / sourceRect.height})`;
-
-      backdrop.animate([{ opacity: 0 }, { opacity: 0.94 }], {
-        duration: 420,
-        easing: "cubic-bezier(.22,.61,.36,1)",
+      // A gentle veil replaces the old full-screen white flash. Keep the
+      // source photo stationary until the destination gallery is measured.
+      veil.animate([{ opacity: 0 }, { opacity: .14 }], {
+        duration: 180,
+        easing: EASE,
         fill: "forwards",
       });
 
-      const moveToCenter = image.animate(
-        [
-          { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
-          { transform: centerTransform, opacity: 1 },
-        ],
-        {
-          duration: 560,
-          easing: "cubic-bezier(.16,1,.3,1)",
-          fill: "forwards",
-        },
-      );
-
-      moveToCenter.finished
-        .catch(() => undefined)
-        .then(() => {
-          if (pending.current !== active) return;
-
-          Object.assign(image.style, {
-            left: `${center.left}px`,
-            top: `${center.top}px`,
-            width: `${center.width}px`,
-            height: `${center.height}px`,
-            transform: "translate3d(0,0,0)",
-          });
-
-          moveToCenter.cancel();
-          router.push(url.pathname + url.search, { scroll: true });
-        });
+      router.prefetch(url.pathname + url.search);
+      router.push(url.pathname + url.search + url.hash, { scroll: true });
     }
 
     document.addEventListener("click", onClick, true);
@@ -216,138 +162,103 @@ export function ProductImageTransition() {
   }, [router, pathname]);
 
   useEffect(() => {
-    const transition = pending.current;
-    if (!transition) return;
-
-    if (transition.href !== pathname) {
-      transition.cleanup();
+    const active = pending.current;
+    if (!active) return;
+    if (pathname !== active.pathname) {
+      active.cleanup();
       return;
     }
 
-    const active = transition;
-    let frame = 0;
-    let stopped = false;
-    let growAnimation: Animation | undefined;
-    let target: HTMLImageElement | null = null;
-    let noTargetTimer = 0;
+    let raf = 0;
+    let settled = false;
+    let movement: Animation | null = null;
+    let fade: Animation | null = null;
 
-    const observer = new MutationObserver(tryAnimate);
+    const findDestination = () => {
+      if (settled || pending.current !== active) return;
+      const destination = document.querySelector<HTMLImageElement>(TARGET);
+      if (!destination) return;
+      const rectangle = destination.getBoundingClientRect();
+      if (!rectangle.width || !rectangle.height) return;
 
-    function tryAnimate() {
-      if (stopped) return;
-
-      target = document.querySelector<HTMLImageElement>(
-        "[data-product-image-target] img",
-      );
-
-      if (!target) return;
-
-      const firstRect = target.getBoundingClientRect();
-      if (!firstRect.width || !firstRect.height) return;
-
-      stopped = true;
+      settled = true;
       observer.disconnect();
-      window.clearTimeout(noTargetTimer);
-
-      frame = window.requestAnimationFrame(() => {
-        frame = window.requestAnimationFrame(() => {
-          if (!target || pending.current !== active) {
+      // Two frames allow mobile Safari/Next.js to settle scroll and layout
+      // before measuring the image's final on-screen position.
+      raf = window.requestAnimationFrame(() => {
+        raf = window.requestAnimationFrame(() => {
+          if (pending.current !== active || !destination.isConnected) {
+            active.cleanup();
+            return;
+          }
+          const end = destination.getBoundingClientRect();
+          const from = active.image.getBoundingClientRect();
+          if (!end.width || !end.height || !from.width || !from.height) {
             active.cleanup();
             return;
           }
 
-          const rect = target.getBoundingClientRect();
-          const targetStyle = getComputedStyle(target);
-          const image = active.image;
-          const currentRect = image.getBoundingClientRect();
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          const duration = reduced ? 160 : window.innerWidth < 768 ? 680 : 760;
+          if (reduced) {
+            // If the setting changes mid-navigation, avoid a large flight.
+            fade = active.image.animate(
+              [{ opacity: 1 }, { opacity: 0 }],
+              { duration, easing: "ease-out", fill: "forwards" },
+            );
+          } else {
+            const dx = end.left - from.left;
+            const dy = end.top - from.top;
+            const sx = end.width / from.width;
+            const sy = end.height / from.height;
+            movement = active.image.animate(
+              [
+                { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+                { transform: `translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`, opacity: 0 },
+              ],
+              { duration, easing: EASE, fill: "forwards" },
+            );
+          }
 
-          Object.assign(image.style, {
-            left: `${currentRect.left}px`,
-            top: `${currentRect.top}px`,
-            width: `${currentRect.width}px`,
-            height: `${currentRect.height}px`,
-            objectFit: targetStyle.objectFit,
-            objectPosition: targetStyle.objectPosition,
-            borderRadius: targetStyle.borderRadius,
-            opacity: "1",
-            transform: "translate3d(0,0,0)",
-            padding: targetStyle.padding,
-          });
-
-          active.backdrop.animate([{ opacity: 0.94 }, { opacity: 0 }], {
-            duration: 980,
-            easing: "cubic-bezier(.16,1,.3,1)",
-            fill: "forwards",
-          });
-
-          const targetTransform = `translate3d(${rect.left - currentRect.left}px, ${rect.top - currentRect.top}px, 0) scale(${rect.width / currentRect.width}, ${rect.height / currentRect.height})`;
-          growAnimation = image.animate(
-            [
-              { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
-              { transform: targetTransform, opacity: 1 },
-            ],
-            {
-              duration: window.innerWidth < 768 ? 920 : 1080,
-              easing: "cubic-bezier(.16,1,.3,1)",
-              fill: "forwards",
-            },
+          active.veil.animate(
+            [{ opacity: .14 }, { opacity: 0 }],
+            { duration, easing: "ease-out", fill: "forwards" },
           );
-
-          growAnimation.finished
-            .then(() => {
-              if (!target || pending.current !== active) return;
-
-              const reveal = () => {
-                if (!target || pending.current !== active) return;
-
-                delete document.documentElement.dataset.productTransitionActive;
-
-                window.requestAnimationFrame(() => {
-                  active.image.remove();
-                  active.backdrop.remove();
-
-                  if (pending.current === active) {
-                    window.clearTimeout(active.timer);
-                    pending.current = null;
-                  }
-                });
-              };
-
-              if (target.complete && target.naturalWidth) {
-                reveal();
-              } else {
-                target.addEventListener("load", reveal, { once: true });
-                target.addEventListener("error", active.cleanup, { once: true });
-              }
-            })
-            .catch(active.cleanup);
+          // The outgoing clone fades as it reaches the destination; the
+          // destination image is already ready to display after cleanup.
+          const promise = (movement ?? fade)?.finished;
+          promise?.then(active.cleanup).catch(active.cleanup);
         });
       });
-    }
+    };
 
+    const observer = new MutationObserver(findDestination);
     observer.observe(document.body, { childList: true, subtree: true });
-    tryAnimate();
+    findDestination();
 
-    noTargetTimer = window.setTimeout(() => {
-      if (!stopped) active.cleanup();
-    }, 1600);
+    // Route content may be missing (network issue, not-found page, lazy load).
+    // Never leave the destination image hidden or an overlay stranded.
+    const fallback = window.setTimeout(active.cleanup, 2900);
 
     return () => {
       observer.disconnect();
-      window.clearTimeout(noTargetTimer);
-      window.cancelAnimationFrame(frame);
-      growAnimation?.cancel();
-      target?.removeEventListener("error", active.cleanup);
+      window.cancelAnimationFrame(raf);
+      window.clearTimeout(fallback);
+      movement?.cancel();
+      fade?.cancel();
     };
   }, [pathname]);
 
-  useEffect(() => () => pending.current?.cleanup(), []);
+  useEffect(() => () => {
+    pending.current?.cleanup();
+    reducedTimers.current.forEach((timer) => window.clearTimeout(timer));
+    reducedTimers.current.clear();
+  }, []);
 
   return (
     <style jsx global>{`
       html[data-product-transition-active="true"]
-        [data-product-image-target]
-        img {
+      [data-product-image-target] img {
         opacity: 0 !important;
       }
     `}</style>
