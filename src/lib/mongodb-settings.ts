@@ -64,6 +64,14 @@ function normalize(value: unknown): StoreSettings {
       );
   }
 
+  // Only administrator-provided HTTPS photo URLs appear in the public hero.
+  output.homeEditorialPhotos = Array.isArray(source.homeEditorialPhotos)
+    ? [...new Set(source.homeEditorialPhotos
+        .filter((url): url is string => typeof url === "string")
+        .map((url) => url.trim())
+        .filter((url) => /^https:\/\/[^\s]+$/i.test(url)))].slice(0, 3)
+    : [];
+
   output.homeDefaultHeroImagePlacement = normalizeHeroImagePlacement(source.homeDefaultHeroImagePlacement);
   Object.assign(output, normalizeHomepageLayouts(source));
   return output;

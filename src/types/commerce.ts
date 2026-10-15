@@ -50,6 +50,8 @@ export type StoreSettings = HomepageLayouts & {
   homeDealerTags: string[];
   homeSpotlightBadge: string;
   homeShowcaseProductUrls: string[];
+  /** Up to 3 administrator-uploaded campaign photos for the homepage editorial stack. */
+  homeEditorialPhotos: string[];
   aboutHeroEyebrow: string;
   aboutHeroTitle: string;
   aboutHeroLead: string;

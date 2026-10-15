@@ -49,6 +49,8 @@ export const localStoreSettings: StoreSettings = {
   homeDealerTags: ["Retailers", "Resellers", "Repeat orders"],
   homeSpotlightBadge: "Most loved",
   homeShowcaseProductUrls: [],
+  // No stock/fake campaign images. Upload authentic brand photography in Admin.
+  homeEditorialPhotos: [],
   aboutHeroEyebrow: "KLEID.IN / ABOUT",
   aboutHeroTitle: "Clothes for real rotation.",
   aboutHeroLead:

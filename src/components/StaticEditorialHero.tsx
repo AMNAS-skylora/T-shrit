@@ -5,43 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./StaticEditorialHero.module.css";
 import { ArrowUpRightIcon } from "@/components/UiIcons";
 
-type EditorialPhoto = {
-  id: string;
-  src: string;
-  alt: string;
-};
-
-// Fashion editorial photography, not product imagery or celebrity endorsements.
-// Photos: Joon Tae Kim, 거열 박 and CUONG QUANG on Pexels.
-// The card photos are intentionally independent of shop inventory.
-// For an exclusive KLEID.IN campaign, replace with commissioned/model-released shots.
-const EDITORIAL_PHOTOS: readonly EditorialPhoto[] = [
-  {
-    id: "seoul-studio",
-    src: "https://images.pexels.com/photos/8460301/pexels-photo-8460301.jpeg?auto=compress&cs=tinysrgb&w=950",
-    alt: "Korean-style men's casual fashion studio editorial",
-  },
-  {
-    id: "seoul-street",
-    src: "https://images.pexels.com/photos/34586553/pexels-photo-34586553.jpeg?auto=compress&cs=tinysrgb&w=950",
-    alt: "Seoul street-style editorial in a contemporary white outfit",
-  },
-  {
-    id: "seoul-blue",
-    src: "https://images.pexels.com/photos/8460709/pexels-photo-8460709.jpeg?auto=compress&cs=tinysrgb&w=950",
-    alt: "Minimal Seoul streetwear fashion portrait in blue",
-  },
-  {
-    id: "seoul-neutral",
-    src: "https://images.pexels.com/photos/20478046/pexels-photo-20478046.jpeg?auto=compress&cs=tinysrgb&w=950",
-    alt: "Contemporary Korean-inspired street fashion portrait in a neutral coat",
-  },
-];
-
 const ROTATION_INTERVAL = 3800;
-const CARD_POSITIONS = ["front", "right", "back", "left"] as const;
+const CARD_POSITIONS = ["front", "right", "left"] as const;
 
-export function StaticEditorialHero() {
+export function StaticEditorialHero({ photos }: { photos: string[] }) {
+  const uploadedPhotos = photos.filter(Boolean).slice(0, 3);
+  const [manualSelection, setManualSelection] = useState(false);
   const [frontIndex, setFrontIndex] = useState(0);
   const [inView, setInView] = useState(true);
   const [pageVisible, setPageVisible] = useState(true);
@@ -77,20 +46,21 @@ export function StaticEditorialHero() {
 
   useEffect(() => {
     if (
-      EDITORIAL_PHOTOS.length < 2 ||
+      uploadedPhotos.length < 2 ||
       !inView ||
       !pageVisible ||
-      reduceMotion
+      reduceMotion ||
+      manualSelection
     ) {
       return;
     }
 
     const timer = window.setInterval(() => {
-      setFrontIndex((current) => (current + 1) % EDITORIAL_PHOTOS.length);
+      setFrontIndex((current) => (current + 1) % uploadedPhotos.length);
     }, ROTATION_INTERVAL);
 
     return () => window.clearInterval(timer);
-  }, [inView, pageVisible, reduceMotion]);
+  }, [inView, pageVisible, reduceMotion, uploadedPhotos.length, manualSelection]);
 
   useEffect(() => {
     const stage = visualRef.current;
@@ -157,31 +127,43 @@ export function StaticEditorialHero() {
 
         <div ref={visualRef} className={styles.visual}>
           <div className={styles.visualCanvas}>
-            <div className={styles.stack} aria-label="Fashion inspiration gallery">
-              {EDITORIAL_PHOTOS.map((photo, index) => {
-                const position = CARD_POSITIONS[
-                  (index - frontIndex + EDITORIAL_PHOTOS.length) % EDITORIAL_PHOTOS.length
-                ];
-                const front = position === "front";
-
-                return (
-                  <figure
-                    key={photo.id}
-                    className={`${styles.card} ${styles[position]}`}
-                    aria-hidden={!front}
-                  >
-                    <img
-                      src={photo.src}
-                      alt={front ? photo.alt : ""}
-                      loading="eager"
-                      decoding="async"
-                      fetchPriority={index === 0 ? "high" : "auto"}
-                      draggable={false}
-                    />
-                  </figure>
-                );
-              })}
-            </div>
+            {uploadedPhotos.length ? (
+              <div className={styles.stack} role="group" aria-label="Homepage campaign photos">
+                {uploadedPhotos.map((src, index) => {
+                  const position = CARD_POSITIONS[
+                    (index - (frontIndex % uploadedPhotos.length) + uploadedPhotos.length) % uploadedPhotos.length
+                  ];
+                  const front = position === "front";
+                  return (
+                    <button
+                      type="button"
+                      key={src + index}
+                      className={`${styles.card} ${styles[position]}`}
+                      aria-label={`Show campaign photo ${index + 1} as main image`}
+                      aria-pressed={front}
+                      onClick={() => {
+                        setFrontIndex(index);
+                        setManualSelection(true);
+                      }}
+                    >
+                      <img
+                        src={src}
+                        alt=""
+                        loading={index === 0 ? "eager" : "lazy"}
+                        decoding="async"
+                        fetchPriority={index === 0 ? "high" : "auto"}
+                        draggable={false}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className={styles.emptyVisual} aria-label="KLEID.IN collection">
+                <span>KLEID.IN</span>
+                <p>Our next collection is taking shape.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AdminDrawer } from "@/components/AdminDrawer";
 import type { StoreSettings } from "@/types/commerce";
+import { uploadAdminImage } from "@/lib/admin-image-upload";
 
 const sectionControls = [["homeCatalogEnabled", "Product catalog"], ["footerEnabled", "Footer (all storefront pages)"]] as const;
 
@@ -20,6 +21,7 @@ export function AdminStoreSettings() {
   const [principlesText, setPrinciplesText] = useState("[]");
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editorialUploading, setEditorialUploading] = useState<number | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   async function loadSettings() {
@@ -50,8 +52,44 @@ export function AdminStoreSettings() {
     });
   }
 
+  async function uploadEditorialPhoto(slot: number, file?: File) {
+    if (!file || !settings || editorialUploading !== null || saving) return;
+    if (slot > settings.homeEditorialPhotos.length) return;
+    setEditorialUploading(slot);
+    setMessage("");
+    try {
+      const { url } = await uploadAdminImage(file, "kleidin/hero");
+      setSettings((current) => {
+        if (!current) return current;
+        const updated = [...current.homeEditorialPhotos];
+        updated[slot] = url;
+        return { ...current, homeEditorialPhotos: updated.filter(Boolean).slice(0, 3) };
+      });
+      setMessage("Photo uploaded. Click Save settings to publish it.");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not upload the photo.");
+    } finally {
+      setEditorialUploading(null);
+    }
+  }
+
+  function removeEditorialPhoto(slot: number) {
+    if (!settings || editorialUploading !== null) return;
+    update("homeEditorialPhotos", settings.homeEditorialPhotos.filter((_, index) => index !== slot));
+  }
+
+  function setEditorialMain(slot: number) {
+    if (!settings || editorialUploading !== null) return;
+    const chosen = settings.homeEditorialPhotos[slot];
+    if (!chosen) return;
+    update("homeEditorialPhotos", [
+      chosen,
+      ...settings.homeEditorialPhotos.filter((_, index) => index !== slot),
+    ]);
+  }
+
   async function closeDrawer() {
-    if (saving) return;
+    if (saving || editorialUploading !== null) return;
     setDrawerOpen(false);
     setMessage("");
 
@@ -65,7 +103,7 @@ export function AdminStoreSettings() {
   }
 
   async function save() {
-    if (!settings) return;
+    if (!settings || editorialUploading !== null) return;
     setSaving(true);
     setMessage("");
 
@@ -125,6 +163,7 @@ export function AdminStoreSettings() {
       !(["supportEmail", "whatsappNumber", "phoneNumber", "instagramUrl", "facebookUrl"].includes(key)) &&
       key !== "aboutPrinciples" &&
       key !== "homeShowcaseProductUrls" &&
+      key !== "homeEditorialPhotos" &&
       !(key.startsWith("home") && !key.startsWith("homeCatalog")) &&
       !["homeHeroLayout", "homeCatalogLayout", "homeFeaturedLayout"].includes(key) &&
       !key.startsWith("announcement"),
@@ -206,7 +245,7 @@ export function AdminStoreSettings() {
             <button
               type="button"
               onClick={() => void save()}
-              disabled={saving}
+              disabled={saving || editorialUploading !== null}
               className="min-h-11 rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save settings"}
@@ -229,6 +268,60 @@ export function AdminStoreSettings() {
             ))}
           </div>
         </fieldset>
+
+        <section className="mb-4 rounded-2xl bg-white p-4 ring-1 ring-black/5">
+          <h3 className="text-sm font-bold">Homepage editorial gallery — 3 photos</h3>
+          <p className="mt-1 text-xs leading-5 text-black/50">
+            The home page uses these genuine brand photos instead of stock pictures.
+            Upload JPG, PNG, WEBP or AVIF (maximum 15 MB each). The first photo is
+            initially in front; visitors can select a side photo to bring it forward.
+          </p>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[0, 1, 2].map((slot) => {
+              const photo = settings.homeEditorialPhotos[slot];
+              const busy = editorialUploading !== null || saving;
+              const selectable = Boolean(photo) || slot === settings.homeEditorialPhotos.length;
+              return (
+                <div key={slot} className="min-w-0 rounded-xl border border-black/10 bg-[#fafafa] p-2">
+                  <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-lg bg-white">
+                    {photo ? (
+                      <img src={photo} alt={"Editorial photo " + (slot + 1)} className="h-full w-full object-contain" />
+                    ) : (
+                      <span className="text-center text-[10px] text-black/40">Photo {slot + 1}</span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-center text-[10px] font-bold">{slot === 0 ? "Main photo" : "Photo " + (slot + 1)}</p>
+                  <label className={"mt-2 flex min-h-9 items-center justify-center rounded-lg border border-dashed border-black/25 bg-white px-1 text-center text-[10px] font-bold " + (busy || !selectable ? "opacity-40" : "cursor-pointer")}>
+                    {editorialUploading === slot ? "Uploading…" : photo ? "Replace" : "Upload"}
+                    <input type="file" className="sr-only" accept="image/jpeg,image/png,image/webp,image/avif"
+                      disabled={busy || !selectable}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.target.value = "";
+                        void uploadEditorialPhoto(slot, file);
+                      }} />
+                  </label>
+                  {photo && slot > 0 ? (
+                    <button type="button" disabled={busy} onClick={() => setEditorialMain(slot)}
+                      className="mt-1 min-h-9 w-full rounded-lg border border-black/10 bg-white px-1 text-[10px] font-semibold disabled:opacity-40">
+                      Set as main
+                    </button>
+                  ) : null}
+                  {photo ? (
+                    <button type="button" disabled={busy} onClick={() => removeEditorialPhoto(slot)}
+                      className="mt-1 min-h-9 w-full text-[10px] font-semibold text-red-600 disabled:opacity-40">
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-[11px] text-black/50">
+            {settings.homeEditorialPhotos.length}/3 photos configured.
+            Photos upload to Cloudinary; changes become visible after Save settings.
+          </p>
+        </section>
 
         <div className="mb-4 rounded-2xl bg-white p-4 ring-1 ring-black/5">
           <div className="flex items-center justify-between gap-3">
