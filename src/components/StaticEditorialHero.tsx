@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import styles from "./StaticEditorialHero.module.css";
 import { ArrowUpRightIcon } from "@/components/UiIcons";
 
-const ROTATION_INTERVAL = 3800;
+// Pause between clear horizontal card slides; keep each step visible.
+const ROTATION_INTERVAL = 4600;
 const CARD_POSITIONS = ["front", "right", "left"] as const;
 
 export function StaticEditorialHero({ photos }: { photos: string[] }) {
