@@ -236,14 +236,6 @@ export function ProductDetailClient({
           </div>
 
           <div className={galleryStyles.actions}>
-            {product.featuredImage ? (
-              <Link
-                href={"/try-on/" + product.slug}
-                className={galleryStyles.secondaryButton}
-              >
-                Try-On Anywhere
-              </Link>
-            ) : null}
             <button
               type="button"
               className={galleryStyles.secondaryButton}
@@ -278,9 +270,6 @@ export function ProductDetailClient({
           {cartNotice ? <p role="status" aria-live="polite" className="mt-3 text-sm font-medium">{cartNotice}</p> : null}
 
           <div className={galleryStyles.notes}>
-            {product.featuredImage ? (
-              <span>Live camera try-on available</span>
-            ) : null}
             <span>Your colour and size are included in your WhatsApp message.</span>
             <span>Send the message to confirm availability and delivery with us.</span>
           </div>

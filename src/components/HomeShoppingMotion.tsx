@@ -10,7 +10,7 @@ export function HomeShoppingMotion() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (pathname.startsWith("/admin") || pathname.startsWith("/try-on/")) return;
+    if (pathname.startsWith("/admin")) return;
     const root = document.querySelector("main");
     if (!root) return;
     // Mobile Safari/Chrome: native, one-shot IntersectionObserver reveals avoid

@@ -53,7 +53,7 @@ After deployment, use the production domain:
 - Create a real category/product, upload an image, set a price/stock and verify the public `/products` and individual product pages. Do not use demo inventory in production.
 - Verify offer start/end times, expired-offer pricing, sold-out stock state, responsive product cards and the WhatsApp enquiry URL with the real store number.
 - Verify Admin → Products, Inventory, Orders, Customers, Settings and image uploads; test a failed upload and a disconnected backend.
-- Check on a **real iPhone Safari and Android Chrome**, including drawer dialogs, product selectors, try-on camera permission (requires HTTPS), and mobile safe areas.
+- Check on a **real iPhone Safari and Android Chrome**, including drawer dialogs, product selectors, and mobile safe areas.
 - Verify public pages are not embedded in frames and that admin API responses cannot be cached by shared caches.
 
 The storefront currently uses **WhatsApp enquiry/order workflows**, not a full online payment checkout. Do not advertise automated card payments unless a payment gateway has been implemented and tested.

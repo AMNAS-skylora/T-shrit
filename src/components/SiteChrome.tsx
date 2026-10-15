@@ -24,11 +24,8 @@ export function SiteChrome({
 }) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/admin");
-  const isTryOn = pathname.startsWith("/try-on/");
   const [announcementDismissed, setAnnouncementDismissed] = useState(false);
-  const [tryOnChromeHidden, setTryOnChromeHidden] = useState(isTryOn);
   const showAnnouncement =
-    !tryOnChromeHidden &&
     settings.announcementEnabled &&
     !announcementDismissed;
   const overlayHomeHeader = false;
@@ -39,25 +36,6 @@ export function SiteChrome({
       window.sessionStorage.getItem("kleidin-announcement-dismissed") === "1",
     );
   }, [isAdmin]);
-
-  useEffect(() => {
-    if (!isTryOn) {
-      setTryOnChromeHidden(false);
-      return;
-    }
-
-    setTryOnChromeHidden(true);
-
-    const handleTryOnChrome = (event: Event) => {
-      const customEvent = event as CustomEvent<{ hidden?: boolean }>;
-      setTryOnChromeHidden(Boolean(customEvent.detail?.hidden));
-    };
-
-    window.addEventListener("kleidin:tryon-chrome", handleTryOnChrome);
-    return () => {
-      window.removeEventListener("kleidin:tryon-chrome", handleTryOnChrome);
-    };
-  }, [isTryOn]);
 
 
   if (isAdmin) return <>{children}</>;
@@ -96,16 +74,13 @@ export function SiteChrome({
       <HomeShoppingMotion />
       <ProductImageTransition />
       <ShopPageTransition />
-      {!tryOnChromeHidden ? (
-        <Header
-          products={products}
-          settings={settings}
-          overlayHome={overlayHomeHeader}
-        />
-      ) : null}
+      <Header
+        products={products}
+        settings={settings}
+        overlayHome={overlayHomeHeader}
+      />
       <main
         className={overlayHomeHeader ? "site-main-home-overlay" : undefined}
-        style={tryOnChromeHidden ? { paddingTop: 0 } : undefined}
       >
         {children}
       </main>
