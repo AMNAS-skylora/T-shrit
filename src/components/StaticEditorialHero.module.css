@@ -154,9 +154,9 @@
   backface-visibility: hidden;
   transform-origin: center center;
   transition:
-    transform 850ms cubic-bezier(.22, 1, .36, 1),
-    box-shadow 850ms ease,
-    filter 850ms ease;
+    transform 1850ms cubic-bezier(.22, 1, .36, 1),
+    box-shadow 1850ms ease,
+    filter 1850ms ease;
   will-change: transform;
 }
 
@@ -265,7 +265,7 @@
 @media (prefers-reduced-motion: reduce) {
   .title, .intro, .visualCanvas { animation: none; }
   /* Keep the slideshow changing, but avoid an extended slide for visitors
-     requesting reduced motion. The full .85s movement is used otherwise. */
+     requesting reduced motion. The full 1.85s movement is used otherwise. */
   .card { transition-duration: 160ms; }
   .cta { transition: none; }
 }

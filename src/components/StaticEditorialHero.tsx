@@ -6,7 +6,7 @@ import styles from "./StaticEditorialHero.module.css";
 import { ArrowUpRightIcon } from "@/components/UiIcons";
 
 // Hold each photo longer; the slide itself finishes quickly and smoothly.
-const ROTATION_INTERVAL = 6500;
+const ROTATION_INTERVAL = 3000;
 const CARD_POSITIONS = ["front", "right", "left"] as const;
 
 export function StaticEditorialHero({ photos }: { photos: string[] }) {
