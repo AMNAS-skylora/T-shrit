@@ -380,9 +380,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .copy[data-reveal] .reveal {
-    opacity: 1;
+  .copy[data-reveal="waiting"] .reveal {
+    opacity: .92;
     transform: none;
     transition: none;
+  }
+  .copy[data-reveal="shown"] .reveal {
+    opacity: 1;
+    transform: none;
+    transition: opacity 160ms ease;
+    transition-delay: 0ms;
   }
 }
