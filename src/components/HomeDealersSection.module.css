@@ -187,3 +187,119 @@
     font-size: 13px;
   }
 }
+
+
+/* Compact editorial presentation for iPhone / Android.
+   iOS browser chrome is outside the page; enough bottom breathing room lets
+   the final feature scroll clear of its floating toolbar. */
+@media (max-width: 767px) {
+  .everydayBlue {
+    padding: clamp(40px, 8vw, 52px) clamp(18px, 5.3vw, 28px)
+      calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .everydayBlue .layout {
+    width: 100%;
+    max-width: 580px;
+    gap: 26px;
+    align-items: stretch;
+  }
+
+  .everydayBlue .eyebrow {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .15em;
+    line-height: 1.45;
+  }
+
+  .everydayBlue .title {
+    margin-top: 12px;
+    max-width: 18ch;
+    font-size: clamp(27px, 6.8vw, 34px);
+    font-weight: 750;
+    line-height: 1.13;
+    letter-spacing: -.043em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+
+  .everydayBlue .body {
+    margin-top: 15px;
+    max-width: 49ch;
+    font-size: clamp(13px, 3.4vw, 14px);
+    line-height: 1.65;
+    letter-spacing: 0;
+    overflow-wrap: break-word;
+  }
+
+  .everydayBlue .details {
+    display: grid;
+    gap: 0;
+    padding: 0;
+    border-top: 1px solid rgba(255,255,255,.22);
+  }
+
+  .everydayBlue .everydayFeature {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    min-width: 0;
+    padding: 17px 0;
+    border-top: 0;
+    border-bottom: 1px solid rgba(255,255,255,.22);
+  }
+
+  .everydayBlue .featureNumber {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 7px;
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.87);
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: 0;
+  }
+
+  .everydayBlue .featureCopy {
+    min-width: 0;
+  }
+
+  .everydayBlue .featureCopy h3 {
+    margin: 1px 0 0;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -.012em;
+  }
+
+  .everydayBlue .featureCopy p {
+    max-width: 44ch;
+    margin: 5px 0 0;
+    font-size: 12.5px;
+    font-weight: 400;
+    line-height: 1.62;
+    overflow-wrap: break-word;
+  }
+}
+
+@media (max-width: 380px) {
+  .everydayBlue {
+    padding-inline: 18px;
+  }
+  .everydayBlue .layout {
+    gap: 24px;
+  }
+  .everydayBlue .title {
+    font-size: 27px;
+  }
+  .everydayBlue .everydayFeature {
+    gap: 11px;
+    padding-block: 15px;
+  }
+}
