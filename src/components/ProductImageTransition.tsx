@@ -175,7 +175,7 @@ export function ProductImageTransition() {
     if (!active) {
       // Reliable mobile fallback when the listing image hasn't decoded yet:
       // still animate the arriving product page instead of doing a hard cut.
-      if (/^\\/products\\/[^/]+\\/?$/.test(pathname)) {
+      if (pathname.startsWith("/products/") && pathname.split("/").filter(Boolean).length === 2) {
         const main = document.querySelector("main");
         if (main && typeof main.animate === "function") {
           const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
