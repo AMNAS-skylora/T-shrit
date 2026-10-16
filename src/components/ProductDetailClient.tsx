@@ -13,6 +13,15 @@ import { OfferCountdown } from "@/components/OfferCountdown";
 import { useCart } from "@/components/CartProvider";
 import galleryStyles from "@/components/ProductGallery.module.css";
 
+function firstAvailableSize(product: Product, color: string): string {
+  const variant = product.colorVariants?.find((item) => item.name === color);
+  const perSize = variant?.sizeStocks;
+  const tracking = perSize && Object.keys(perSize).length > 0;
+  return product.sizes.find((option) => !tracking || Number(perSize?.[option] ?? 0) > 0)
+    ?? product.sizes[0]
+    ?? "One size";
+}
+
 export function ProductDetailClient({
   product,
   whatsappNumber,
@@ -24,10 +33,9 @@ export function ProductDetailClient({
   const [cartNotice, setCartNotice] = useState("");
   const variants = product.colorVariants ?? [];
   const now = useOfferClock(product);
-  const [selectedColor, setSelectedColor] = useState(
-    variants[0]?.name ?? product.colors[0] ?? "Default",
-  );
-  const [size, setSize] = useState(product.sizes[0] ?? "One size");
+  const initialColor = variants[0]?.name ?? product.colors[0] ?? "Default";
+  const [selectedColor, setSelectedColor] = useState(initialColor);
+  const [size, setSize] = useState(() => firstAvailableSize(product, initialColor));
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const touchStart = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
@@ -148,9 +156,7 @@ export function ProductDetailClient({
         <div className={galleryStyles.inner}>
           <div className={galleryStyles.heading}>
             <div>
-              <p className={galleryStyles.eyebrow}>
-                {product.category} / {product.sku}
-              </p>
+              <p className={galleryStyles.eyebrow}>{product.category}</p>
               <h1>{product.name}</h1>
             </div>
 
@@ -175,64 +181,82 @@ export function ProductDetailClient({
 
           {product.description ? <p className={galleryStyles.description}>{product.description}</p> : null}
 
-          <div className={galleryStyles.optionBlock}>
-            <div className={galleryStyles.optionHead}>
-              <span>Colour</span>
-              <strong>{selectedColor}</strong>
-            </div>
-
-            {variants.length > 1 ? (
-              <div className={galleryStyles.swatches}>
-                {variants.map((variant) => (
+          <div className={galleryStyles.choices} aria-label="Choose product options">
+            <div className={galleryStyles.optionBlock}>
+              <div className={galleryStyles.optionHead}>
+                <span>Colour</span>
+                <strong>{selectedColor}</strong>
+              </div>
+              <div className={galleryStyles.swatches} role="group" aria-label="Choose colour">
+                {variants.length ? variants.map((variant) => (
                   <button
                     key={variant.name}
                     type="button"
-                    className={
-                      galleryStyles.swatch + " " + (selectedColor === variant.name ? galleryStyles.selected : "")
-                    }
+                    className={galleryStyles.colourChoice + " " + (selectedColor === variant.name ? galleryStyles.selected : "")}
                     aria-label={variant.name}
-                    title={variant.name}
                     aria-pressed={selectedColor === variant.name}
-                    onClick={() => setSelectedColor(variant.name)}
+                    onClick={() => {
+                      setSelectedColor(variant.name);
+                      setSize(firstAvailableSize(product, variant.name));
+                      setCartNotice("");
+                    }}
                   >
-                    <span style={{ background: variant.value }} aria-hidden="true" />
+                    <span className={galleryStyles.colourDot} style={{ backgroundColor: variant.value }} aria-hidden="true" />
+                    <span>{variant.name}</span>
+                  </button>
+                )) : (product.colors.length ? product.colors : [initialColor]).map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className={galleryStyles.colourChoice + " " + (selectedColor === color ? galleryStyles.selected : "")}
+                    aria-pressed={selectedColor === color}
+                    onClick={() => {
+                      setSelectedColor(color);
+                      setSize(firstAvailableSize(product, color));
+                      setCartNotice("");
+                    }}
+                  >
+                    {color}
                   </button>
                 ))}
               </div>
-            ) : (
-              <strong className={galleryStyles.singleColor}>{selectedColor}</strong>
-            )}
+            </div>
+
+            {product.sizes.length ? (
+              <div className={galleryStyles.optionBlock}>
+                <div className={galleryStyles.optionHead}>
+                  <span>Size</span>
+                  <strong>{size}</strong>
+                </div>
+                <div className={galleryStyles.sizes} role="group" aria-label="Choose size">
+                  {product.sizes.map((option) => {
+                    const unavailable = product.status !== "active" ||
+                      (Object.keys(trackedSizes).length > 0 && Number(trackedSizes[option] ?? 0) <= 0);
+                    return (
+                      <button
+                        type="button"
+                        key={option}
+                        className={(size === option ? galleryStyles.selected : "") + (unavailable ? " " + galleryStyles.unavailableSize : "")}
+                        aria-pressed={size === option}
+                        aria-label={option + (unavailable ? ", sold out" : "")}
+                        disabled={unavailable && option !== size}
+                        onClick={() => {
+                          setSize(option);
+                          setCartNotice("");
+                        }}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
 
-          <div className={galleryStyles.optionBlock}>
-            <div className={galleryStyles.optionHead}>
-              <span>Size</span>
-              <strong>{size}</strong>
-            </div>
-            <div className={galleryStyles.sizes} aria-label="Select size">
-              {product.sizes.map((option) => (
-                <button
-                  type="button"
-                  key={option}
-                  className={size === option ? galleryStyles.selected : ""}
-                  aria-pressed={size === option}
-                  onClick={() => setSize(option)}
-                >
-                  {option}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className={galleryStyles.attributes}>
-            <div>
-              <span>Availability</span>
-              <strong>{soldOut ? "Sold out" : `${stock} in stock`}</strong>
-            </div>
-            <div>
-              <span>Selected</span>
-              <strong>{selectedColor} / {size}</strong>
-            </div>
+          <div className={galleryStyles.stockRow} role="status" aria-live="polite">
+            <span className={galleryStyles.stockDot + (soldOut ? " " + galleryStyles.stockUnavailable : "")} aria-hidden="true" />
+            <span>{soldOut ? "Currently unavailable" : `${stock} available`}</span>
           </div>
 
           <div className={galleryStyles.actions}>
@@ -247,7 +271,7 @@ export function ProductDetailClient({
                   className={galleryStyles.secondaryButton}
                   onClick={() => {
                     addItem({ productId: product.id, color: selectedColor, size, quantity: 1 });
-                    setCartNotice("Added to your bag. View it using the bag icon above.");
+                    setCartNotice("Added to bag");
                   }}
                 >
                   Add to bag
@@ -266,13 +290,14 @@ export function ProductDetailClient({
             )}
           </div>
 
-          {cartNotice ? <p role="status" aria-live="polite" className="mt-3 text-sm font-medium">{cartNotice}</p> : null}
-
-          {!soldOut && whatsappUrl !== "#" ? (
-            <div className={galleryStyles.notes}>
-              <span>Your colour and size are included in your WhatsApp message.</span>
-              <span>Send the message to confirm availability and delivery with us.</span>
+          {cartNotice ? (
+            <div role="status" aria-live="polite" className={galleryStyles.cartNotice}>
+              <span>{cartNotice}</span>
+              <Link href="/cart">View bag <span aria-hidden="true">↗</span></Link>
             </div>
+          ) : null}
+          {!soldOut && whatsappUrl !== "#" ? (
+            <p className={galleryStyles.shortNote}>Selected colour and size are included in your message.</p>
           ) : null}
         </div>
       </div>
