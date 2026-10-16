@@ -138,8 +138,19 @@
   border: 0;
   border-radius: 0;
   outline: 0;
-  background: transparent;
+  background: #eeece8;
   box-shadow: none;
+}
+
+.imageUnavailable {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  color: #666;
+  font-size: 13px;
+  text-align: center;
 }
 
 .media img {
@@ -227,8 +238,8 @@
 
   .media {
     order: -1;
-    height: clamp(260px, 65vw, 410px);
-    border-radius: 0;
+    height: clamp(250px, 74vw, 390px);
+    border-radius: 14px;
   }
 
   .media img {
@@ -270,7 +281,7 @@
   }
 
   .media {
-    height: clamp(225px, 70vw, 300px);
+    height: clamp(245px, 74vw, 315px);
   }
 
   .info {

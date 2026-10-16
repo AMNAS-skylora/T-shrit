@@ -9,6 +9,30 @@ import { getProductPrimaryImage } from "@/lib/product-images";
 import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
 import { formatPrice } from "@/lib/format";
 import { useOfferClock } from "@/hooks/useOfferClock";
+
+/** Always request the featured image immediately; use other real uploaded
+ * photos if the saved primary URL is no longer valid. No demo images. */
+function FeaturedPhoto({ product }: { product: Product }) {
+  const sources = Array.from(new Set([
+    getProductPrimaryImage(product),
+    ...(product.images ?? []),
+    ...(product.colorVariants ?? []).flatMap((variant) => [variant.image, ...(variant.images ?? [])]),
+  ].filter((src): src is string => Boolean(src))));
+  const [sourceIndex, setSourceIndex] = useState(0);
+  const src = sources[sourceIndex];
+  if (!src) return <span className={styles.imageUnavailable}>Product image unavailable</span>;
+  return (
+    <img
+      src={src}
+      alt={product.name}
+      loading="eager"
+      fetchPriority="high"
+      decoding="async"
+      draggable={false}
+      onError={() => setSourceIndex((old) => old + 1)}
+    />
+  );
+}
 import styles from "./FeaturedProductMotion.module.css";
 
 export function FeaturedProductMotion({ products = [], layout = "motion" }: { products?: Product[]; layout?: "motion" | "static" }) {
@@ -77,7 +101,7 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
     return () => window.clearInterval(rotation);
   }, [index, items.length, layout, reduced, inView, pageVisible]);
   useEffect(() => { if (layout === "static") { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); setIndex(0); setVisible(true); } }, [layout]);
-  useEffect(() => { if (items.length > 1) { const next = new Image(); next.src = getProductPrimaryImage(items[(activeIndex + 1) % items.length]); } }, [items, activeIndex]);
+  useEffect(() => { if (items.length > 1) { const src = getProductPrimaryImage(items[(activeIndex + 1) % items.length]); if (src) { const next = new Image(); next.src = src; } } }, [items, activeIndex]);
   useEffect(() => () => { window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current); }, []);
   if (!current) return null;
   const offerPrice = getProductOfferPrice(current, now);
@@ -92,12 +116,12 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
           <strong className={styles.price}>{formatPrice(offerPrice)}</strong>
           {showOriginalPrice ? <del className={styles.originalPrice}>{formatPrice(current.price)}</del> : null}
         </div>
-        <Link href={"/products/" + current.slug} className={styles.button} data-product-transition>
+        <Link href={"/products/" + current.slug} className={styles.button} data-product-transition data-featured-product-link>
           <span>View product</span><ArrowUpRightIcon width={18} height={18} />
         </Link>
       </div>
-      <Link href={"/products/" + current.slug} className={styles.media} data-product-transition data-visible={visible} aria-label={"View " + current.name}>
-        <img src={getProductPrimaryImage(current)} alt={current.name} loading="lazy" decoding="async" draggable={false} />
+      <Link href={"/products/" + current.slug} className={styles.media} data-product-transition data-featured-product-media data-visible={visible} aria-label={"View " + current.name}>
+        <FeaturedPhoto key={current.id} product={current} />
       </Link>
     </div>
     {items.length > 1 ? (
