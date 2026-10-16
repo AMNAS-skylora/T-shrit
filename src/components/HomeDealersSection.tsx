@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import { getDealerProducts } from "@/lib/dealer-products";
 import { getWholesaleWhatsappUrl } from "@/lib/format";
 import type { Product } from "@/types/product";
@@ -40,8 +41,8 @@ export function HomeDealersSection({ products, whatsappNumber, enabled }: { prod
         <h2 id="home-dealers-title" className={styles.title}>Bring KLEID.IN.<br />to your store.</h2>
         <p className={styles.body}>For retailers, resellers and independent stores. Explore our dealer catalog and get in touch to discuss the styles, quantities and availability for your next order.</p>
         <div className={styles.actions}>
-          <Link href="/wholesale" className={styles.primary}>Explore dealer catalog ↗</Link>
-          {whatsappHref !== "#" ? <a href={whatsappHref} target="_blank" rel="noreferrer" className={styles.secondary}>Contact us on WhatsApp ↗</a> : null}
+          <Link href="/wholesale" className={styles.primary}>Explore dealer catalog <ArrowUpRightIcon width={16} height={16} /></Link>
+          {whatsappHref !== "#" ? <a href={whatsappHref} target="_blank" rel="noreferrer" className={styles.secondary}>Contact us on WhatsApp <ArrowUpRightIcon width={16} height={16} /></a> : null}
         </div>
       </div>
       <div className={styles.details}>

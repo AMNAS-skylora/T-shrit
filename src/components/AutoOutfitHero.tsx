@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import {
   useCallback,
   useEffect,
@@ -248,7 +249,7 @@ export function AutoOutfitHero({ products }: { products: Product[] }) {
         <h1 className="selected-product-name text-[clamp(32px,5vw,68px)] font-semibold leading-[.95] tracking-[-.05em]">{active.name}</h1>
         <p className="mt-4 max-w-[420px] text-sm leading-6">{active.description}</p>
         <p className="selected-product-price mt-4 text-lg font-semibold">₹{activePrice?.toLocaleString("en-IN")}</p>
-        <Link href={`/products/${active.slug}`} onTouchStart={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="selected-product-button mt-5 inline-flex min-h-11 items-center bg-[#111] px-6 text-xs font-semibold !text-white">View product <span className="ml-4">↗</span></Link>
+        <Link href={`/products/${active.slug}`} onTouchStart={(event) => event.stopPropagation()} onClick={(event) => event.stopPropagation()} className="selected-product-button mt-5 inline-flex min-h-11 items-center bg-[#111] px-6 text-xs font-semibold !text-white">View product <ArrowUpRightIcon className="ml-4 shrink-0" width={18} height={18} /></Link>
       </div>
 
       <div className="absolute inset-x-0 bottom-[76px] z-40 flex h-[112px] items-center sm:bottom-[82px] sm:h-[122px] lg:bottom-[86px] lg:h-[132px]">

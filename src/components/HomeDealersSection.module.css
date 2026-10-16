@@ -12,6 +12,7 @@
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px; }
 .primary { display: inline-flex; align-items: center; min-height: 44px; padding: 12px 22px; border-radius: 999px; background: #fff; color: #111 !important; font-size: 13px; font-weight: 600; }
 .secondary { display: inline-flex; align-items: center; min-height: 44px; color: #fff !important; font-size: 12px; font-weight: 500; }
+.actions a svg { display: block; flex-shrink: 0; margin-left: 8px; }
 .actions a:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
 .details { display: grid; gap: 24px; padding-left: 40px; border-left: 1px solid #ffffff26; }
 .details h3 { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.5; }

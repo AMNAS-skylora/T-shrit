@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import type { CSSProperties } from "react";
 import type { ComfortSlide } from "@/lib/comfort-slides";
 import { getProductPrimaryImage } from "@/lib/product-images";
@@ -15,7 +16,7 @@ export function SecondaryHero({ slide, preview = false }: { slide: ComfortSlide;
       <span className={styles.brand}>KLEID.IN</span>
       <h2>{slide.title}</h2>
       {slide.subtitle ? <p className={styles.description}>{slide.subtitle}</p> : null}
-      <div className={styles.actions}><Link href={slide.href} className={styles.primary}>{slide.button}</Link><Link href="/products" className={styles.secondary}>Explore products <span aria-hidden="true">↗</span></Link></div>
+      <div className={styles.actions}><Link href={slide.href} className={styles.primary}>{slide.button}</Link><Link href="/products" className={styles.secondary}>Explore products <ArrowUpRightIcon width={16} height={16} /></Link></div>
     </div>
     {slide.product && getProductPrimaryImage(slide.product) ? <Link href={"/products/" + slide.product.slug} aria-label={"View " + slide.product.name} className={styles.product}><img src={getProductPrimaryImage(slide.product)} alt={slide.product.name} /></Link> : null}
     <span className={styles.arc} aria-hidden="true" />

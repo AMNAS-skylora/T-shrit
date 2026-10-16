@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import Image from "next/image";
 import Link from "next/link";
 import { useOfferClock } from "@/hooks/useOfferClock";
@@ -36,7 +37,7 @@ export function HomeSpotlightSection({ product }: { product?: Product; badge: st
         <div className={styles.options}>
           <ProductActions key={product.id} product={product} compact showColorOptions onColorChange={setSelectedColor} />
         </div>
-        <Link href={productHref} className={styles.view}>View full product <span aria-hidden="true">↗</span></Link>
+        <Link href={productHref} className={styles.view} data-product-transition>View full product <ArrowUpRightIcon width={18} height={18} /></Link>
       </div>
     </div>
   </section>;
