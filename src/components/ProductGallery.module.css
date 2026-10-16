@@ -1,8 +1,4 @@
 /* One consistent gallery and purchase layout across the storefront. */
-.breadcrumbs {
-  width: min(1160px, calc(100% - 48px));
-  margin: 0 auto;
-}
 .page {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
@@ -325,8 +321,7 @@
   .info { padding: 0; }
 }
 @media (max-width: 640px) {
-  .breadcrumbs, .page { width: calc(100% - 32px); min-width: 0; }
-  .breadcrumbs { padding-top: 10px; }
+  .page { width: calc(100% - 32px); min-width: 0; }
   .page { gap: 18px; padding: 12px 0 calc(68px + env(safe-area-inset-bottom, 0px)); }
   .gallery { aspect-ratio: 1 / 1.1; max-height: none; border-radius: 13px; }
   .tag { top: 10px; right: 10px; font-size: 10px; }
@@ -342,7 +337,7 @@
   .primaryButton, .secondaryButton, .soldOutNotice { min-height: 50px; }
 }
 @media (max-width: 370px) {
-  .breadcrumbs, .page { width: calc(100% - 28px); }
+  .page { width: calc(100% - 28px); }
   .heading h1 { font-size: 23px; }
 }
 @media (prefers-reduced-motion: reduce) {

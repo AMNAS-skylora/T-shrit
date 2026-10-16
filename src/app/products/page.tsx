@@ -19,5 +19,5 @@ export default async function ProductsPage({
     ? params.category[0] ?? "All"
     : params.category || "All";
   const products = catalog.filter((product) => product.status !== "draft");
-  return <HomeProductCatalog whatsappNumber={settings.whatsappNumber} products={products} initialCategory={selectedCategory} eyebrow="KLEID.IN / COLLECTION" title="Shop everyday essentials" />;
+  return <HomeProductCatalog whatsappNumber={settings.whatsappNumber} products={products} initialCategory={selectedCategory} title="Shop everyday essentials" />;
 }
