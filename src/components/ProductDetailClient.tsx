@@ -236,43 +236,44 @@ export function ProductDetailClient({
           </div>
 
           <div className={galleryStyles.actions}>
-            <button
-              type="button"
-              className={galleryStyles.secondaryButton}
-              disabled={soldOut}
-              onClick={() => {
-                addItem({ productId: product.id, color: selectedColor, size, quantity: 1 });
-                setCartNotice("Added to your bag. View it using the bag icon above.");
-              }}
-            >
-              Add to bag
-            </button>
-            {whatsappUrl !== "#" && !soldOut ? (
-              <a
-                className={galleryStyles.primaryButton}
-                href={whatsappUrl}
-                target="_blank"
-                rel="noreferrer"
-              >
-                {"Order on WhatsApp"}
-              </a>
+            {soldOut ? (
+              <div className={galleryStyles.soldOutNotice} role="status">
+                Sold out
+              </div>
             ) : (
-              <button
-                type="button"
-                className={galleryStyles.primaryButton}
-                disabled
-              >
-                {soldOut ? "Sold out" : "WhatsApp unavailable"}
-              </button>
+              <>
+                <button
+                  type="button"
+                  className={galleryStyles.secondaryButton}
+                  onClick={() => {
+                    addItem({ productId: product.id, color: selectedColor, size, quantity: 1 });
+                    setCartNotice("Added to your bag. View it using the bag icon above.");
+                  }}
+                >
+                  Add to bag
+                </button>
+                {whatsappUrl !== "#" ? (
+                  <a
+                    className={galleryStyles.primaryButton}
+                    href={whatsappUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Order on WhatsApp
+                  </a>
+                ) : null}
+              </>
             )}
           </div>
 
           {cartNotice ? <p role="status" aria-live="polite" className="mt-3 text-sm font-medium">{cartNotice}</p> : null}
 
-          <div className={galleryStyles.notes}>
-            <span>Your colour and size are included in your WhatsApp message.</span>
-            <span>Send the message to confirm availability and delivery with us.</span>
-          </div>
+          {!soldOut && whatsappUrl !== "#" ? (
+            <div className={galleryStyles.notes}>
+              <span>Your colour and size are included in your WhatsApp message.</span>
+              <span>Send the message to confirm availability and delivery with us.</span>
+            </div>
+          ) : null}
         </div>
       </div>
     </>

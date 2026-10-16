@@ -180,3 +180,120 @@
 @media (prefers-reduced-motion: reduce) {
   .galleryColumn .thumbnail { transition: none; }
 }
+
+
+/* Mobile product purchase panel: consistent buttons and proper iPhone spacing. */
+.soldOutNotice {
+  display: flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 18px;
+  border: 1px solid #e2e2e2;
+  border-radius: 14px;
+  background: #f1f1f1;
+  color: #5b5b5b;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+}
+.actions > * {
+  box-sizing: border-box;
+  min-width: 0;
+}
+.actions .primaryButton,
+.actions .secondaryButton {
+  white-space: normal;
+  line-height: 1.35;
+}
+.actions .secondaryButton:not(:disabled) {
+  background: #fff;
+  border-color: #1b1b1b;
+  color: #1b1b1b;
+}
+.actions .primaryButton:not(:disabled) {
+  background: #111;
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .page {
+    padding-bottom: calc(124px + env(safe-area-inset-bottom, 0px));
+  }
+  .info {
+    min-width: 0;
+  }
+  .inner {
+    width: 100%;
+    min-width: 0;
+  }
+  .heading {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .heading h1 {
+    font-size: clamp(25px, 6.8vw, 32px);
+    line-height: 1.15;
+    letter-spacing: -.035em;
+  }
+  .price strong {
+    font-size: clamp(23px, 6vw, 27px);
+  }
+  .description {
+    margin: 16px 0 4px;
+    font-size: 14px;
+    line-height: 1.65;
+  }
+  .optionBlock {
+    padding-top: 20px;
+  }
+  .optionHead {
+    align-items: center;
+    margin-bottom: 11px;
+    font-size: 13px;
+  }
+  .swatch {
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+  }
+  .sizes button {
+    min-width: 48px;
+    min-height: 46px;
+    padding: 9px 13px;
+    border-radius: 10px;
+    font-weight: 650;
+  }
+  .attributes {
+    margin-top: 22px;
+    padding-top: 16px;
+  }
+  .actions {
+    display: grid;
+    grid-template-columns: minmax(0,1fr);
+    gap: 10px;
+    margin-top: 22px;
+    width: 100%;
+  }
+  .actions .secondaryButton,
+  .actions .primaryButton,
+  .actions .soldOutNotice {
+    width: 100%;
+    min-width: 0;
+    min-height: 50px;
+    padding: 13px 16px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    overflow-wrap: break-word;
+  }
+  .notes {
+    margin-top: 15px;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+}
