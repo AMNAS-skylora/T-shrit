@@ -9,7 +9,7 @@ type Offset = { x: number; y: number };
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 4;
 
-function distance(touches: TouchList) {
+function distance(touches: ReactTouchEvent<HTMLDivElement>["touches"]) {
   const a = touches[0], b = touches[1];
   return a && b ? Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) : 0;
 }
