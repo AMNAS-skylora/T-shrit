@@ -27,6 +27,15 @@ export function ArrowRightIcon(props: IconProps) {
   return <svg {...base} {...props}><path d="m10 5 7 7-7 7M4 12h13" /></svg>;
 }
 
+export function ShoppingBagIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 8h16l-1.5 12h-13L4 8Z" />
+      <path d="M9 9V6a3 3 0 0 1 6 0v3" />
+    </svg>
+  );
+}
+
 export function MenuIcon({ open }: { open: boolean }) {
   return (
     <svg {...base} width={24} height={24}>

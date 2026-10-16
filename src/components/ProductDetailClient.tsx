@@ -2,7 +2,7 @@
 
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon, ArrowUpRightIcon } from "@/components/UiIcons";
+import { ArrowLeftIcon, ArrowRightIcon, ArrowUpRightIcon, ShoppingBagIcon } from "@/components/UiIcons";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/types/product";
@@ -116,12 +116,12 @@ export function ProductDetailClient({
           </div>
 
           {variantImages.length > 1 ? (
-            <div className={galleryStyles.controls}>
-              <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image">
+            <div className={galleryStyles.controls} role="group" aria-label="Product photo navigation">
+              <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image" title="Previous photo">
                 <ArrowLeftIcon width={18} height={18} />
               </button>
               <span aria-live="polite">{activeImageIndex + 1} / {variantImages.length}</span>
-              <button type="button" onClick={() => moveImage(1)} aria-label="Next product image">
+              <button type="button" onClick={() => moveImage(1)} aria-label="Next product image" title="Next photo">
                 <ArrowRightIcon width={18} height={18} />
               </button>
             </div>
@@ -258,16 +258,19 @@ export function ProductDetailClient({
             ) : null}
           </div>
 
-          <div className={galleryStyles.stockRow} role="status" aria-live="polite">
-            <span className={galleryStyles.stockDot + (soldOut ? " " + galleryStyles.stockUnavailable : "")} aria-hidden="true" />
-            <span>{soldOut ? "Currently unavailable" : `${stock} available`}</span>
-          </div>
+          {!soldOut ? (
+            <div className={galleryStyles.stockRow} role="status" aria-live="polite">
+              <span className={galleryStyles.stockDot} aria-hidden="true" />
+              <span>In stock · {stock} available</span>
+            </div>
+          ) : null}
 
           <div className={galleryStyles.actions}>
             {soldOut ? (
-              <div className={galleryStyles.soldOutNotice} role="status">
-                Sold out
-              </div>
+              <button type="button" className={galleryStyles.soldOutNotice} disabled aria-label="Sold out — unavailable for the selected colour and size">
+                <ShoppingBagIcon width={19} height={19} />
+                <span>Sold out</span>
+              </button>
             ) : (
               <>
                 <button
@@ -278,7 +281,8 @@ export function ProductDetailClient({
                     setCartNotice("Added to bag");
                   }}
                 >
-                  Add to bag
+                  <ShoppingBagIcon width={19} height={19} />
+                  <span>Add to bag</span>
                 </button>
                 {whatsappUrl !== "#" ? (
                   <a
