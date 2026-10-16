@@ -122,7 +122,11 @@ export function ProductReturnTransition() {
       // Safari's native back gesture completes before popstate. Capture while
       // the old product DOM is available; Next.js handles navigation itself.
       const origin = readOrigin(slug);
-      if (origin) capture(origin.href);
+      // popstate can also lead to Cart or an external history entry. Only
+      // animate when the browser is actually returning to the saved listing.
+      if (origin && window.location.pathname === new URL(origin.href, window.location.origin).pathname) {
+        capture(origin.href);
+      }
     };
 
     document.addEventListener("click", onClick, true);
