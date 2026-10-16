@@ -2,9 +2,9 @@
 
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon, ArrowUpRightIcon, ShoppingBagIcon } from "@/components/UiIcons";
+import { ArrowUpRightIcon, ShoppingBagIcon } from "@/components/UiIcons";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Product } from "@/types/product";
 import { formatPrice, getProductWhatsappUrl } from "@/lib/format";
 import { getProductOfferPrice, isProductOfferActive } from "@/lib/product-offers";
@@ -12,7 +12,7 @@ import { getProductGalleryForColor } from "@/lib/product-images";
 import { OfferCountdown } from "@/components/OfferCountdown";
 import { useCart } from "@/components/CartProvider";
 import galleryStyles from "@/components/ProductGallery.module.css";
-import { ProductImageZoom } from "@/components/ProductImageZoom";
+import { useProductInlineZoom } from "@/hooks/useProductInlineZoom";
 
 function firstAvailableSize(product: Product, color: string): string {
   const variant = product.colorVariants?.find((item) => item.name === color);
@@ -38,16 +38,13 @@ export function ProductDetailClient({
   const [selectedColor, setSelectedColor] = useState(initialColor);
   const [size, setSize] = useState(() => firstAvailableSize(product, initialColor));
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [zoomOpen, setZoomOpen] = useState(false);
-  const ignoreZoomUntil = useRef(0);
-  const touchStart = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
 
   const selectedVariant =
     variants.find((variant) => variant.name === selectedColor) ?? variants[0];
 
   const variantImages = getProductGalleryForColor(product, selectedColor);
   const image = variantImages[activeImageIndex] ?? variantImages[0];
+  const zoom = useProductInlineZoom(image, (direction) => moveImage(direction));
   const trackedSizes = selectedVariant?.sizeStocks ?? {};
   const stock = Object.keys(trackedSizes).length
     ? Number(trackedSizes[size] ?? 0)
@@ -75,36 +72,22 @@ export function ProductDetailClient({
     <>
       <div className={galleryStyles.galleryColumn}>
         <div
-          className={galleryStyles.gallery}
+          ref={zoom.galleryRef}
+          className={galleryStyles.gallery + (zoom.scale > 1 ? " " + galleryStyles.galleryZoomed : "")}
           data-product-image-target
           onClick={(event) => {
-            if (!image || Date.now() < ignoreZoomUntil.current) return;
+            if (!image || !zoom.allowClick()) return;
             if (event.target instanceof Element && event.target.closest("button")) return;
-            setZoomOpen(true);
+            zoom.toggleZoom();
           }}
-          onTouchStart={(event) => {
-            touchStart.current = event.touches[0]?.clientX ?? null;
-            touchStartY.current = event.touches[0]?.clientY ?? null;
-          }}
-          onTouchEnd={(event) => {
-            const endX = event.changedTouches[0]?.clientX;
-            const endY = event.changedTouches[0]?.clientY;
-            if (
-              touchStart.current !== null &&
-              endX !== undefined &&
-              Math.abs(endX - touchStart.current) > 40 &&
-              Math.abs(endX - touchStart.current) > Math.abs((endY ?? 0) - (touchStartY.current ?? 0))
-            ) {
-              ignoreZoomUntil.current = Date.now() + 450;
-              moveImage(endX < touchStart.current ? 1 : -1);
-            }
-            touchStart.current = null;
-            touchStartY.current = null;
-          }}
-          onTouchCancel={() => {
-            touchStart.current = null;
-            touchStartY.current = null;
-          }}
+          onTouchStart={zoom.onTouchStart}
+          onTouchMove={zoom.onTouchMove}
+          onTouchEnd={zoom.onTouchEnd}
+          onTouchCancel={zoom.onTouchCancel}
+          onPointerDown={zoom.onPointerDown}
+          onPointerMove={zoom.onPointerMove}
+          onPointerUp={zoom.onPointerUp}
+          onPointerCancel={zoom.onPointerUp}
         >
           {image ? (
             <Image
@@ -114,7 +97,11 @@ export function ProductDetailClient({
               fill
               preload={activeImageIndex === 0}
               sizes="(max-width: 800px) 100vw, 58vw"
-              className={galleryStyles.image}
+              className={galleryStyles.image + (zoom.dragging ? " " + galleryStyles.imageDragging : "")}
+              draggable={false}
+              style={{
+                transform: `translate3d(${zoom.offset.x}px, ${zoom.offset.y}px, 0) scale(${zoom.scale})`,
+              }}
             />
           ) : (
             <span className={galleryStyles.empty}>No product image</span>
@@ -128,28 +115,19 @@ export function ProductDetailClient({
             <button
               type="button"
               className={galleryStyles.zoomLaunch}
-              onClick={(event) => { event.stopPropagation(); setZoomOpen(true); }}
-              aria-label="Zoom product photo"
-              title="Zoom photo"
+              onClick={(event) => { event.stopPropagation(); zoom.toggleZoom(); }}
+              aria-label={zoom.scale > 1 ? "Reset product photo zoom" : "Zoom product photo"}
+              aria-pressed={zoom.scale > 1}
+              title={zoom.scale > 1 ? "Reset zoom" : "Zoom photo"}
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="10.6" cy="10.6" r="6.3" />
-                <path d="m15.2 15.2 5 5M10.6 7.6v6M7.6 10.6h6" />
+                <path d={zoom.scale > 1 ? "m15.2 15.2 5 5M7.6 10.6h6" : "m15.2 15.2 5 5M10.6 7.6v6M7.6 10.6h6"} />
               </svg>
             </button>
           ) : null}
 
-          {variantImages.length > 1 ? (
-            <div className={galleryStyles.controls} role="group" aria-label="Product photo navigation">
-              <button type="button" onClick={() => moveImage(-1)} aria-label="Previous product image" title="Previous photo">
-                <ArrowLeftIcon width={18} height={18} />
-              </button>
-              <span aria-live="polite">{activeImageIndex + 1} / {variantImages.length}</span>
-              <button type="button" onClick={() => moveImage(1)} aria-label="Next product image" title="Next photo">
-                <ArrowRightIcon width={18} height={18} />
-              </button>
-            </div>
-          ) : null}
+
         </div>
 
         {variantImages.length > 1 ? (
@@ -175,14 +153,6 @@ export function ProductDetailClient({
           </div>
         ) : null}
       </div>
-
-      {zoomOpen && image ? (
-        <ProductImageZoom
-          src={image}
-          alt={product.name + " — " + selectedColor}
-          onClose={() => setZoomOpen(false)}
-        />
-      ) : null}
 
       <div className={galleryStyles.info}>
         <div className={galleryStyles.inner}>

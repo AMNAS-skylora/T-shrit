@@ -49,53 +49,6 @@
   color: #666;
   font-size: 13px;
 }
-.controls {
-  position: absolute;
-  z-index: 3;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-inline: 12px;
-  pointer-events: none;
-}
-.controls button {
-  display: grid;
-  flex: 0 0 42px;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  border: 1px solid rgba(0,0,0,.09);
-  border-radius: 50%;
-  background: rgba(255,255,255,.92);
-  color: #151515;
-  box-shadow: 0 3px 12px rgba(0,0,0,.08);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  cursor: pointer;
-  pointer-events: auto;
-  transition: transform .2s ease, background-color .2s ease;
-}
-.controls button svg { display: block; width: 19px; height: 19px; }
-.controls button:hover { background: #fff; transform: scale(1.04); }
-.controls button:active { transform: scale(.95); }
-.controls span {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 7px 11px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.94);
-  color: #444;
-  font-size: 11px;
-  font-weight: 600;
-  line-height: 1.35;
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
-}
 .tag {
   position: absolute;
   z-index: 2;
@@ -361,7 +314,7 @@
   font-size: 11px;
   line-height: 1.55;
 }
-.controls button:focus-visible, .thumbnail:focus-visible, .zoomLaunch:focus-visible,
+.thumbnail:focus-visible, .zoomLaunch:focus-visible,
 .colourChoice:focus-visible, .sizes button:focus-visible, .actions a:focus-visible,
 .actions button:focus-visible, .viewBagLink:focus-visible {
   outline: 2px solid #001cac;
@@ -376,9 +329,6 @@
   .breadcrumbs { padding-top: 10px; }
   .page { gap: 18px; padding: 12px 0 calc(68px + env(safe-area-inset-bottom, 0px)); }
   .gallery { aspect-ratio: 1 / 1.1; max-height: none; border-radius: 13px; }
-  .controls { padding-inline: 10px; }
-  .controls button { flex-basis: 40px; width: 40px; height: 40px; }
-  .controls span { top: 10px; padding: 6px 10px; }
   .tag { top: 10px; right: 10px; font-size: 10px; }
   .galleryColumn { gap: 9px; }
   .thumbnail { flex-basis: 72px; width: 72px; height: 82px; }
@@ -397,156 +347,47 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .image { animation: image-arrive 150ms ease-out both; }
-  .controls button { transition: none; }
 }
 
-/* Product detail magnification: visible button plus full-screen, touch-friendly viewer. */
-.gallery { cursor: zoom-in; }
+
+/* Inline magnification: all uploaded aspect ratios fit the same gallery
+   without cropping, and no fullscreen overlay or second page appears. */
+.gallery { cursor: zoom-in; -webkit-user-select: none; user-select: none; }
+.image {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  transform-origin: center center;
+  transition: transform 260ms cubic-bezier(.22,1,.36,1);
+  will-change: transform;
+}
+.galleryZoomed { cursor: grab; touch-action: none; }
+.galleryZoomed:active { cursor: grabbing; }
+.imageDragging { transition: none; }
 .zoomLaunch {
   position: absolute;
   z-index: 4;
-  bottom: 12px;
-  right: 12px;
+  bottom: 10px;
+  right: 10px;
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid rgba(0,0,0,.11);
+  padding: 0;
+  border: 1px solid rgba(0,0,0,.12);
   border-radius: 50%;
   background: rgba(255,255,255,.96);
   color: #151515;
-  cursor: zoom-in;
-  box-shadow: 0 3px 12px rgba(0,0,0,.09);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-.zoomLaunch svg { display: block; width: 21px; height: 21px; }
-.zoomOverlay {
-  position: fixed;
-  inset: 0;
-  z-index: 100000;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100dvh;
-  overflow: hidden;
-  background: #101113;
-  color: #fff;
-  isolation: isolate;
-}
-.zoomViewport {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: grab;
-}
-.zoomViewport:active { cursor: grabbing; }
-.zoomImage {
-  object-fit: contain;
-  object-position: center center;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
-  transform-origin: center center;
-  will-change: transform;
-}
-.zoomHeader {
-  position: absolute;
-  z-index: 2;
-  top: calc(env(safe-area-inset-top, 0px) + 12px);
-  left: 16px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  pointer-events: none;
-}
-.zoomTitle {
-  padding: 10px 13px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.48);
-  font-size: 13px;
-  font-weight: 650;
-  letter-spacing: .01em;
-}
-.zoomClose {
-  display: grid;
-  flex: 0 0 44px;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid rgba(255,255,255,.25);
-  border-radius: 50%;
-  background: rgba(255,255,255,.16);
-  color: #fff;
-  cursor: pointer;
-  pointer-events: auto;
-}
-.zoomClose svg { display: block; width: 22px; height: 22px; }
-.zoomToolbar {
-  position: absolute;
-  z-index: 2;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 55px);
-  left: 50%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px;
-  border: 1px solid rgba(255,255,255,.22);
-  border-radius: 999px;
-  background: rgba(27,28,31,.88);
-  box-shadow: 0 6px 28px rgba(0,0,0,.27);
-  transform: translateX(-50%);
-}
-.zoomToolbar button {
-  display: grid;
-  place-items: center;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 9px;
-  border: 0;
-  border-radius: 999px;
-  background: rgba(255,255,255,.13);
-  color: #fff;
-  font-size: 21px;
-  font-weight: 600;
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
   cursor: pointer;
 }
-.zoomToolbar button:disabled { opacity: .35; cursor: default; }
-.zoomToolbar output {
-  min-width: 49px;
-  font-size: 12px;
-  font-weight: 650;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-.zoomToolbar button.zoomReset {
-  padding: 0 14px;
-  font-size: 12px;
-}
-.zoomClose:focus-visible, .zoomToolbar button:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 3px;
-}
-.zoomHint {
-  position: absolute;
-  z-index: 2;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
-  left: 16px;
-  right: 16px;
-  margin: 0;
-  color: #d2d2d2;
-  font-size: 11px;
-  text-align: center;
-  pointer-events: none;
-}
-@media (max-width: 640px) {
-  .zoomLaunch { right: 10px; bottom: 10px; }
-}
+.zoomLaunch svg { width: 21px; height: 21px; display: block; }
+.zoomLaunch[aria-pressed="true"] { background: #171717; color: #fff; }
+.zoomLaunch:focus-visible { outline: 2px solid #001cac; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) {
-  .zoomLaunch { transition: none; }
+  .image:not(.imageDragging) { transition: transform 140ms ease-out; }
 }
