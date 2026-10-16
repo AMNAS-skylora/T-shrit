@@ -280,12 +280,13 @@
 
 @media (prefers-reduced-motion: reduce) {
   .info,
-  .media,
-  .button {
-    transition: none;
+  .media {
+    transition: opacity 140ms ease-out;
   }
-
-  .button:hover {
+  .info[data-visible="false"],
+  .media[data-visible="false"] {
     transform: none;
   }
+  .button { transition: none; }
+  .button:hover { transform: none; }
 }

@@ -53,7 +53,18 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
 
   function select(next: number) {
     window.clearTimeout(timer.current); window.cancelAnimationFrame(frame.current);
-    if (reduced || layout === "static") { setIndex(next); setVisible(true); return; }
+    if (layout === "static") { setIndex(next); setVisible(true); return; }
+    if (reduced) {
+      // Keep automatic changes on iOS Reduce Motion, with a small fade only.
+      setVisible(false);
+      timer.current = window.setTimeout(() => {
+        setIndex(next);
+        frame.current = window.requestAnimationFrame(() => {
+          frame.current = window.requestAnimationFrame(() => setVisible(true));
+        });
+      }, 110);
+      return;
+    }
     setVisible(false);
     timer.current = window.setTimeout(() => {
       setIndex(next);

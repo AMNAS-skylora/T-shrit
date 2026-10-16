@@ -55,7 +55,8 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
     document.addEventListener("visibilitychange", updateVisibility); updateVisibility();
     return () => { window.clearInterval(timer); observer.disconnect(); media.removeEventListener("change", updateMotion); document.removeEventListener("visibilitychange", updateVisibility); };
   }, []);
-  const automatic = active.length > 1 && !paused && !dragging && !hovered && !focused && visible && !reducedMotion;
+  // Motion preference controls visual movement, not whether the slides advance.
+  const automatic = active.length > 1 && !paused && !dragging && !hovered && !focused && visible;
   useEffect(() => {
     if (!automatic) return;
     const timer = window.setTimeout(() => setSelectedId(active[(selected + 1) % active.length].id), 5000);
