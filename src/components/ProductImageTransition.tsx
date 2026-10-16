@@ -131,7 +131,7 @@ export function ProductImageTransition() {
         zIndex: "10000",
       });
       document.body.append(veil, copy);
-      document.documentElement.dataset.productTransitionActive = "true";
+
 
       let active: ActiveTransition;
       const cleanup = () => {
@@ -139,7 +139,7 @@ export function ProductImageTransition() {
         veil.remove();
         // An old fallback must not clear the next navigation's overlay.
         if (pending.current === active) {
-          delete document.documentElement.dataset.productTransitionActive;
+
           window.clearTimeout(active.timer);
           pending.current = null;
         }
@@ -154,8 +154,8 @@ export function ProductImageTransition() {
       };
       pending.current = active;
 
-      // A gentle veil replaces the old full-screen white flash. Keep the
-      // source photo stationary until the destination gallery is measured.
+      // The destination image stays visible throughout the transition.
+      // Never hide it while waiting for iOS Safari image decoding or routing.
       veil.animate([{ opacity: 0 }, { opacity: .14 }], {
         duration: 180,
         easing: EASE,
@@ -172,7 +172,24 @@ export function ProductImageTransition() {
 
   useEffect(() => {
     const active = pending.current;
-    if (!active) return;
+    if (!active) {
+      // Reliable mobile fallback when the listing image hasn't decoded yet:
+      // still animate the arriving product page instead of doing a hard cut.
+      if (/^\\/products\\/[^/]+\\/?$/.test(pathname)) {
+        const main = document.querySelector("main");
+        if (main && typeof main.animate === "function") {
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          main.animate(
+            reduced
+              ? [{ opacity: .82 }, { opacity: 1 }]
+              : [{ opacity: .74, transform: "translate3d(0,12px,0)" },
+                 { opacity: 1, transform: "translate3d(0,0,0)" }],
+            { duration: reduced ? 170 : 430, easing: EASE },
+          );
+        }
+      }
+      return;
+    }
     if (pathname !== active.pathname) {
       active.cleanup();
       return;
@@ -258,7 +275,7 @@ export function ProductImageTransition() {
 
     // Route content may be missing (network issue, not-found page, lazy load).
     // Never leave the destination image hidden or an overlay stranded.
-    const fallback = window.setTimeout(active.cleanup, 2900);
+    const fallback = window.setTimeout(active.cleanup, 2100);
 
     return () => {
       observer.disconnect();
@@ -276,12 +293,5 @@ export function ProductImageTransition() {
     reducedTimers.current.clear();
   }, []);
 
-  return (
-    <style jsx global>{`
-      html[data-product-transition-active="true"]
-      [data-product-image-target] img {
-        opacity: 0 !important;
-      }
-    `}</style>
-  );
+  return null;
 }

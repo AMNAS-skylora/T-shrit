@@ -3,129 +3,139 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
-const TEXT_TARGETS = "h1, h2, h3, p, article, [data-scroll-reveal], .footer-intro, .footer-column, .footer-bottom";
-const SKIP_REGIONS =
-  '[data-motion-owned], #about, [data-scroll-reveal-ignore], [role="dialog"], dialog, [aria-live], [role="status"], nav, form';
+const SELECTOR = 'h1, h2, h3, p, article, [data-scroll-reveal], .footer-intro, .footer-column, .footer-bottom';
+const SKIP = '[data-motion-owned], #about, [data-scroll-reveal-ignore], [role="dialog"], dialog, [aria-live], [role="status"], nav, form';
 
 /**
- * One scroll-reveal owner for all public storefront pages.
- *
- * No global opacity CSS: content is always readable with JavaScript disabled,
- * slow hydration, Reduce Motion enabled, or an unsupported browser.
- * Individual About-section choreography remains owned by HomeAboutSection.
+ * Scroll animation is progressive enhancement. Content is never hidden until
+ * this component explicitly marks a BELOW-THE-FOLD element "waiting".
+ * Scroll observers and injected markup are reset on each storefront route.
  */
 export function HomeShoppingMotion() {
   const pathname = usePathname();
 
   useEffect(() => {
     if (pathname.startsWith("/admin")) return;
-    const root = document.querySelector<HTMLElement>("main");
+    const main = document.querySelector<HTMLElement>("main");
     const footer = document.querySelector<HTMLElement>("footer.site-footer");
-    if (!root || typeof IntersectionObserver === "undefined") return;
+    if (!main || typeof IntersectionObserver === "undefined") return;
 
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const seen = new WeakSet<HTMLElement>();
-    const animations = new Set<Animation>();
-    const roots = [root, footer].filter((value): value is HTMLElement => Boolean(value));
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const roots = [main, footer].filter((x): x is HTMLElement => x instanceof HTMLElement);
     const observed = new Set<HTMLElement>();
-    let scheduledScan = 0;
+    const known = new WeakSet<HTMLElement>();
+    let scanFrame = 0;
     let disposed = false;
 
-    const revealObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          const element = entry.target as HTMLElement;
-          revealObserver.unobserve(element);
-          observed.delete(element);
+    function visibleInViewport(element: HTMLElement) {
+      const rect = element.getBoundingClientRect();
+      return rect.top < window.innerHeight - 25 && rect.bottom > 0;
+    }
 
-          if (disposed || !element.isConnected || typeof element.animate !== "function") {
-            continue;
-          }
-          // Existing complex motion components control their own transforms.
-          if (element.closest(SKIP_REGIONS)) continue;
+    const reveal = (element: HTMLElement) => {
+      observer.unobserve(element);
+      observed.delete(element);
+      if (!element.isConnected) return;
+      // The class is applied after the initial offscreen style is painted.
+      // The browser can now interpolate from hidden to shown reliably.
+      element.dataset.kleidReveal = "shown";
+      element.addEventListener("transitionend", () => {
+        // Keep the final visible state, but remove animation-only properties.
+        if (element.dataset.kleidReveal === "shown") delete element.dataset.kleidReveal;
+      }, { once: true });
+    };
 
-          const isCard = element.matches("article, [data-scroll-reveal='card']");
-          const reduced = motion.matches;
-          const shiftY = isCard ? 22 : 16;
-          const duration = reduced ? 160 : isCard ? 720 : 620;
-          const delay = Number(element.dataset.revealDelay ?? "0");
-          const animation = element.animate(
-            reduced
-              ? [{ opacity: 0.84 }, { opacity: 1 }]
-              : [
-                  { opacity: 0.2, transform: `translate3d(0,${shiftY}px,0)` },
-                  { opacity: 1, transform: "translate3d(0,0,0)" },
-                ],
-            {
-              duration,
-              delay: reduced ? 0 : Number.isFinite(delay) ? Math.min(260, Math.max(0, delay)) : 0,
-              easing: "cubic-bezier(.22,1,.36,1)",
-              fill: "none",
-            },
-          );
-          animations.add(animation);
-          animation.finished
-            .catch(() => undefined)
-            .finally(() => animations.delete(animation));
-        }
-      },
-      { threshold: 0.02, rootMargin: "0px 0px -6% 0px" },
-    );
+    const observer = new IntersectionObserver((entries) => {
+      if (disposed) return;
+      for (const entry of entries) {
+        if (entry.isIntersecting) reveal(entry.target as HTMLElement);
+      }
+    }, { threshold: 0.01, rootMargin: "0px 0px -5% 0px" });
 
     const eligible = (element: HTMLElement) => {
-      if (seen.has(element) || element.closest(SKIP_REGIONS)) return false;
-      if (element.closest("[data-scroll-reveal]") && !element.hasAttribute("data-scroll-reveal")) return false;
-      // Animate product cards as one piece, never animate each child separately.
-      const parentCard = element.closest("article");
-      if (parentCard && parentCard !== element) return false;
-      // Avoid fading nested paragraphs inside the same named content block.
-      if (element.matches("p") && element.closest("button, a, [data-product-transition]")) return false;
+      if (known.has(element) || element.closest(SKIP)) return false;
       if (element.getAttribute("aria-hidden") === "true") return false;
+      if (element.matches("p") && element.closest("button, a")) return false;
+      if (element.closest("article") && !element.matches("article")) return false;
+      if (element.closest("[data-scroll-reveal]") && !element.hasAttribute("data-scroll-reveal")) return false;
+      if (element.offsetWidth === 0 || element.offsetHeight === 0) return false;
       return true;
     };
 
-    const discover = () => {
-      scheduledScan = 0;
+    const scan = () => {
+      scanFrame = 0;
       if (disposed) return;
-      for (const container of roots) {
-        if (!container.isConnected) continue;
-        container.querySelectorAll<HTMLElement>(TEXT_TARGETS).forEach((element) => {
+      for (const root of roots) {
+        if (!root.isConnected) continue;
+        root.querySelectorAll<HTMLElement>(SELECTOR).forEach((element) => {
           if (!eligible(element)) return;
-          seen.add(element);
+          known.add(element);
+          // Do not fade text that's already on screen at initial hydration.
+          if (visibleInViewport(element)) return;
+          element.dataset.kleidReveal = "waiting";
           observed.add(element);
-          revealObserver.observe(element);
+          observer.observe(element);
         });
       }
     };
 
-    const schedule = () => {
-      if (!scheduledScan && !disposed) scheduledScan = window.requestAnimationFrame(discover);
+    const queueScan = () => {
+      if (!scanFrame && !disposed) scanFrame = window.requestAnimationFrame(scan);
     };
 
-    const mutations = new MutationObserver(schedule);
-    roots.forEach((container) => mutations.observe(container, { childList: true, subtree: true }));
-    const onMotionChange = () => {
-      // Leave pending intersections registered; the callback chooses reduced
-      // opacity-only motion or full slide-up at the moment it enters the view.
-      animations.forEach((animation) => animation.cancel());
-      animations.clear();
-      schedule();
+    const mutationObserver = new MutationObserver(queueScan);
+    roots.forEach((root) => mutationObserver.observe(root, { childList: true, subtree: true }));
+    // Switching iOS Reduce Motion while scrolling changes only the effect,
+    // not whether upcoming elements become visible.
+    const syncMotion = () => {
+      observed.forEach((element) => {
+        if (element.isConnected && visibleInViewport(element)) reveal(element);
+      });
     };
-    motion.addEventListener("change", onMotionChange);
-    schedule();
+    reduceMotion.addEventListener("change", syncMotion);
+    queueScan();
 
     return () => {
       disposed = true;
-      window.cancelAnimationFrame(scheduledScan);
-      mutations.disconnect();
-      revealObserver.disconnect();
-      motion.removeEventListener("change", onMotionChange);
-      animations.forEach((animation) => animation.cancel());
-      animations.clear();
+      window.cancelAnimationFrame(scanFrame);
+      mutationObserver.disconnect();
+      observer.disconnect();
+      reduceMotion.removeEventListener("change", syncMotion);
+      observed.forEach((element) => {
+        if (element.dataset.kleidReveal === "waiting") delete element.dataset.kleidReveal;
+      });
       observed.clear();
     };
   }, [pathname]);
 
-  return null;
+  return (
+    <style jsx global>{`
+      [data-kleid-reveal="waiting"] {
+        opacity: 0;
+        transform: translate3d(0, 22px, 0);
+        transition: none;
+      }
+      [data-kleid-reveal="shown"] {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+        transition:
+          opacity 650ms cubic-bezier(.22, 1, .36, 1),
+          transform 750ms cubic-bezier(.22, 1, .36, 1);
+      }
+      @media (max-width: 767px) {
+        [data-kleid-reveal="waiting"] { transform: translate3d(0, 16px, 0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        [data-kleid-reveal="waiting"] {
+          opacity: .88;
+          transform: none;
+        }
+        [data-kleid-reveal="shown"] {
+          opacity: 1;
+          transform: none;
+          transition: opacity 160ms ease-out;
+        }
+      }
+    `}</style>
+  );
 }
