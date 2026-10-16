@@ -90,6 +90,7 @@ export function ProductDetailClient({
           onPointerCancel={zoom.onPointerUp}
         >
           {image ? (
+            <>
             <Image
               key={image}
               src={image}
@@ -112,6 +113,7 @@ export function ProductDetailClient({
               className={galleryStyles.imageBackdrop}
               draggable={false}
             />
+            </>
           ) : (
             <span className={galleryStyles.empty}>No product image</span>
           )}
