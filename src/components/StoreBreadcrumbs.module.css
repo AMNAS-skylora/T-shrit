@@ -1,0 +1,83 @@
+/* Shared, readable breadcrumb navigation for the shop and product pages. */
+.bar {
+  min-width: 0;
+  color: #777;
+}
+.catalog {
+  margin: 0 0 14px;
+}
+.detail {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding-top: 18px;
+}
+.bar :global(.site-breadcrumbs) {
+  width: 100%;
+  min-width: 0;
+}
+.bar :global(.site-breadcrumbs) ol {
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+}
+.bar :global(.site-breadcrumbs) a,
+.bar :global(.site-breadcrumbs) :global(.breadcrumb-current) {
+  min-height: 34px;
+  padding-inline: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.bar :global(.site-breadcrumbs) li:first-child a {
+  padding-left: 0;
+}
+.bar :global(.site-breadcrumbs) a {
+  color: #666;
+  text-decoration: none;
+}
+.bar :global(.site-breadcrumbs) a:hover {
+  color: #001cac;
+}
+.bar :global(.site-breadcrumbs) :global(.breadcrumb-current) {
+  color: #171717;
+  max-width: min(55vw, 420px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar :global(.breadcrumb-separator) {
+  flex: 0 0 auto;
+  color: #aaa;
+  font-size: 12px;
+}
+.bar :global(.site-breadcrumbs) a:focus-visible {
+  outline: 2px solid #001cac;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@media (max-width: 640px) {
+  .detail {
+    width: calc(100% - 32px);
+    padding-top: 10px;
+  }
+  .catalog { margin-bottom: 12px; }
+  .bar :global(.site-breadcrumbs) ol { min-height: 40px; }
+  .bar :global(.site-breadcrumbs) a,
+  .bar :global(.site-breadcrumbs) :global(.breadcrumb-current) {
+    min-height: 40px;
+    padding-inline: 7px;
+    font-size: 11px;
+  }
+  .bar :global(.site-breadcrumbs) :global(.breadcrumb-current) {
+    max-width: 100%;
+  }
+  .bar :global(.breadcrumb-separator) { font-size: 11px; }
+}
+@media (max-width: 360px) {
+  .detail { width: calc(100% - 28px); }
+  .bar :global(.site-breadcrumbs) a,
+  .bar :global(.site-breadcrumbs) :global(.breadcrumb-current) {
+    padding-inline: 5px;
+    font-size: 10px;
+  }
+}

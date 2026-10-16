@@ -4,6 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCategoryShopHref, getStorefrontCategories, productMatchesCategory } from "@/lib/storefront-categories";
 import { HomeProductGridCard } from "@/components/HomeProductGridCard";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import breadcrumbStyles from "@/components/StoreBreadcrumbs.module.css";
 import styles from "./HomeProductGrid.module.css";
 import catalogStyles from "./HomeProductCatalog.module.css";
 import type { Product } from "@/types/product";
@@ -65,6 +67,9 @@ export function HomeProductCatalog({
 
   return (
     <section id="shop-products" data-shop-reveal className={catalogStyles.section} aria-label="Product catalog">
+      <div className={`${breadcrumbStyles.bar} ${breadcrumbStyles.catalog}`}>
+        <Breadcrumbs items={[{ label: "Home", href: "/" }, { label: "Shop" }]} />
+      </div>
       <div className={catalogStyles.heading}>
         {eyebrow ? <p className={catalogStyles.eyebrow}>{eyebrow}</p> : null}
         <h1>{title}</h1>
