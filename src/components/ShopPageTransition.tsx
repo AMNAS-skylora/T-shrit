@@ -38,7 +38,7 @@ export function ShopPageTransition() {
     function onClick(event: MouseEvent) {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[href]") : null;
-      if (!link || link.target === "_blank" || link.hasAttribute("download")) return;
+      if (!link || link.target === "_blank" || link.hasAttribute("download") || link.hasAttribute("data-product-return")) return;
       const url = new URL(link.href, location.href);
       if (url.origin !== location.origin || url.pathname !== "/products" || pathname === "/products") return;
       const main = document.querySelector("main");

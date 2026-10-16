@@ -21,7 +21,6 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [visible, setVisible] = useState(true);
-  const [reducedMotion, setReducedMotion] = useState(false);
   const root = useRef<HTMLDivElement>(null);
   const touchStart = useRef<SwipePoint | null>(null);
   const active = useMemo(() => getComfortSlides(slides, products, now, section), [slides, products, now, section]);
@@ -44,16 +43,13 @@ export function HomeHeroSlider({ settings, products, slides, initialNow, preview
   }, [preview, section, active.length]);
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30000);
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotion = () => setReducedMotion(media.matches);
-    updateMotion(); media.addEventListener("change", updateMotion);
     const element = root.current;
     let inView = true;
     const updateVisibility = () => setVisible(inView && !document.hidden);
     const observer = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; updateVisibility(); });
     if (element) observer.observe(element);
     document.addEventListener("visibilitychange", updateVisibility); updateVisibility();
-    return () => { window.clearInterval(timer); observer.disconnect(); media.removeEventListener("change", updateMotion); document.removeEventListener("visibilitychange", updateVisibility); };
+    return () => { window.clearInterval(timer); observer.disconnect(); document.removeEventListener("visibilitychange", updateVisibility); };
   }, []);
   // Motion preference controls visual movement, not whether the slides advance.
   const automatic = active.length > 1 && !paused && !dragging && !hovered && !focused && visible;
