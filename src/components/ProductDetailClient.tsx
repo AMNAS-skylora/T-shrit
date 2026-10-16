@@ -103,6 +103,15 @@ export function ProductDetailClient({
                 transform: `translate3d(${zoom.offset.x}px, ${zoom.offset.y}px, 0) scale(${zoom.scale})`,
               }}
             />
+            <Image
+              src={image}
+              alt=""
+              aria-hidden="true"
+              fill
+              sizes="(max-width: 800px) 100vw, 58vw"
+              className={galleryStyles.imageBackdrop}
+              draggable={false}
+            />
           ) : (
             <span className={galleryStyles.empty}>No product image</span>
           )}

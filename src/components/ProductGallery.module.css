@@ -345,10 +345,28 @@
 }
 
 
-/* Inline magnification: all uploaded aspect ratios fit the same gallery
-   without cropping, and no fullscreen overlay or second page appears. */
-.gallery { cursor: zoom-in; -webkit-user-select: none; user-select: none; }
+/* Full gallery frame, whatever the uploaded photo ratio: show the entire
+   product with an edge-to-edge soft extension of the SAME photo behind it.
+   Unlike object-fit:cover on the main image, nothing gets cropped. */
+.gallery {
+  cursor: zoom-in;
+  background: #eeece8;
+  isolation: isolate;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.imageBackdrop {
+  z-index: 0;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(19px) saturate(.9);
+  transform: scale(1.1);
+  opacity: .85;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
 .image {
+  z-index: 1;
   width: 100%;
   height: 100%;
   padding: 0;
