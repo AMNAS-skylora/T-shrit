@@ -152,25 +152,6 @@
 .thumbnail:hover { border-color: #667bdc; }
 .info { min-width: 0; padding: 8px 0; }
 .inner { display: flex; min-width: 0; flex-direction: column; }
-.backLink {
-  display: inline-flex;
-  align-self: flex-start;
-  align-items: center;
-  gap: 7px;
-  min-height: 44px;
-  margin-bottom: 15px;
-  padding: 9px 13px;
-  border: 1px solid #dedede;
-  border-radius: 999px;
-  background: #fff;
-  color: #333;
-  font-size: 12px;
-  font-weight: 650;
-  text-decoration: none;
-  transition: background-color .2s ease;
-}
-.backLink svg { flex-shrink: 0; }
-.backLink:hover { background: #f4f4f4; }
 .heading {
   display: flex;
   flex-direction: column;
@@ -380,7 +361,7 @@
   font-size: 11px;
   line-height: 1.55;
 }
-.controls button:focus-visible, .thumbnail:focus-visible, .backLink:focus-visible,
+.controls button:focus-visible, .thumbnail:focus-visible, .zoomLaunch:focus-visible,
 .colourChoice:focus-visible, .sizes button:focus-visible, .actions a:focus-visible,
 .actions button:focus-visible, .viewBagLink:focus-visible {
   outline: 2px solid #001cac;
@@ -401,7 +382,6 @@
   .tag { top: 10px; right: 10px; font-size: 10px; }
   .galleryColumn { gap: 9px; }
   .thumbnail { flex-basis: 72px; width: 72px; height: 82px; }
-  .backLink { margin-bottom: 11px; }
   .heading { gap: 9px; margin-bottom: 3px; }
   .heading h1 { font-size: clamp(24px, 6.6vw, 30px); line-height: 1.16; }
   .price strong { font-size: 26px; }
@@ -418,4 +398,155 @@
 @media (prefers-reduced-motion: reduce) {
   .image { animation: image-arrive 150ms ease-out both; }
   .controls button { transition: none; }
+}
+
+/* Product detail magnification: visible button plus full-screen, touch-friendly viewer. */
+.gallery { cursor: zoom-in; }
+.zoomLaunch {
+  position: absolute;
+  z-index: 4;
+  bottom: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(0,0,0,.11);
+  border-radius: 50%;
+  background: rgba(255,255,255,.96);
+  color: #151515;
+  cursor: zoom-in;
+  box-shadow: 0 3px 12px rgba(0,0,0,.09);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.zoomLaunch svg { display: block; width: 21px; height: 21px; }
+.zoomOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  overflow: hidden;
+  background: #101113;
+  color: #fff;
+  isolation: isolate;
+}
+.zoomViewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+}
+.zoomViewport:active { cursor: grabbing; }
+.zoomImage {
+  object-fit: contain;
+  object-position: center center;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  transform-origin: center center;
+  will-change: transform;
+}
+.zoomHeader {
+  position: absolute;
+  z-index: 2;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  pointer-events: none;
+}
+.zoomTitle {
+  padding: 10px 13px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.48);
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: .01em;
+}
+.zoomClose {
+  display: grid;
+  flex: 0 0 44px;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%;
+  background: rgba(255,255,255,.16);
+  color: #fff;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.zoomClose svg { display: block; width: 22px; height: 22px; }
+.zoomToolbar {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 55px);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px;
+  border: 1px solid rgba(255,255,255,.22);
+  border-radius: 999px;
+  background: rgba(27,28,31,.88);
+  box-shadow: 0 6px 28px rgba(0,0,0,.27);
+  transform: translateX(-50%);
+}
+.zoomToolbar button {
+  display: grid;
+  place-items: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255,255,255,.13);
+  color: #fff;
+  font-size: 21px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.zoomToolbar button:disabled { opacity: .35; cursor: default; }
+.zoomToolbar output {
+  min-width: 49px;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.zoomToolbar button.zoomReset {
+  padding: 0 14px;
+  font-size: 12px;
+}
+.zoomClose:focus-visible, .zoomToolbar button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+.zoomHint {
+  position: absolute;
+  z-index: 2;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 18px);
+  left: 16px;
+  right: 16px;
+  margin: 0;
+  color: #d2d2d2;
+  font-size: 11px;
+  text-align: center;
+  pointer-events: none;
+}
+@media (max-width: 640px) {
+  .zoomLaunch { right: 10px; bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .zoomLaunch { transition: none; }
 }

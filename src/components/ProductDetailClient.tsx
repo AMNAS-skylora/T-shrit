@@ -12,6 +12,7 @@ import { getProductGalleryForColor } from "@/lib/product-images";
 import { OfferCountdown } from "@/components/OfferCountdown";
 import { useCart } from "@/components/CartProvider";
 import galleryStyles from "@/components/ProductGallery.module.css";
+import { ProductImageZoom } from "@/components/ProductImageZoom";
 
 function firstAvailableSize(product: Product, color: string): string {
   const variant = product.colorVariants?.find((item) => item.name === color);
@@ -37,6 +38,8 @@ export function ProductDetailClient({
   const [selectedColor, setSelectedColor] = useState(initialColor);
   const [size, setSize] = useState(() => firstAvailableSize(product, initialColor));
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
+  const ignoreZoomUntil = useRef(0);
   const touchStart = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
 
@@ -74,6 +77,11 @@ export function ProductDetailClient({
         <div
           className={galleryStyles.gallery}
           data-product-image-target
+          onClick={(event) => {
+            if (!image || Date.now() < ignoreZoomUntil.current) return;
+            if (event.target instanceof Element && event.target.closest("button")) return;
+            setZoomOpen(true);
+          }}
           onTouchStart={(event) => {
             touchStart.current = event.touches[0]?.clientX ?? null;
             touchStartY.current = event.touches[0]?.clientY ?? null;
@@ -87,6 +95,7 @@ export function ProductDetailClient({
               Math.abs(endX - touchStart.current) > 40 &&
               Math.abs(endX - touchStart.current) > Math.abs((endY ?? 0) - (touchStartY.current ?? 0))
             ) {
+              ignoreZoomUntil.current = Date.now() + 450;
               moveImage(endX < touchStart.current ? 1 : -1);
             }
             touchStart.current = null;
@@ -114,6 +123,21 @@ export function ProductDetailClient({
           <div className={galleryStyles.tag}>
             {soldOut ? "Sold out" : selectedColor}
           </div>
+
+          {image ? (
+            <button
+              type="button"
+              className={galleryStyles.zoomLaunch}
+              onClick={(event) => { event.stopPropagation(); setZoomOpen(true); }}
+              aria-label="Zoom product photo"
+              title="Zoom photo"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="10.6" cy="10.6" r="6.3" />
+                <path d="m15.2 15.2 5 5M10.6 7.6v6M7.6 10.6h6" />
+              </svg>
+            </button>
+          ) : null}
 
           {variantImages.length > 1 ? (
             <div className={galleryStyles.controls} role="group" aria-label="Product photo navigation">
@@ -152,12 +176,16 @@ export function ProductDetailClient({
         ) : null}
       </div>
 
+      {zoomOpen && image ? (
+        <ProductImageZoom
+          src={image}
+          alt={product.name + " — " + selectedColor}
+          onClose={() => setZoomOpen(false)}
+        />
+      ) : null}
+
       <div className={galleryStyles.info}>
         <div className={galleryStyles.inner}>
-          <Link href="/products" data-product-return className={galleryStyles.backLink}>
-            <ArrowLeftIcon width={18} height={18} />
-            <span>Back to shop</span>
-          </Link>
           <div className={galleryStyles.heading}>
             <div>
               <p className={galleryStyles.eyebrow}>{product.category}</p>
