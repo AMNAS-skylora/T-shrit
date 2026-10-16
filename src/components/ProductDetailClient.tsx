@@ -2,7 +2,7 @@
 
 import { useOfferClock } from "@/hooks/useOfferClock";
 import Image from "next/image";
-import { ArrowLeftIcon, ArrowRightIcon } from "@/components/UiIcons";
+import { ArrowLeftIcon, ArrowRightIcon, ArrowUpRightIcon } from "@/components/UiIcons";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { Product } from "@/types/product";
@@ -154,6 +154,10 @@ export function ProductDetailClient({
 
       <div className={galleryStyles.info}>
         <div className={galleryStyles.inner}>
+          <Link href="/products" data-product-return className={galleryStyles.backLink}>
+            <ArrowLeftIcon width={18} height={18} />
+            <span>Back to shop</span>
+          </Link>
           <div className={galleryStyles.heading}>
             <div>
               <p className={galleryStyles.eyebrow}>{product.category}</p>
@@ -293,7 +297,7 @@ export function ProductDetailClient({
           {cartNotice ? (
             <div role="status" aria-live="polite" className={galleryStyles.cartNotice}>
               <span>{cartNotice}</span>
-              <Link href="/cart">View bag <span aria-hidden="true">↗</span></Link>
+              <Link href="/cart" className={galleryStyles.viewBagLink}>View bag <ArrowUpRightIcon width={16} height={16} /></Link>
             </div>
           ) : null}
           {!soldOut && whatsappUrl !== "#" ? (

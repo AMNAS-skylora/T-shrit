@@ -81,11 +81,11 @@ export function FeaturedProductMotion({ products = [], layout = "motion" }: { pr
           <strong className={styles.price}>{formatPrice(offerPrice)}</strong>
           {showOriginalPrice ? <del className={styles.originalPrice}>{formatPrice(current.price)}</del> : null}
         </div>
-        <Link href={"/products/" + current.slug} className={styles.button}>
+        <Link href={"/products/" + current.slug} className={styles.button} data-product-transition>
           <span>View product</span><ArrowUpRightIcon width={18} height={18} />
         </Link>
       </div>
-      <Link href={"/products/" + current.slug} className={styles.media} data-visible={visible} aria-label={"View " + current.name}>
+      <Link href={"/products/" + current.slug} className={styles.media} data-product-transition data-visible={visible} aria-label={"View " + current.name}>
         <img src={getProductPrimaryImage(current)} alt={current.name} loading="lazy" decoding="async" draggable={false} />
       </Link>
     </div>

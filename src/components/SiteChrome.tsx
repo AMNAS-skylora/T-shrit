@@ -9,6 +9,7 @@ import { CartProvider } from "@/components/CartProvider";
 import { Footer } from "@/components/Footer";
 import { ShopPageTransition } from "@/components/ShopPageTransition";
 import { ProductImageTransition } from "@/components/ProductImageTransition";
+import { ProductReturnTransition } from "@/components/ProductReturnTransition";
 import { StoreSettingsProvider } from "@/components/StoreSettingsContext";
 import type { Product } from "@/types/product";
 import type { StoreSettings } from "@/types/commerce";
@@ -72,6 +73,7 @@ export function SiteChrome({
         </div>
       ) : null}
       <HomeShoppingMotion />
+      <ProductReturnTransition />
       <ProductImageTransition />
       <ShopPageTransition />
       <Header

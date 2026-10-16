@@ -56,6 +56,14 @@ export function ProductImageTransition() {
         url.pathname === pathname
       ) return;
 
+      // Remember the exact storefront page for app-style reverse navigation.
+      try {
+        window.sessionStorage.setItem("kleidin:product-origin", JSON.stringify({
+          slug: decodeURIComponent(url.pathname.slice("/products/".length)),
+          href: window.location.pathname + window.location.search + window.location.hash,
+        }));
+      } catch { /* Private browsing can disable storage; links still work. */ }
+
       if (typeof link.animate !== "function") return;
       const image = link.querySelector<HTMLImageElement>("img") ??
         link.closest("article")?.querySelector<HTMLImageElement>("img");
