@@ -127,7 +127,7 @@ export function HomeProductCatalog({
       </div>
 
       {filteredProducts.length ? (
-        <div className={styles.grid + " " + catalogStyles.catalogGrid + (filteredProducts.length === 1 ? " " + catalogStyles.singleGrid : "")}>
+        <div className={styles.grid + " " + catalogStyles.catalogGrid}>
           {filteredProducts.map((product) => (
             <HomeProductGridCard key={product.id} product={product} whatsappNumber={whatsappNumber} />
           ))}

@@ -110,10 +110,15 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
-.catalogGrid { margin-top: 0; }
-.singleGrid {
-  grid-template-columns: minmax(0, min(360px, 100%));
-  justify-content: start;
+.catalogGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: stretch;
+  column-gap: clamp(10px, 2.5vw, 20px);
+  margin-top: 0;
+}
+@media (min-width: 1024px) {
+  .catalogGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 .emptyState {
   display: grid;
@@ -157,7 +162,11 @@
   .filters { gap: 7px; }
   .filters button { min-height: 40px; padding-inline: 14px; font-size: 12px; }
   .count { font-size: 11px; }
-  .singleGrid { justify-content: center; }
+  .catalogGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 10px;
+    row-gap: 24px;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .filters button { transition: none; }
