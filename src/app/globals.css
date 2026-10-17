@@ -17112,3 +17112,32 @@ select,
     padding: 6px !important;
   }
 }
+
+
+/* KLEID.IN mobile navigation: rounded, accessible arrow-link buttons. */
+.mobile-card-nav .mobile-card-link {
+  border-radius: 16px;
+  border: 1px solid rgba(23, 42, 167, .14);
+  padding-inline: 16px;
+  min-height: 52px;
+  background: #f6f7fb;
+  transition: background-color .2s ease, color .2s ease, transform .2s ease, border-color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-card-nav .mobile-card-link.active {
+  background: #172aa7;
+  border-color: #172aa7;
+  color: #fff;
+}
+.mobile-card-nav .mobile-card-arrow { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.mobile-card-nav .mobile-card-arrow svg { display: block; }
+@media (hover: hover) and (pointer: fine) {
+  .mobile-card-nav .mobile-card-link:hover { background: #172aa7; border-color: #172aa7; color: #fff; }
+}
+.mobile-card-nav .mobile-card-link:active { transform: scale(.985); }
+.mobile-card-nav .mobile-card-link:focus-visible { outline: 3px solid #2448fa; outline-offset: 3px; }
+@media (max-width: 640px) { .mobile-card-nav .mobile-card-link { border-radius: 14px; } }
+@media (prefers-reduced-motion: reduce) {
+  .mobile-card-nav .mobile-card-link { transition: none; }
+  .mobile-card-nav .mobile-card-link:active { transform: none; }
+}
