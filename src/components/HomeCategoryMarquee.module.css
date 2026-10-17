@@ -34,7 +34,7 @@
   display: flex;
   flex: 0 0 auto;
   align-items: center;
-  gap: clamp(38px, 4vw, 70px);
+  gap: clamp(12px, 2vw, 24px);
   padding-inline: clamp(19px, 2.5vw, 42px);
 }
 
@@ -42,11 +42,13 @@
   display: inline-flex;
   flex: 0 0 auto;
   align-items: center;
+  justify-content: space-between;
+  gap: 18px;
   min-height: 56px;
-  padding: 8px 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
+  padding: 10px 18px;
+  border: 1px solid #484a50;
+  border-radius: 16px;
+  background: #292b30;
   color: #bfc1c4 !important;
   font-size: clamp(16px, 1.55vw, 23px);
   font-weight: 700;
@@ -56,13 +58,19 @@
   white-space: nowrap;
   text-decoration: none;
   touch-action: pan-y;
-  transition: color .2s ease;
+  transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .category:hover,
 .category:focus-visible {
   color: #fff !important;
+  background: #172aa7;
+  border-color: #172aa7;
 }
+
+.category:active { transform: scale(.98); }
+.category svg { display: block; flex-shrink: 0; }
 
 .category:focus-visible {
   outline: 2px solid #aeb9ff;
@@ -84,11 +92,14 @@
 @media (max-width: 767px) {
   .window { min-height: 90px; }
   .group {
-    gap: 34px;
+    gap: 12px;
     padding-inline: 18px;
   }
   .category {
     min-height: 48px;
+    border-radius: 14px;
+    padding: 9px 14px;
+    gap: 12px;
     font-size: 15px;
     letter-spacing: .04em;
   }
@@ -97,6 +108,8 @@
 /* Deliberately retain the category loop for Reduce Motion ON as requested.
    There is no manual scrolling and no hover/focus pause behaviour. */
 @media (prefers-reduced-motion: reduce) {
+  .category { transition: none; }
+  .category:active { transform: none; }
   .track {
     animation: categoryMarquee var(--marquee-duration, 42s) linear infinite;
     animation-play-state: running;
