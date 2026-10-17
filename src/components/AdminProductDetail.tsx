@@ -588,7 +588,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
   function reset() { if (savedProduct) { setDraft(cloneProduct(savedProduct)); setCustomSize(""); setMessageError(false); setMessage(""); } }
 
   if (!draft) {
-    return <div className="min-w-0"><Link href="/admin/products" className="inline-flex min-h-11 items-center text-xs font-semibold !text-[#001cac]">← Back to products</Link>{loading ? <div role="status" aria-label="Loading product" className="mt-4 grid gap-4 lg:grid-cols-3"><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none lg:col-span-2" /><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none" /></div> : <div role="alert" className="mt-4 rounded-2xl bg-white p-5 ring-1 ring-black/5"><p className="text-sm text-red-600">{loadError || "Product not found."}</p>{!notFound ? <button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button> : null}</div>}</div>;
+    return <div className="min-w-0"><Link href="/admin/products" className="inline-flex min-h-10 items-center gap-1.5 text-xs font-semibold !text-[#001cac]">← Back to products</Link>{loading ? <div role="status" aria-label="Loading product" className="mt-4 grid gap-4 lg:grid-cols-3"><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none lg:col-span-2" /><div className="h-80 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none" /></div> : <div role="alert" className="mt-4 rounded-2xl bg-white p-5 ring-1 ring-black/5"><p className="text-sm text-red-600">{loadError || "Product not found."}</p>{!notFound ? <button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button> : null}</div>}</div>;
   }
 
   const variants = draft.colorVariants ?? [];
@@ -597,15 +597,15 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
   return (
     <div className="min-w-0 pb-28">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-2 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <Link
             href="/admin/products"
             className="inline-flex min-h-11 items-center text-xs font-semibold !text-[#001cac]"
           >
-            ← Products
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>Products
           </Link>
-          <h1 className="mt-2 break-words text-3xl font-bold tracking-[-.045em]">
+          <h1 className="mt-1 break-words text-[26px] leading-tight font-bold tracking-[-.045em] sm:text-3xl">
             {draft.name}
           </h1>
           <p className="mt-2 break-words text-xs text-black/45">
@@ -618,15 +618,15 @@ export function AdminProductDetail({ productId }: { productId: string }) {
           <Link
             href={"/products/" + draft.slug}
             target="_blank"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-black/10 bg-white px-4 text-xs font-bold"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-black/10 bg-white px-4 text-xs font-bold"
           >
-            View storefront ↗
+            View storefront <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9" /></svg>
           </Link>
           <button
             type="button"
             onClick={() => void save()}
             disabled={!dirty || saving || Boolean(uploading)}
-            className="min-h-11 rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white disabled:opacity-50"
+            className="hidden min-h-11 rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white disabled:opacity-50 sm:inline-flex sm:items-center"
           >
             {saving ? "Saving…" : "Save changes"}
           </button>
@@ -635,7 +635,7 @@ export function AdminProductDetail({ productId }: { productId: string }) {
 
       <AdminActionFeedback id="product-feedback" message={message} error={messageError} />
 
-      <div className="mt-4 flex flex-wrap items-center justify-between gap-3"><nav aria-label="Product sections" className="flex flex-wrap gap-2">{[["details", "Details"], ["sizes", "Sizes"], ["colours", "Colours"], ["offer", "Offer"], ["dealers", "Dealers"], ["homepage", "Homepage"], ["images", "Images"]].map(([id, label]) => <a key={id} href={"#product-" + id} className="inline-flex min-h-11 items-center rounded-xl border border-black/10 bg-white px-3 text-xs font-semibold hover:bg-[#eef2ff]">{label}</a>)}</nav><p aria-live="polite" className={"text-xs font-semibold " + (dirty ? "text-amber-700" : "text-black/45")}>{dirty ? "Unsaved changes" : "All changes saved"}</p></div>
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2"><nav aria-label="Product sections" className="flex max-w-full flex-nowrap gap-2 overflow-x-auto pb-2">{[["details", "Details"], ["sizes", "Sizes"], ["colours", "Colours"], ["offer", "Offer"], ["dealers", "Dealers"], ["homepage", "Homepage"], ["images", "Images"]].map(([id, label]) => <a key={id} href={"#product-" + id} className="inline-flex min-h-10 shrink-0 items-center rounded-xl border border-black/10 bg-white px-3 text-xs font-semibold hover:bg-[#eef2ff]">{label}</a>)}</nav><p aria-live="polite" className={"text-xs font-semibold " + (dirty ? "text-amber-700" : "text-black/45")}>{dirty ? "Unsaved changes" : "All changes saved"}</p></div>
       <fieldset data-admin-form disabled={saving} className="mt-5 grid min-w-0 gap-4 border-0 p-0 xl:grid-cols-[minmax(0,1fr)_320px]">
         <div className="order-2 min-w-0 space-y-4 xl:order-1">
           <section id="product-details" className="scroll-mt-6 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
