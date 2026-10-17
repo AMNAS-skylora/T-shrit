@@ -201,15 +201,13 @@ export function AdminInventoryManager() {
 
   return (
     <div className="min-w-0">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">
-            STOCK CONTROL
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-[-.04em]">
+          
+          <h1 className="text-[30px] font-bold tracking-[-.04em]">
             Inventory
           </h1>
-          <p className="mt-2 text-xs leading-5 text-black/45">
+          <p className="mt-1.5 text-sm leading-5 text-black/50">
             Low stock alerts are calculated per product, colour and size.
           </p>
         </div>
@@ -218,7 +216,7 @@ export function AdminInventoryManager() {
           type="button"
           onClick={() => openAdjustment()}
           disabled={loading || !!loadError || !products.length}
-          className="disabled:opacity-50 min-h-11 w-full rounded-xl bg-[#001cac] px-5 text-xs font-bold !text-white sm:w-auto"
+          className="disabled:opacity-50 min-h-[48px] w-full rounded-[14px] bg-[#001cac] px-5 text-sm font-bold !text-white sm:w-auto"
         >
           Adjust stock
         </button>
@@ -227,15 +225,15 @@ export function AdminInventoryManager() {
       {loading ? <div role="status" aria-label="Loading inventory" className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{[0, 1, 2].map((key) => <div key={key} className="h-72 animate-pulse rounded-2xl bg-black/5 motion-reduce:animate-none" />)}</div>
         : loadError ? <div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-red-100"><p className="text-sm text-red-600">{loadError}</p><button type="button" onClick={() => setRetry((value) => value + 1)} className="mt-3 min-h-11 rounded-xl border border-black/10 px-4 text-xs font-semibold">Try again</button></div>
         : <>
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <article className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
+      <div className="mt-4 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+        <article className="rounded-[16px] bg-white p-3.5 ring-1 ring-black/5">
           <p className="text-[10px] font-semibold uppercase tracking-[.08em] text-black/40">
             Products
           </p>
           <strong className="mt-2 block text-2xl">{summary.totalProducts}</strong>
         </article>
 
-        <article className="rounded-2xl bg-white p-4 ring-1 ring-black/5">
+        <article className="rounded-[16px] bg-white p-3.5 ring-1 ring-black/5">
           <p className="text-[10px] font-semibold uppercase tracking-[.08em] text-black/40">
             Stock units
           </p>
