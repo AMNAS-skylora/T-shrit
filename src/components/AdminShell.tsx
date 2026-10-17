@@ -6,12 +6,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 const nav = [
-  { href: "/admin", label: "Dashboard" },
-  { href: "/admin/products", label: "Products" },
-  { href: "/admin/inventory", label: "Inventory" },
-  { href: "/admin/orders", label: "Orders" },
-  { href: "/admin/customers", label: "Customers" },
-  { href: "/admin/settings", label: "Settings" },
+  { href: "/admin", label: "Dashboard", icon: "home" },
+  { href: "/admin/products", label: "Products", icon: "products" },
+  { href: "/admin/inventory", label: "Inventory", icon: "inventory" },
+  { href: "/admin/orders", label: "Orders", icon: "orders" },
+  { href: "/admin/customers", label: "Customers", icon: "customers" },
+  { href: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 
 const mobilePrimary = [
@@ -163,13 +163,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
                   href={item.href}
                   aria-current={active ? "page" : undefined}
                   className={
-                    "block shrink-0 rounded-xl px-3 py-2.5 text-[12px] font-semibold transition " +
+                    "flex min-h-11 shrink-0 items-center gap-3 rounded-[14px] px-3 py-2.5 text-[12px] font-semibold transition-colors motion-reduce:transition-none " +
                     (active
                       ? "bg-[#001cac] !text-white"
                       : "text-black/55 hover:bg-black/[.04] hover:text-black")
                   }
                 >
-                  {item.label}
+                  <NavIcon name={item.icon} className="h-[19px] w-[19px]" />
+                  <span className="flex-1">{item.label}</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg>
                 </Link>
               );
             })}
@@ -177,8 +179,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
 
           <button
             onClick={logout}
-            className="mt-8 hidden w-full rounded-xl border border-black/10 px-3 py-2.5 text-left text-[12px] font-semibold text-black/60 md:block"
+            className="mt-8 hidden min-h-11 w-full items-center gap-3 rounded-[14px] border border-black/10 px-3 py-2.5 text-left text-[12px] font-semibold text-black/60 transition-colors hover:bg-red-50 hover:text-red-600 md:flex"
           >
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m10 17 5-5-5-5M15 12H3M14 3h6v18h-6" /></svg>
             Logout
           </button>
         </aside>
@@ -222,7 +225,8 @@ export function AdminShell({ children }: { children: ReactNode }) {
                     }
                   >
                     <NavIcon name={item.icon} className="h-[18px] w-[18px]" />
-                    {item.label}
+                    <span className="flex-1">{item.label}</span>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9" /></svg>
                   </Link>
                 );
               })}
