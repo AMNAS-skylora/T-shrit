@@ -74,27 +74,31 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 38px;
-  min-height: 53px;
+  gap: 34px;
+  min-height: 54px;
   margin-top: 30px;
-  padding: 0 22px;
+  padding: 0 24px;
   border: 1px solid rgba(255,255,255,.12);
   border-radius: 16px;
   background: #172aa7;
   color: #fff !important;
   box-shadow: 0 7px 18px rgba(23,42,167,.16);
   -webkit-tap-highlight-color: transparent;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .07em;
-  transition: background-color .25s ease, transform .25s ease, box-shadow .25s ease;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: background-color .22s ease, transform .22s ease, box-shadow .22s ease;
 }
 
+@media (hover: hover) and (pointer: fine) {
 .cta:hover {
   background: #09196f;
   transform: translateY(-2px);
   box-shadow: 0 10px 24px rgba(23,42,167,.23);
+}
 }
 .cta:active {
   transform: translateY(0) scale(.98);
@@ -269,7 +273,7 @@
     padding: 0 20px;
     border-radius: 14px;
     gap: 32px;
-    font-size: 11px;
+    font-size: 12px;
   }
   .visual { padding: 32px 12px 26px; }
   .visualCanvas { height: clamp(360px, 106vw, 470px); }
@@ -282,7 +286,7 @@
   /* Keep the slideshow changing, but avoid an extended slide for visitors
      requesting reduced motion. The full 3s movement is used otherwise. */
   .card { transition-duration: 160ms; }
-  .cta { transition: background-color 120ms ease; }
+  .cta { transition: none; }
   .cta:hover, .cta:active { transform: none; }
 }
 
