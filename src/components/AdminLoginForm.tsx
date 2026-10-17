@@ -75,15 +75,15 @@ export function AdminLoginForm() {
   return (
     <form data-admin-ui data-admin-form
       onSubmit={submit}
-      className="w-full max-w-[420px] rounded-[24px] border border-black/10 bg-white p-6 shadow-sm md:p-8"
+      className="w-full max-w-[440px] rounded-[24px] border border-[#e6e9f0] bg-white px-5 py-7 shadow-[0_18px_60px_rgba(16,24,40,0.08)] sm:px-8 sm:py-9"
     >
-      <p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">
+      <p className="inline-flex rounded-full bg-[#eef2ff] px-3 py-1.5 text-[11px] font-bold tracking-[.13em] text-[#001cac]">
         ADMIN
       </p>
 
-      <h1 className="mt-3 text-3xl font-bold tracking-[-.04em]">Sign in</h1>
+      <h1 className="mt-5 text-[30px] font-bold leading-tight tracking-[-.045em] text-[#151923]">Sign in</h1>
 
-      <p className="mt-2 text-sm leading-6 text-black/50">
+      <p className="mt-2 max-w-[34ch] text-[14px] leading-6 text-[#667085]">
         Manage products, stock, orders and storefront content.
       </p>
 
@@ -94,7 +94,7 @@ export function AdminLoginForm() {
           autoComplete="username"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="mt-2 w-full rounded-xl border border-black/10 px-4 py-3 text-sm outline-none transition-colors focus:border-[#001cac]"
+          className="mt-2 h-[52px] w-full rounded-[14px] border border-[#d8deea] bg-white px-4 text-[16px] text-[#151923] outline-none transition-colors focus:border-[#001cac] focus:ring-[3px] focus:ring-[#001cac]/10"
           required
         />
       </label>
@@ -108,14 +108,14 @@ export function AdminLoginForm() {
             autoComplete="current-password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
-            className="w-full rounded-xl border border-black/10 px-4 py-3 pr-12 text-sm outline-none transition-colors focus:border-[#001cac]"
+            className="h-[52px] w-full rounded-[14px] border border-[#d8deea] bg-white px-4 pr-14 text-[16px] text-[#151923] outline-none transition-colors focus:border-[#001cac] focus:ring-[3px] focus:ring-[#001cac]/10"
             required
           />
 
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-black/45 transition hover:bg-black/[.04] hover:text-[#001cac] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001cac]/30"
+            className="absolute right-2 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-xl text-[#667085] transition-colors hover:bg-[#eef2ff] hover:text-[#001cac] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001cac]/30"
             aria-label={showPassword ? "Hide password" : "Show password"}
             aria-pressed={showPassword}
           >
@@ -132,7 +132,7 @@ export function AdminLoginForm() {
 
       <button
         disabled={loading}
-        className="mt-6 w-full rounded-xl bg-[#001cac] px-4 py-3 text-sm font-bold !text-white transition hover:bg-[#00179a] disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-7 flex min-h-[52px] w-full items-center justify-center rounded-[14px] bg-[#001cac] px-4 py-3 text-[15px] font-bold !text-white shadow-[0_8px_20px_rgba(0,28,172,0.16)] transition-[background-color,box-shadow,transform] duration-200 hover:bg-[#00147d] hover:shadow-[0_12px_24px_rgba(0,28,172,0.22)] active:scale-[.985] motion-reduce:transition-none motion-reduce:active:scale-100 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {loading ? "Signing in…" : "Sign in"}
       </button>
