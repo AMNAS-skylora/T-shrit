@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 function EyeIcon({ hidden }: { hidden: boolean }) {
@@ -39,6 +39,22 @@ function EyeIcon({ hidden }: { hidden: boolean }) {
 
 export function AdminLoginForm() {
   const router = useRouter();
+
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const previous = { htmlOverflow: html.style.overflow, bodyOverflow: body.style.overflow, htmlOverscroll: html.style.overscrollBehavior, bodyOverscroll: body.style.overscrollBehavior };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.overscrollBehavior = "none";
+    body.style.overscrollBehavior = "none";
+    return () => {
+      html.style.overflow = previous.htmlOverflow;
+      body.style.overflow = previous.bodyOverflow;
+      html.style.overscrollBehavior = previous.htmlOverscroll;
+      body.style.overscrollBehavior = previous.bodyOverscroll;
+    };
+  }, []);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
