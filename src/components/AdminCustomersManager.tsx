@@ -48,18 +48,18 @@ export function AdminCustomersManager() {
     (!query || [customer.name, customer.email, customer.phone].some((value) => value?.toLowerCase().includes(query))));
 
   return <div className="min-w-0">
-    <p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">CRM</p>
-    <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-      <div><h1 className="text-3xl font-bold tracking-[-.04em]">Customers</h1><p className="mt-2 text-xs leading-5 text-black/50">Contact details, orders and customer notes.</p></div>
+    
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><h1 className="text-[30px] font-bold tracking-[-.04em]">Customers</h1><p className="mt-1.5 text-sm leading-5 text-black/50">Contact details, orders and customer notes.</p></div>
       {!loading && !error ? <span className="rounded-full bg-white px-3 py-2 text-xs font-semibold ring-1 ring-black/10">{customers.length} customers</span> : null}
     </div>
     <section aria-label="Customer list" className="mt-6">
-      <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:flex-row sm:items-end">
+      <div className="flex flex-col gap-3 rounded-[18px] bg-white p-3.5 ring-1 ring-black/5 sm:flex-row sm:items-end">
         <label className="min-w-0 flex-1 text-xs font-semibold">Search customers
-          <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name, phone or email" className="mt-2 min-h-11 w-full rounded-xl border border-black/10 bg-[#fafafa] px-3 text-sm font-normal outline-none focus:border-[#001cac] focus:ring-2 focus:ring-[#001cac]/10" />
+          <input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Name, phone or email" className="mt-2 min-h-[48px] w-full rounded-[14px] border border-black/10 bg-white px-3 text-[16px] font-normal outline-none focus:border-[#001cac] focus:ring-2 focus:ring-[#001cac]/10" />
         </label>
         <label className="text-xs font-semibold sm:w-44">Status
-          <select value={status} onChange={(event) => setStatus(event.target.value)} className="mt-2 min-h-11 w-full rounded-xl border border-black/10 bg-[#fafafa] px-3 text-sm font-normal outline-none focus:border-[#001cac]">
+          <select value={status} onChange={(event) => setStatus(event.target.value)} className="mt-2 min-h-[48px] w-full rounded-[14px] border border-black/10 bg-white px-3 text-[16px] font-normal outline-none focus:border-[#001cac]">
             <option value="all">All customers</option><option value="active">Active</option><option value="blocked">Blocked</option>
           </select>
         </label>
@@ -97,7 +97,7 @@ export function CustomerCard({ customer, update, showDetailLink = true }: { cust
     <dl className="my-4 grid grid-cols-2 gap-3 rounded-xl bg-[#fafafa] p-3"><div><dt className="text-[10px] text-black/45">Orders</dt><dd className="mt-1 text-sm font-semibold">{customer.totalOrders}</dd></div><div><dt className="text-[10px] text-black/45">Total spend</dt><dd className="mt-1 break-words text-sm font-semibold">₹{customer.totalSpend.toLocaleString("en-IN")}</dd></div><div className="col-span-2"><dt className="text-[10px] text-black/45">Last order</dt><dd className="mt-1 text-xs">{customer.lastOrderAt ? new Date(customer.lastOrderAt).toLocaleDateString("en-IN") : "No orders yet"}</dd></div></dl>
     <label className="mt-auto text-xs font-semibold">Notes<textarea value={notes} onChange={(event) => { setNotes(event.target.value); setMessage(""); }} disabled={busy !== null} rows={2} placeholder="Add a customer note" className="mt-2 w-full resize-y rounded-xl border border-black/10 px-3 py-2 text-sm font-normal outline-none focus:border-[#001cac] disabled:opacity-60" /></label>
     <div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={!dirty || busy !== null} onClick={() => void save("notes")} className="min-h-11 flex-1 rounded-xl bg-[#001cac] px-3 text-xs font-semibold !text-white disabled:opacity-50">{busy === "notes" ? "Saving…" : "Save notes"}</button><button type="button" disabled={busy !== null} onClick={() => void save("status")} className={"min-h-11 flex-1 rounded-xl border px-3 text-xs font-semibold disabled:opacity-50 " + (customer.status === "active" ? "border-red-100 !text-red-600" : "border-black/10 !text-[#001cac]")}>{busy === "status" ? "Updating…" : customer.status === "active" ? "Block customer" : "Unblock customer"}</button></div>
-    {showDetailLink ? <Link href={"/admin/customers/" + customer.id} className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-black/10 px-3 text-xs font-semibold !text-[#001cac] hover:bg-[#eef2ff]">View customer details →</Link> : null}
+    {showDetailLink ? <Link href={"/admin/customers/" + customer.id} className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-black/10 px-3 text-xs font-semibold !text-[#001cac] hover:bg-[#eef2ff]">View customer details</Link> : null}
     {error ? <p role="alert" className="mt-3 text-xs text-red-600">{error}</p> : null}{message ? <p role="status" className="mt-3 text-xs text-green-700">{message}</p> : null}
   </article>;
 }
