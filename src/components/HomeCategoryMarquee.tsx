@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRightIcon } from "@/components/UiIcons";
 import type { CSSProperties } from "react";
 import { getCategoryShopHref } from "@/lib/storefront-categories";
 import styles from "./HomeCategoryMarquee.module.css";
@@ -49,7 +50,8 @@ export function HomeCategoryMarquee({ categories }: { categories: string[] }) {
                     className={styles.category}
                     tabIndex={copy === 1 ? -1 : undefined}
                   >
-                    {category}
+                    <span>{category}</span>
+                    <ArrowUpRightIcon width={18} height={18} />
                   </Link>
                 ))}
               </div>
