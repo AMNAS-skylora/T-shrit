@@ -54,6 +54,9 @@ function ActionIcon({ name }: { name: string }) {
   return <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d={paths[name]} /></svg>;
 }
 
+function ArrowIcon() { return <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7M8 7h9v9" /></svg>; }
+function ChevronIcon() { return <svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>; }
+function TrophyIcon() { return <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M8 21h8M12 17v4M7 4h10v7a5 5 0 0 1-10 0V4ZM7 6H4v3a4 4 0 0 0 4 4M17 6h3v3a4 4 0 0 1-4 4" /></svg>; }
 function statusClass(status: string) {
   if (status === "delivered" || status === "paid") {
     return "bg-emerald-50 text-emerald-700 ring-emerald-100";
@@ -146,7 +149,7 @@ export default async function AdminDashboardPage() {
   let metrics: Awaited<ReturnType<typeof getDashboardMetrics>>;
   try { metrics = await getDashboardMetrics(); }
   catch {
-    return <div className="min-w-0"><p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">CONTROL CENTER</p><h1 className="mt-2 text-3xl font-bold">Dashboard</h1><div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5"><h2 className="text-base font-semibold">Could not load dashboard</h2><p className="mt-2 text-sm leading-6 text-black/50">Store data is temporarily unavailable. Try loading the dashboard again.</p><a href="/admin" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#001cac] px-5 text-xs font-semibold !text-white">Retry dashboard</a></div><AdminDealersToggle /><nav aria-label="Store management" className="mt-4 grid gap-3 sm:grid-cols-3">{[["/admin/products", "Products"], ["/admin/orders", "Orders"], ["/admin/inventory", "Inventory"]].map(([href, label]) => <Link key={href} href={href} className="flex min-h-11 items-center justify-between rounded-xl bg-white px-4 text-sm font-semibold ring-1 ring-black/5">{label}<span aria-hidden="true">→</span></Link>)}</nav></div>;
+    return <div className="min-w-0"><p className="text-[10px] font-bold tracking-[.16em] text-[#001cac]">CONTROL CENTER</p><h1 className="mt-2 text-3xl font-bold">Dashboard</h1><div role="alert" className="mt-6 rounded-2xl bg-white p-6 ring-1 ring-black/5"><h2 className="text-base font-semibold">Could not load dashboard</h2><p className="mt-2 text-sm leading-6 text-black/50">Store data is temporarily unavailable. Try loading the dashboard again.</p><a href="/admin" className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#001cac] px-5 text-xs font-semibold !text-white">Retry dashboard</a></div><AdminDealersToggle /><nav aria-label="Store management" className="mt-4 grid gap-3 sm:grid-cols-3">{[["/admin/products", "Products"], ["/admin/orders", "Orders"], ["/admin/inventory", "Inventory"]].map(([href, label]) => <Link key={href} href={href} className="flex min-h-11 items-center justify-between rounded-xl bg-white px-4 text-sm font-semibold ring-1 ring-black/5">{label}<span aria-hidden="true"><ChevronIcon /></span></Link>)}</nav></div>;
   }
   const maxDailyRevenue = Math.max(
     1,
@@ -251,7 +254,7 @@ export default async function AdminDashboardPage() {
               Control center
             </p>
           </div>
-          <h1 className="mt-2 text-[34px] font-bold leading-none tracking-[-.055em] md:text-[42px]">
+          <h1 className="mt-2 text-[30px] font-bold leading-tight tracking-[-.045em] sm:text-[36px] md:text-[42px]">
             Dashboard
           </h1>
           <p className="mt-2.5 max-w-xl text-[11px] leading-5 text-black/55">
@@ -317,9 +320,9 @@ export default async function AdminDashboardPage() {
 
       <section aria-label="Quick actions" className="mt-5 rounded-2xl bg-white p-4 ring-1 ring-black/5 sm:p-5">
         <h2 className="text-sm font-semibold">Quick actions</h2>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4 xl:grid-cols-7">
-          {quickActions.map((action) => <Link key={action.label} href={action.href} className="group min-w-0 rounded-xl border border-black/5 bg-[#fafafa] p-3 transition hover:border-[#001cac]/20 hover:bg-[#eef2ff]">
-            <div className="flex items-center justify-between gap-2"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#eef2ff] text-[#001cac]"><ActionIcon name={action.short} /></span><span aria-hidden="true" className="text-xs text-black/50">↗</span></div><strong className="mt-3 block break-words text-xs font-semibold">{action.label}</strong><span className="mt-1 block text-[10px] leading-5 text-black/50">{action.description}</span>
+        <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6">
+          {quickActions.map((action) => <Link key={action.label} href={action.href} className="group min-w-0 rounded-[16px] border border-black/[.07] bg-[#fafafa] p-3.5 transition-colors hover:border-[#001cac]/20 hover:bg-[#eef2ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#001cac]">
+            <div className="flex items-center justify-between gap-2"><span className="grid h-9 w-9 place-items-center rounded-xl bg-[#eef2ff] text-[#001cac]"><ActionIcon name={action.short} /></span><span aria-hidden="true" className="text-xs text-black/50"><ArrowIcon /></span></div><strong className="mt-3 block break-words text-xs font-semibold">{action.label}</strong><span className="mt-1 block text-[10px] leading-5 text-black/50">{action.description}</span>
           </Link>)}
         </div>
       </section>
@@ -359,7 +362,7 @@ export default async function AdminDashboardPage() {
             {!hasSales ? (
               <div className="absolute inset-x-5 top-1/2 z-10 -translate-y-1/2 text-center">
                 <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-[#001cac]/[.06] text-sm font-bold text-[#001cac]">
-                  ↗
+                  <ArrowIcon />
                 </div>
                 <p className="mt-2 text-[11px] font-semibold">
                   No sales in the last 7 days
@@ -462,7 +465,7 @@ export default async function AdminDashboardPage() {
             ) : (
               <div className="flex min-h-[205px] flex-col items-center justify-center px-5 text-center">
                 <div className="grid h-11 w-11 place-items-center rounded-full bg-black/[.035] text-sm font-bold text-black/50">
-                  #
+                  <TrophyIcon />
                 </div>
                 <p className="mt-3 text-[11px] font-semibold">
                   No best sellers yet
@@ -519,7 +522,7 @@ export default async function AdminDashboardPage() {
                 </div>
                 <strong className="shrink-0 text-[11px]">{item.value}</strong>
                 <span className="text-[11px] text-black/20 transition group-hover:translate-x-0.5 group-hover:text-black/50">
-                  →
+                  <ChevronIcon />
                 </span>
               </Link>
             ))}
@@ -541,14 +544,14 @@ export default async function AdminDashboardPage() {
               <Link
                 key={item.label}
                 href={item.href}
-                className="group min-w-0 min-h-[92px] rounded-[16px] bg-[#f7f7f8] p-3 transition hover:bg-[#f0f1f4]"
+                className="group min-w-0 min-h-[106px] rounded-[16px] border border-black/[.045] bg-[#f7f7f8] p-3.5 transition-colors hover:border-[#001cac]/20 hover:bg-[#eef2ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#001cac]"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-[.08em] text-black/50">
                     {item.label}
                   </span>
                   <span className="text-[10px] text-black/20 transition group-hover:text-black/50">
-                    ↗
+                    <ArrowIcon />
                   </span>
                 </div>
                 <strong className="mt-3 block text-[21px] leading-none tracking-[-.04em]">
@@ -587,7 +590,7 @@ export default async function AdminDashboardPage() {
               <div className="flex flex-wrap items-start justify-between gap-2"><h3 className="min-w-0 break-all text-sm font-semibold"><Link href={"/admin/orders/" + order.id} className="!text-[#001cac] hover:underline">{order.orderNumber}</Link></h3><strong className="text-sm">{formatPrice(order.total)}</strong></div>
               <p className="mt-2 break-words text-xs font-semibold">{order.customerName}</p><p className="mt-1 text-[10px] text-black/50">{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
               <div className="mt-3 flex flex-wrap gap-2"><span className={"rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ring-1 " + statusClass(order.status)}>{order.status.replaceAll("-", " ")}</span><span className={"rounded-full px-2.5 py-1 text-[10px] font-semibold capitalize ring-1 " + statusClass(order.paymentStatus)}>{order.paymentMethod.toUpperCase()} · {order.paymentStatus}</span></div>
-              <Link href={"/admin/orders/" + order.id} className="mt-4 flex min-h-11 items-center justify-center rounded-xl border border-black/10 px-3 text-xs font-semibold !text-[#001cac] hover:bg-[#eef2ff]">View order →</Link>
+              <Link href={"/admin/orders/" + order.id} className="mt-4 flex min-h-11 items-center justify-center gap-2 rounded-xl border border-black/10 px-3 text-xs font-semibold !text-[#001cac] hover:bg-[#eef2ff]">View order <ChevronIcon /></Link>
             </article>)}
           </div>
         ) : (
